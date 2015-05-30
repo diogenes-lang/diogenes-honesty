@@ -1,0 +1,9 @@
+target=it.unica.co2.LTSExample
+
+native_classpath+=./bin
+classpath+=./bin/
+sourcepath+=./src/
+
+cg.enumerate_random = true
+
+listener = it.unica.co2.semantics.jpf.ComplianceListener
