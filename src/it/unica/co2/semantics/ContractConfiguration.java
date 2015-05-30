@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ContractConfiguration implements LTSState<ContractConfiguration>{
+public class ContractConfiguration implements LTSState {
 
 	private final Contract a;
 	private final Contract b;
@@ -91,9 +91,14 @@ public class ContractConfiguration implements LTSState<ContractConfiguration>{
 		
 		return nextStates.length!=0;
 	}
-
+	
 	@Override
-	public LTSState<ContractConfiguration>[] nextStates() {
+	public boolean check() {
+		return isSafe();
+	}
+	
+	@Override
+	public LTSState[] nextStates() {
 		return nextStates;
 	}
 	

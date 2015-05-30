@@ -6,4 +6,4 @@ sourcepath+=./src/
 
 cg.enumerate_random = true
 
-#listener = it.unica.co2.listener.MyPropertyListener
+listener = it.unica.co2.listener.MyPropertyListener

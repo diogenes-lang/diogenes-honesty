@@ -1,9 +1,11 @@
 package it.unica.co2.semantics;
 
-public interface LTSState<T> {
+public interface LTSState {
 
 	public boolean hasNext();
 	
-	public LTSState<T>[] nextStates();
+	public LTSState[] nextStates();
+	
+	public boolean check();
 	
 }

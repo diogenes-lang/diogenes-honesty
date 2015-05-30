@@ -44,7 +44,7 @@ public class ModelChecker {
 		
 		
 		
-		LTS<ContractConfiguration> lts = new LTS<ContractConfiguration>(startState);
+		LTS lts = new LTS(startState);
 
 		lts.start();
 	}

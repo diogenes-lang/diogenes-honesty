@@ -20,15 +20,16 @@ public class LTSExample {
 				)
 		);
 		
-		Contract b = Factory.externalSum("a", "d");
+		Contract b = Factory.externalSum("a", "b", "c");
 		
 		ContractConfiguration startState = new ContractConfiguration(a, b);
 		
 		
 		
-		LTS<ContractConfiguration> lts = new LTS<ContractConfiguration>(startState);
+		LTS lts = new LTS(startState);
 
-		lts.start();
+		lts.start(ContractConfiguration.class);
+
 	}
 
 }

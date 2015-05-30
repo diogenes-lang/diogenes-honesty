@@ -18,6 +18,6 @@ public class InternalSum extends Contract{
 	
 	@Override
 	public String toString() {
-		return Arrays.stream(actions).map(a -> a.toString()).collect(Collectors.joining(" (+) ", "[", "]"));
+		return Arrays.stream(actions).map(a -> a.toString()).collect(Collectors.joining(" (+) ", "(", ")"));
 	}
 }

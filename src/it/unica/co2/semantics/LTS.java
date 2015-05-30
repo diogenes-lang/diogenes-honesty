@@ -2,39 +2,53 @@ package it.unica.co2.semantics;
 
 import java.util.Random;
 
-public class LTS<T> {
+public class LTS {
 
 	private Random random = new Random();
-	private LTSState<T> currentState;
+	private LTSState currentState;
 
-	public LTS(LTSState<T> startState) {
+	public LTS(LTSState startState) {
 		this.currentState = startState;
 	}
 	
+	public LTSState start() {
+		return start(LTSState.class);
+	}
 	
-	public void start() {
+	public <T extends LTSState> T start(Class<T> clazz) {
 		
 		int iterations=0;
 		
 		System.out.println("-- START --");
+		
+		checkState();
 		
 		while (currentState.hasNext()) {
 			iterations++;
 			System.out.println("iter: "+ iterations);
 			
 			System.out.println("\tcurrentState: "+ currentState);
-			LTSState<T>[] nextStates = currentState.nextStates();
-			
+
+			LTSState[] nextStates = currentState.nextStates();
 			System.out.println("\tnumber of next states: "+ nextStates.length);
 			
 			int choice = random.nextInt(nextStates.length);
-			
 			currentState = nextStates[choice];
 			System.out.println("\tchoosed state: "+ currentState);
+			
+			checkState();
 		}
 		
 		System.out.println("iterations: "+iterations);
 		System.out.println("-- FINISH --");
+		return clazz.cast(currentState);
 	}
 
+	private void checkState() {
+		
+		if (!currentState.check()) {
+			System.out.println("\tthe state violate the property, throwing an exception");
+			throw new LTSPropertyViolatedException(currentState);
+		}
+	}
 }
