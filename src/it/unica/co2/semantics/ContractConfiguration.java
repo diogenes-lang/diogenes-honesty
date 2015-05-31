@@ -6,6 +6,7 @@ import it.unica.co2.model.contract.ExternalSum;
 import it.unica.co2.model.contract.InternalAction;
 import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Ready;
+import it.unica.co2.model.contract.Recursion;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -17,6 +18,17 @@ public class ContractConfiguration implements LTSState {
 	private final Contract b;
 	
 	public ContractConfiguration(Contract a, Contract b) {
+		
+		if (a instanceof Recursion) {
+			a = ContractSemantics.expandRecursion((Recursion)a);
+			assert !(a instanceof Recursion);
+		}
+		
+		if (b instanceof Recursion) {
+			b = ContractSemantics.expandRecursion((Recursion)b);
+			assert !(b instanceof Recursion);
+		}
+		
 		this.a = a;
 		this.b = b;
 	}
@@ -59,15 +71,11 @@ public class ContractConfiguration implements LTSState {
 			Set<String> intActionsSet = Arrays.stream(intActions).map( action -> action.getName() ).collect(Collectors.toSet());
 			Set<String> extActionsSet = Arrays.stream(extActions).map( action -> action.getName() ).collect(Collectors.toSet());
 
-			for (String intAction : intActionsSet) {
-				
-				if (!extActionsSet.contains(intAction)) {
-					return false;
-				}
-			}
-			
 			// intActionsSet ⊆ extActionsSet
-			return true;
+			if (extActionsSet.containsAll(intActionsSet))
+				return true;
+			else
+				return false;
 		}
 		
 		return false;

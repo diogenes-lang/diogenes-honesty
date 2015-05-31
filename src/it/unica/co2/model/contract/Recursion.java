@@ -2,20 +2,18 @@ package it.unica.co2.model.contract;
 
 public class Recursion extends Contract {
 
-	private final String recursionName;
-	private final Contract contract;
-
-	public Recursion(String recursionName, Contract contract) {
-		this.recursionName = recursionName;
-		this.contract = contract;
-	}
-
-	public String getRecursionName() {
-		return recursionName;
-	}
-
+	private Contract contract;
+	
 	public Contract getContract() {
 		return contract;
 	}
 
+	public void setContract(Contract contract) {
+		this.contract = contract;
+	}
+
+	@Override
+	public String toString() {
+		return "<rec>";
+	}
 }

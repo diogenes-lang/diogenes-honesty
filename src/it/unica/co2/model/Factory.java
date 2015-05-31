@@ -1,13 +1,12 @@
 package it.unica.co2.model;
 
+import it.unica.co2.model.contract.Action.Sort;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.ExternalAction;
 import it.unica.co2.model.contract.ExternalSum;
 import it.unica.co2.model.contract.InternalAction;
 import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Recursion;
-import it.unica.co2.model.contract.RecursionReference;
-import it.unica.co2.model.contract.Action.Sort;
 
 import java.util.Arrays;
 
@@ -196,11 +195,8 @@ public class Factory {
 		return new ExternalAction(actionName, sort, next);
 	}
 	
-	public static Recursion recursion(String recursionName, Contract contract) {
-		return new Recursion(recursionName, contract);
+	public static Recursion recursion() {
+		return new Recursion();
 	}
 	
-	public static RecursionReference recursionReference(String referredRecursionName) {
-		return new RecursionReference(referredRecursionName);
-	}
 }

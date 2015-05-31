@@ -36,6 +36,6 @@ public abstract class Action {
 
 	@Override
 	public String toString() {
-		return name + (this instanceof InternalAction?"!":"?") + (sort!=Sort.UNIT? " :"+sort: "") + (next!=null? ".<c>": "") ;
+		return name + (this instanceof InternalAction?"!":"?") + (sort!=Sort.UNIT? " :"+sort: "") + (next!=null? "."+next.toString(): "") ;
 	}
 }

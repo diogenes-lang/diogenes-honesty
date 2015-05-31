@@ -5,12 +5,15 @@ import static it.unica.co2.model.Factory.doSendPrefix;
 import static it.unica.co2.model.Factory.doSendProcess;
 import static it.unica.co2.model.Factory.internalAction;
 import static it.unica.co2.model.Factory.internalSum;
+import static it.unica.co2.model.Factory.recursion;
 import static it.unica.co2.model.Factory.sum;
 import static it.unica.co2.model.Factory.sumOperand;
 import static it.unica.co2.model.Factory.tauPrefix;
 import static it.unica.co2.model.Factory.tell;
 import it.unica.co2.model.Process;
 import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.contract.InternalSum;
+import it.unica.co2.model.contract.Recursion;
 
 public class ExampleProcess extends Process {
 	
@@ -40,6 +43,5 @@ public class ExampleProcess extends Process {
 						doReceiveProcess("x", "a")
 				)
 		);
-		
 	}
 }

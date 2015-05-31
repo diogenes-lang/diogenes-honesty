@@ -1,8 +1,12 @@
 package it.unica.co2;
 
-import static it.unica.co2.model.Factory.*;
-import it.unica.co2.model.Factory;
+import static it.unica.co2.model.Factory.externalAction;
+import static it.unica.co2.model.Factory.externalSum;
+import static it.unica.co2.model.Factory.internalAction;
+import static it.unica.co2.model.Factory.internalSum;
+import static it.unica.co2.model.Factory.recursion;
 import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.contract.Recursion;
 import it.unica.co2.semantics.ContractConfiguration;
 import it.unica.co2.semantics.LTS;
 
@@ -20,9 +24,17 @@ public class LTSExample {
 				)
 		);
 		
-		Contract b = Factory.externalSum("a", "b", "c");
+		Recursion r = recursion();
 		
-		ContractConfiguration startState = new ContractConfiguration(a, b);
+		Contract b = externalSum(
+				externalAction("a"), 
+				externalAction("b"), 
+				externalAction("c", r)
+		);
+		
+		r.setContract(b);
+		
+		ContractConfiguration startState = new ContractConfiguration(a, r);
 		
 		
 		
