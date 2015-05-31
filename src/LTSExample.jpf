@@ -1,9 +1,9 @@
 target=it.unica.co2.LTSExample
+target.entry=main([Ljava/lang/String;)V
 
-native_classpath+=./bin
-classpath+=./bin/
+native_classpath+=./bin/;./lib/commons-lang-2.6.jar
+classpath+=./bin/;./lib/commons-lang-2.6.jar
 sourcepath+=./src/
 
 cg.enumerate_random = true
 
-listener = it.unica.co2.semantics.jpf.ComplianceListener

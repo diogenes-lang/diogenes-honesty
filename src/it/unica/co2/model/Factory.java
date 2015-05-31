@@ -8,7 +8,9 @@ import it.unica.co2.model.contract.InternalAction;
 import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Recursion;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Factory {
 	
@@ -145,12 +147,18 @@ public class Factory {
 	}
 	
 	public static InternalSum internalSum(Sort sort, String... actionNames) {
-		InternalAction[] actions = 
-				Arrays.stream(actionNames)
-				.map( p -> new InternalAction(p, sort) )
-				.toArray(InternalAction[]::new);
+//		InternalAction[] actions = 
+//				Arrays.stream(actionNames)
+//				.map( p -> new InternalAction(p, sort) )
+//				.toArray(InternalAction[]::new);
 		
-		return new InternalSum(actions);
+		List<InternalAction> actions = new ArrayList<>();
+		
+		for (String action : actionNames) {
+			actions.add( new InternalAction(action, sort) );
+		}
+		
+		return new InternalSum(actions.toArray(new InternalAction[]{}));
 	}
 	
 	
@@ -161,12 +169,18 @@ public class Factory {
 	}
 	
 	public static ExternalSum externalSum(Sort sort, String... actionNames) {
-		ExternalAction[] actions = 
-				Arrays.stream(actionNames)
-				.map( p -> new ExternalAction(p, sort) )
-				.toArray(ExternalAction[]::new);
+//		ExternalAction[] actions = 
+//				Arrays.stream(actionNames)
+//				.map( p -> new ExternalAction(p, sort) )
+//				.toArray(ExternalAction[]::new);
 		
-		return new ExternalSum(actions);
+		List<ExternalAction> actions = new ArrayList<>();
+		
+		for (String action : actionNames) {
+			actions.add( new ExternalAction(action, sort) );
+		}
+		
+		return new ExternalSum(actions.toArray(new ExternalAction[]{}));
 	}
 
 	

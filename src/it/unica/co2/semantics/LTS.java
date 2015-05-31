@@ -1,12 +1,16 @@
 package it.unica.co2.semantics;
 
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class LTS {
 
 	private Random random = new Random();
 	private LTSState currentState;
 
+	private Set<LTSState> alreadyVisitedStates = new HashSet<>();
+	
 	public LTS(LTSState startState) {
 		this.currentState = startState;
 	}
@@ -28,6 +32,14 @@ public class LTS {
 			System.out.println("iter: "+ iterations);
 			
 			System.out.println("\tcurrentState: "+ currentState);
+			System.err.println("\tstate hash: "+ currentState.hashCode());
+			
+			if (alreadyVisitedStates.contains(currentState)) {
+				System.out.println("\tstate already visited, stop");
+				break;
+			}
+
+			alreadyVisitedStates.add(currentState);
 
 			LTSState[] nextStates = currentState.nextStates();
 			System.out.println("\tnumber of next states: "+ nextStates.length);

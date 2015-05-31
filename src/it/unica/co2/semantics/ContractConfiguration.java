@@ -8,9 +8,7 @@ import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Ready;
 import it.unica.co2.model.contract.Recursion;
 
-import java.util.Arrays;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ContractConfiguration implements LTSState {
 
@@ -68,9 +66,12 @@ public class ContractConfiguration implements LTSState {
 			if (intActions.length==0)
 				return false;
 			
-			Set<String> intActionsSet = Arrays.stream(intActions).map( action -> action.getName() ).collect(Collectors.toSet());
-			Set<String> extActionsSet = Arrays.stream(extActions).map( action -> action.getName() ).collect(Collectors.toSet());
+//			Set<String> intActionsSet = Arrays.stream(intActions).map( action -> action.getName() ).collect(Collectors.toSet());
+//			Set<String> extActionsSet = Arrays.stream(extActions).map( action -> action.getName() ).collect(Collectors.toSet());
 
+			Set<String> intActionsSet = Utils.toSet(intActions);
+			Set<String> extActionsSet = Utils.toSet(extActions);
+			
 			// intActionsSet ⊆ extActionsSet
 			if (extActionsSet.containsAll(intActionsSet))
 				return true;
@@ -116,4 +117,37 @@ public class ContractConfiguration implements LTSState {
 		return "A: ["+a+"]   |   B: ["+b+"]";
 	}
 	
+	
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((a == null) ? 0 : a.hashCode());
+		result = prime * result + ((b == null) ? 0 : b.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ContractConfiguration other = (ContractConfiguration) obj;
+		if (a == null) {
+			if (other.a != null)
+				return false;
+		} else if (!a.equals(other.a))
+			return false;
+		if (b == null) {
+			if (other.b != null)
+				return false;
+		} else if (!b.equals(other.b))
+			return false;
+		return true;
+	}
+
 }

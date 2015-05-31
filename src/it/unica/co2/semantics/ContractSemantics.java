@@ -9,18 +9,19 @@ import it.unica.co2.model.contract.Ready;
 import it.unica.co2.model.contract.Recursion;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ContractSemantics {
 
 	
 	public static ContractConfiguration intExt(String actionName, InternalSum intSum, ExternalSum extSum) {
 		
-		InternalAction[] intActions = Arrays.stream(intSum.getActions()).filter( x -> x.getName().equals(actionName)).toArray(InternalAction[]::new);
-		ExternalAction[] extActions = Arrays.stream(extSum.getActions()).filter( x -> x.getName().equals(actionName)).toArray(ExternalAction[]::new);
+//		InternalAction[] intActions = Arrays.stream(intSum.getActions()).filter( x -> x.getName().equals(actionName)).toArray(InternalAction[]::new);
+//		ExternalAction[] extActions = Arrays.stream(extSum.getActions()).filter( x -> x.getName().equals(actionName)).toArray(ExternalAction[]::new);
+		
+		InternalAction[] intActions = Utils.filter(intSum.getActions(), actionName);
+		ExternalAction[] extActions = Utils.filter(extSum.getActions(), actionName);
 		
 		assert intActions.length==1;
 		assert extActions.length==1;
@@ -98,8 +99,11 @@ public class ContractSemantics {
 			if (intActions.length!=0) {
 				
 			
-				Set<String> intActionsSet = Arrays.stream(intActions).map( action -> action.getName() ).collect(Collectors.toSet());
-				Set<String> extActionsSet = Arrays.stream(extActions).map( action -> action.getName() ).collect(Collectors.toSet());
+//				Set<String> intActionsSet = Arrays.stream(intActions).map( action -> action.getName() ).collect(Collectors.toSet());
+//				Set<String> extActionsSet = Arrays.stream(extActions).map( action -> action.getName() ).collect(Collectors.toSet());
+
+				Set<String> intActionsSet = Utils.toSet(intActions);
+				Set<String> extActionsSet = Utils.toSet(extActions);
 	
 				for (String intAction : intActionsSet) {
 					
