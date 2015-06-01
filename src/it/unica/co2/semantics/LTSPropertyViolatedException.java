@@ -2,8 +2,6 @@ package it.unica.co2.semantics;
 
 public class LTSPropertyViolatedException extends RuntimeException {
 
-	private static final long serialVersionUID = 1L;
-	
 	private LTSState state;		//the state that violate the property
 	
 	public LTSPropertyViolatedException() {

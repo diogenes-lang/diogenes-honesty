@@ -8,8 +8,6 @@ import java.io.ObjectOutputStream;
 import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 public class ObjectUtils {
 	
@@ -20,8 +18,7 @@ public class ObjectUtils {
 		
 		try (
 				ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
-				GZIPOutputStream gzipOutputStream = new GZIPOutputStream(arrayOutputStream);
-				ObjectOutputStream objectOutputStream = new ObjectOutputStream(gzipOutputStream);
+				ObjectOutputStream objectOutputStream = new ObjectOutputStream(arrayOutputStream);
 				) {
 			objectOutputStream.writeObject(object);
 			objectOutputStream.flush();
@@ -33,8 +30,7 @@ public class ObjectUtils {
 		
 		try (
 				ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(base64Decoder.decode(objectString));
-				GZIPInputStream gzipInputStream = new GZIPInputStream(arrayInputStream);
-				ObjectInputStream objectInputStream = new ObjectInputStream(gzipInputStream)
+				ObjectInputStream objectInputStream = new ObjectInputStream(arrayInputStream)
 				) {
 			return objectInputStream.readObject();
 		}

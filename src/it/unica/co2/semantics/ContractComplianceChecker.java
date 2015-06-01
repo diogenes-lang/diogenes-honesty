@@ -36,10 +36,19 @@ public class ContractComplianceChecker {
 			if (jpf.foundErrors()){
 				// ... process property violations discovered by JPF
 				System.out.println("JPF found an error");
-				System.out.println("error details: "+jpf.getLastError().getDetails());
+				
+				gov.nasa.jpf.Error error = jpf.getLastError();
+				
+				System.out.println("error details: "+error.getDetails());
+				
+				System.out.println(error.getPath().getClass());
+				System.out.println(error.getProperty());
+				
+				return false;
 			}
 			else {
 				System.out.println("JPF ends without errors");
+				return true;
 			}
 		}
 		catch (JPFConfigException e){

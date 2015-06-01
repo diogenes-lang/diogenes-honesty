@@ -1,0 +1,9 @@
+target=it.unica.co2.Example
+
+native_classpath+=./bin
+classpath+=./bin/
+sourcepath+=./src/
+
+cg.enumerate_random = true
+
+listener = it.unica.co2.listener.MyPropertyListener

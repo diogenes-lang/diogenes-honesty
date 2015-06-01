@@ -4,7 +4,7 @@ import static it.unica.co2.model.Factory.externalAction;
 import static it.unica.co2.model.Factory.externalSum;
 import static it.unica.co2.model.Factory.internalAction;
 import static it.unica.co2.model.Factory.internalSum;
-import it.unica.co2.model.Factory;
+import static it.unica.co2.model.Factory.recursion;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.Recursion;
 import it.unica.co2.semantics.ContractComplianceChecker;
@@ -13,25 +13,22 @@ public class Compliance {
 
 	public static void main(String[] args) throws Exception {
 		
-		Recursion r = Factory.recursion();
-		
+		Recursion ra = recursion();
 		Contract a = internalSum(
 				internalAction("a"),
 				internalAction("b"),
-				internalAction(
-						"c",
-						r
-				)
+				internalAction("c", ra)
 		);
+		ra.setContract(a);
 		
-		r.setContract(a);
-		
-		
+		Recursion rb = recursion();
 		Contract b = externalSum(
-				externalAction("a"),
+				externalAction("a"), 
 				externalAction("b"), 
-				externalAction("c")
+				externalAction("c", rb)
 		);
+		
+		rb.setContract(b);
 
 		
 		boolean compliance = ContractComplianceChecker.compliance(a,b);
