@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Factory {
+public class CO2Factory {
 	
 	public static void tau() {
 		tauProcess().run();

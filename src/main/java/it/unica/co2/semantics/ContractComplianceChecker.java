@@ -12,14 +12,12 @@ public class ContractComplianceChecker {
 	
 	public static boolean compliance(Contract a, Contract b) throws Exception {
 
-		System.out.println("starting JPF for checking compliance");
-		System.out.println("Contract a: "+a);
-		System.out.println("Contract b: "+b);
+		
 		
 		String aAsString = ObjectUtils.serializeObjectToString(a);
 		String bAsString = ObjectUtils.serializeObjectToString(b);
 		
-		Config.enableLogging(true);
+		Config.enableLogging(false);
 		Config conf = JPF.createConfig(
 				new String[]{"-log", "+site=/home/nicola/xtext_projects/jpf/site.properties", "+shell.port=4242"}
 		);
@@ -31,6 +29,10 @@ public class ContractComplianceChecker {
 		JPF jpf = new JPF(conf);
 		
 		try {
+			
+			System.out.println("starting JPF for checking compliance");
+			System.out.println("Contract a: "+a);
+			System.out.println("Contract b: "+b);
 			jpf.run();
 			
 			if (jpf.foundErrors()){
@@ -48,6 +50,9 @@ public class ContractComplianceChecker {
 			}
 			else {
 				System.out.println("JPF ends without errors");
+				System.out.println("contract a: "+a);
+				System.out.println("contract b: "+b);
+				System.out.println("compliance: "+true);
 				return true;
 			}
 		}

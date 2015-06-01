@@ -1,10 +1,6 @@
 package it.unica.co2;
 
-import static it.unica.co2.model.Factory.externalAction;
-import static it.unica.co2.model.Factory.externalSum;
-import static it.unica.co2.model.Factory.internalAction;
-import static it.unica.co2.model.Factory.internalSum;
-import static it.unica.co2.model.Factory.recursion;
+import static it.unica.co2.model.CO2Factory.*;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.Recursion;
 import it.unica.co2.semantics.ContractConfiguration;
