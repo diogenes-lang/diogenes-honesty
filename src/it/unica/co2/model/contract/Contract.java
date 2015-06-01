@@ -1,5 +1,9 @@
 package it.unica.co2.model.contract;
 
-public abstract class Contract {
+import java.io.Serializable;
+
+public abstract class Contract implements Serializable {
+
+	private static final long serialVersionUID = 1L;
 
 }

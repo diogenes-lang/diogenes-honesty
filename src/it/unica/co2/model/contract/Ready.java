@@ -1,7 +1,9 @@
 package it.unica.co2.model.contract;
 
+
 public class Ready extends Contract{
 
+	private static final long serialVersionUID = 1L;
 	private final ExternalAction action;
 
 	public Ready(ExternalAction action) {

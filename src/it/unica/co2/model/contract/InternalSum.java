@@ -2,13 +2,15 @@ package it.unica.co2.model.contract;
 
 import java.util.Arrays;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 
 public class InternalSum extends Contract{
 
+	private static final long serialVersionUID = 1L;
+	
 	private final InternalAction[] actions;
-
+	
 	public InternalSum(InternalAction... actions) {
 		this.actions = actions;
 	}

@@ -32,7 +32,7 @@ public class LTS {
 			System.out.println("iter: "+ iterations);
 			
 			System.out.println("\tcurrentState: "+ currentState);
-			System.err.println("\tstate hash: "+ currentState.hashCode());
+			System.out.println("\tstate hash: "+ currentState.hashCode());
 			
 			if (alreadyVisitedStates.contains(currentState)) {
 				System.out.println("\tstate already visited, stop");
