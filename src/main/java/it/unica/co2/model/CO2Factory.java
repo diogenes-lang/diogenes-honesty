@@ -7,10 +7,21 @@ import it.unica.co2.model.contract.ExternalSum;
 import it.unica.co2.model.contract.InternalAction;
 import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Recursion;
+import it.unica.co2.model.prefix.DoReceive;
+import it.unica.co2.model.prefix.DoSend;
+import it.unica.co2.model.prefix.Prefix;
+import it.unica.co2.model.prefix.Tau;
+import it.unica.co2.model.prefix.Tell;
+import it.unica.co2.model.prefix.Variable;
+import it.unica.co2.model.process.IfThenElseProcess;
+import it.unica.co2.model.process.Process;
+import it.unica.co2.model.process.Sum;
+import it.unica.co2.model.process.SumOperand;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class CO2Factory {
 	
@@ -31,7 +42,7 @@ public class CO2Factory {
 	}
 	
 	public static void doReceive(String session, String action, Variable receivedValue) {
-		doReceiveProcess(session, action).run();
+		doReceiveProcess(session, action, receivedValue).run();
 	}
 	
 	public static void sum(Prefix prefix, Process process) {
@@ -46,22 +57,24 @@ public class CO2Factory {
 		sumProcess(ops).run();
 	}
 	
-	
-	public static SumOperand sumOperand(Prefix prefix) {
-		return new SumOperand(prefix);
-	}
-	
-	public static SumOperand sumOperand(Prefix prefix, Process process) {
-		return new SumOperand(prefix, process);
-	}
-	
 	public static void sequence(Prefix prefix, Prefix... prefixes) {
 		sequenceProcess(prefix, prefixes).run();
 	}
-
+	
+	public static void ifThenElse(Process thenProcess, Process elseProcess) {
+		ifThenElseProcess(thenProcess, elseProcess).run();
+	}
+	
+	public static void ifThenElse(Supplier<Boolean> condition, Process thenProcess, Process elseProcess) {
+		ifThenElseProcess(condition, thenProcess, elseProcess).run();
+	}
 	
 	
-	
+	/*
+	 * 
+	 * Prefix Factory
+	 * 
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 	public static Prefix tauPrefix() {
 		return new Tau();
 	}
@@ -84,7 +97,11 @@ public class CO2Factory {
 	
 	
 	
-	
+	/*
+	 * 
+	 * Process Factory
+	 * 
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 	public static Process tauProcess() {
 		return new Sum(new Tau());
 	}
@@ -105,6 +122,10 @@ public class CO2Factory {
 		return new Sum(new DoReceive(session, action));
 	}
 	
+	public static Process doReceiveProcess(String session, String action, Variable variable) {
+		return new Sum(new DoReceive(session, action, variable));
+	}
+	
 	public static Process sumProcess(Prefix... prefixes) {
 		return new Sum(prefixes);
 	}
@@ -117,10 +138,18 @@ public class CO2Factory {
 		return sumProcess(new SumOperand(prefix, process));
 	}
 	
+	public static SumOperand sumOperand(Prefix prefix) {
+		return new SumOperand(prefix);
+	}
+	
+	public static SumOperand sumOperand(Prefix prefix, Process process) {
+		return new SumOperand(prefix, process);
+	}
+	
 	/*
 	 * shortcut to create a chain of sum with single prefix
 	 */
-	public static Process sequenceProcess(Prefix prefix, Prefix... prefixes) {
+	public static Sum sequenceProcess(Prefix prefix, Prefix... prefixes) {
 		
 		if (prefixes.length==0) {
 			return new Sum(prefix);
@@ -131,6 +160,49 @@ public class CO2Factory {
 		}
 	}
 
+	public static IfThenElseProcess ifThenElseProcess(Process thenProcess, Process elseProcess) {
+		return new IfThenElseProcess(thenProcess, elseProcess);
+	}
+	
+	public static IfThenElseProcess ifThenElseProcess(Supplier<Boolean> condition, Process thenProcess, Process elseProcess) {
+		return new IfThenElseProcess(thenProcess, elseProcess, condition);
+	}
+
+	
+	
+	
+	
+	/*
+	 * 
+	 * Contract Factory 
+	 * 
+	 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+	public static InternalAction internalAction(String actionName) {
+		return internalAction(actionName, null);
+	}
+	
+	public static InternalAction internalAction(String actionName, Contract next) {
+		return internalAction(Sort.UNIT, actionName, next);
+	}
+	
+	public static InternalAction internalAction(Sort sort, String actionName, Contract next) {
+		return new InternalAction(actionName, sort, next);
+	}
+	
+	public static ExternalAction externalAction(String actionName) {
+		return externalAction(actionName, null);
+	}
+	
+	public static ExternalAction externalAction(String actionName, Contract next) {
+		return externalAction(Sort.UNIT, actionName, next);
+	}
+	public static ExternalAction externalAction(Sort sort, String actionName, Contract next) {
+		return new ExternalAction(actionName, sort, next);
+	}
+	
+	public static Recursion recursion() {
+		return new Recursion();
+	}
 	
 	public static InternalSum internalSum(InternalAction... actions) {
 		return new InternalSum(actions);
@@ -182,35 +254,4 @@ public class CO2Factory {
 		
 		return new ExternalSum(actions.toArray(new ExternalAction[]{}));
 	}
-
-	
-	
-	
-	public static InternalAction internalAction(String actionName) {
-		return internalAction(actionName, null);
-	}
-	
-	public static InternalAction internalAction(String actionName, Contract next) {
-		return internalAction(Sort.UNIT, actionName, next);
-	}
-	
-	public static InternalAction internalAction(Sort sort, String actionName, Contract next) {
-		return new InternalAction(actionName, sort, next);
-	}
-	
-	public static ExternalAction externalAction(String actionName) {
-		return externalAction(actionName, null);
-	}
-	
-	public static ExternalAction externalAction(String actionName, Contract next) {
-		return externalAction(Sort.UNIT, actionName, next);
-	}
-	public static ExternalAction externalAction(Sort sort, String actionName, Contract next) {
-		return new ExternalAction(actionName, sort, next);
-	}
-	
-	public static Recursion recursion() {
-		return new Recursion();
-	}
-	
 }

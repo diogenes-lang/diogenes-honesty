@@ -1,4 +1,4 @@
-package it.unica.co2.model;
+package it.unica.co2.model.prefix;
 
 import it.unica.co2.model.contract.Contract;
 

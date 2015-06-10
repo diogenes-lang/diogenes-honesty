@@ -14,6 +14,10 @@ public class Ready extends Contract{
 		return action.getNext();
 	}
 	
+	public String getActionName() {
+		return action.getName();
+	}
+	
 	@Override
 	public String toString() {
 		return "rdy ["+action.toString()+"]";

@@ -5,7 +5,10 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
 import it.unica.co2.model.contract.Contract;
+import it.unica.co2.semantics.jpf.ComplianceListener;
 import it.unica.co2.util.ObjectUtils;
+
+import java.util.List;
 
 public class ContractComplianceChecker {
 
@@ -28,6 +31,9 @@ public class ContractComplianceChecker {
 		
 		JPF jpf = new JPF(conf);
 		
+		ComplianceListener complianceListener = new ComplianceListener();
+		jpf.addListener(complianceListener);
+		
 		try {
 			
 			System.out.println("starting JPF for checking compliance");
@@ -43,16 +49,32 @@ public class ContractComplianceChecker {
 				
 				System.out.println("error details: "+error.getDetails());
 				
-				System.out.println(error.getPath().getClass());
-				System.out.println(error.getProperty());
+				if (error.getProperty() instanceof ComplianceListener) {
+					ComplianceListener property = (ComplianceListener) error.getProperty();
+					
+					if (property.getPath()!=null && property.getPath().size()>1) {
+						System.out.println("--------------------------------------------------");
+						printPath(property.getPath());
+					}
+					
+					if (property.getFinalState()!=null) {
+						System.out.println("--------------------------------------------------");
+						System.out.println("the contract-configuration not safe is \n "+property.getFinalState());
+					}
+				}
 				
+				System.out.println("--------------------------------------------------");
+				System.out.println("contract a: "+a);
+				System.out.println("contract b: "+b);
+				System.out.println("compliance: false");
+				System.out.println("--------------------------------------------------");
 				return false;
 			}
 			else {
 				System.out.println("JPF ends without errors");
 				System.out.println("contract a: "+a);
 				System.out.println("contract b: "+b);
-				System.out.println("compliance: "+true);
+				System.out.println("compliance: true");
 				return true;
 			}
 		}
@@ -80,8 +102,8 @@ public class ContractComplianceChecker {
 		String aAsString = args[0];
 		String bAsString = args[1];
 		
-		System.out.println("JPF - JSON a: "+aAsString);
-		System.out.println("JPF - JSON b: "+bAsString);
+		System.out.println("JPF - contract a (serialized): "+aAsString);
+		System.out.println("JPF - contract b (serialized): "+bAsString);
 		
 		Contract a = ObjectUtils.deserializeObjectFromString(aAsString, Contract.class);
 		Contract b = ObjectUtils.deserializeObjectFromString(bAsString, Contract.class);
@@ -91,5 +113,21 @@ public class ContractComplianceChecker {
 		
 		LTS lts = new LTS( new ContractConfiguration(a, b));
 		lts.start();
+	}
+	
+	private static String printPath(List<LTSState> path) {
+		
+		for (LTSState s : path) {
+			if (s.getPrecededTransition()!=null) {
+				System.out.println("    |   ");
+				System.out.println("    |   ");
+				System.out.println("    "+s.getPrecededTransition());
+				System.out.println("    |  ");
+				System.out.println("    V   ");
+			}
+			System.out.println(s);
+		}
+		
+		return null;
 	}
 }

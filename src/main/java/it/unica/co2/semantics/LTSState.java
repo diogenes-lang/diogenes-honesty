@@ -1,11 +1,16 @@
 package it.unica.co2.semantics;
 
-public interface LTSState {
+import java.io.Serializable;
+
+public interface LTSState extends Serializable {
 
 	public boolean hasNext();
 	
-	public LTSState[] nextStates();
+	public LTSTransition[] getAvailableTransitions();
+	
+	public LTSTransition getPrecededTransition();
+	
+	public void setPrecedingTransition(LTSTransition transition);
 	
 	public boolean check();
-	
 }

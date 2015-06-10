@@ -12,8 +12,11 @@ import java.util.Set;
 
 public class ContractConfiguration implements LTSState {
 
+	private static final long serialVersionUID = 1L;
+	
 	private final Contract a;
 	private final Contract b;
+	private LTSTransition transition;
 	
 	public ContractConfiguration(Contract a, Contract b) {
 		
@@ -85,15 +88,30 @@ public class ContractConfiguration implements LTSState {
 	
 	
 	/*
-	 * The transition between one contract-configuration to another is defined by the semantics of contracts
+	 * The transition between one contract-configuration to another is defined by the abstract-semantics of contracts
 	 */
-	private ContractConfiguration[] nextStates = null;
+	private ContractTransition[] nextStates = null;
+	
+	@Override
+	public LTSTransition[] getAvailableTransitions() {
+		return nextStates;
+	}
+
+	@Override
+	public LTSTransition getPrecededTransition() {
+		return transition;
+	}
+	
+	@Override
+	public void setPrecedingTransition(LTSTransition transition) {
+		this.transition = transition;
+	}
 	
 	@Override
 	public boolean hasNext() {
 		
 		if (nextStates==null) {
-			nextStates = ContractSemantics.getNextConfiguration(this);
+			nextStates = ContractSemantics.getNextTransitions(this);
 		}
 
 		assert nextStates!=null;
@@ -107,17 +125,9 @@ public class ContractConfiguration implements LTSState {
 	}
 	
 	@Override
-	public LTSState[] nextStates() {
-		return nextStates;
-	}
-	
-	
-	@Override
 	public String toString() {
 		return "A: ["+a+"]   |   B: ["+b+"]";
 	}
-	
-	
 	
 	@Override
 	public int hashCode() {

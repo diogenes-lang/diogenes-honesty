@@ -7,6 +7,7 @@ import it.unica.co2.model.contract.InternalAction;
 import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Ready;
 import it.unica.co2.model.contract.Recursion;
+import it.unica.co2.semantics.ContractTransition.Partecipant;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +15,12 @@ import java.util.Set;
 
 public class ContractSemantics {
 
+
+	public static Contract expandRecursion(Recursion recursion) {
+		return recursion.getContract();
+	}
 	
-	public static ContractConfiguration intExt(String actionName, InternalSum intSum, ExternalSum extSum) {
+	public static ContractTransition intExt(Partecipant p, String actionName, InternalSum intSum, ExternalSum extSum) {
 		
 //		InternalAction[] intActions = Arrays.stream(intSum.getActions()).filter( x -> x.getName().equals(actionName)).toArray(InternalAction[]::new);
 //		ExternalAction[] extActions = Arrays.stream(extSum.getActions()).filter( x -> x.getName().equals(actionName)).toArray(ExternalAction[]::new);
@@ -29,38 +34,47 @@ public class ContractSemantics {
 		InternalAction a = intActions[0];
 		ExternalAction b = extActions[0];
 		
-		return new ContractConfiguration(a.getNext(), new Ready(b));
-	}
-	
-	
-	
-	public static ContractConfiguration intExt(String actionName, ExternalSum extSum, InternalSum intSum) {
-
-		ContractConfiguration tmp = intExt(actionName, intSum, extSum);
-		return new ContractConfiguration(tmp.getB(), tmp.getA());
-	}
-	
-	
-	
-	public static ContractConfiguration rdy(Ready ready, Contract c) {
-		return new ContractConfiguration(ready.consumeAction(), c);
-	}
-
-	public static ContractConfiguration rdy(Contract c, Ready ready) {
-		return new ContractConfiguration(c, ready.consumeAction());
-	}
-	
-	
-	
-	public static Contract expandRecursion(Recursion recursion) {
-		return recursion.getContract();
-	}
-	
-	
-	
-	public static ContractConfiguration[] getNextConfiguration(ContractConfiguration contractConfiguration) {
+		ContractConfiguration cc = null;
 		
-		List<ContractConfiguration> result = new ArrayList<>();
+		if (p==Partecipant.A) {
+			cc = new ContractConfiguration(a.getNext(), new Ready(b));
+		}
+		else if (p==Partecipant.B) {
+			cc = new ContractConfiguration(new Ready(b), a.getNext());
+		}
+		else {
+			throw new AssertionError("unexpected branch");
+		}
+		
+		ContractTransition t = new ContractTransition(p, actionName, cc);
+		cc.setPrecedingTransition(t);
+		
+		return t;
+	}
+	
+	public static ContractTransition rdy(Partecipant p, Ready ready, Contract c) {
+		
+		ContractConfiguration cc = null;
+		
+		if (p==Partecipant.A) {
+			cc = new ContractConfiguration(ready.consumeAction(), c);
+		}
+		else if (p==Partecipant.B) {
+			cc = new ContractConfiguration(c, ready.consumeAction());
+		}
+		else {
+			throw new AssertionError("unexpected branch");
+		}
+		
+		ContractTransition t = new ContractTransition(p, ready.getActionName(), cc);
+		cc.setPrecedingTransition(t);
+		
+		return t;
+	}
+
+	public static ContractTransition[] getNextTransitions(ContractConfiguration contractConfiguration) {
+
+		List<ContractTransition> result = new ArrayList<>();
 		
 		Contract a = contractConfiguration.getA();
 		Contract b = contractConfiguration.getB();
@@ -76,11 +90,11 @@ public class ContractSemantics {
 		}
 		
 		if (a instanceof Ready) {
-			result.add( rdy( (Ready)a, b ) );		// apply rdy
+			result.add( rdy( Partecipant.A, (Ready)a, b ) );		// apply rdy
 		}
 		
 		if (b instanceof Ready) {
-			result.add( rdy( a, (Ready)b ) );		// apply rdy
+			result.add( rdy( Partecipant.B, (Ready)b, a ) );		// apply rdy
 		}
 		
 		
@@ -89,6 +103,8 @@ public class ContractSemantics {
 				(a instanceof InternalSum && b instanceof ExternalSum) ||
 				(a instanceof ExternalSum && b instanceof InternalSum)
 				) {
+			
+			Partecipant p = a instanceof InternalSum? Partecipant.A : Partecipant.B;
 			
 			InternalSum intSum = ((InternalSum) (a instanceof InternalSum? a:b));
 			ExternalSum extSum = ((ExternalSum) (a instanceof ExternalSum? a:b));
@@ -109,17 +125,14 @@ public class ContractSemantics {
 					
 					if (extActionsSet.contains(intAction)) {
 						
-						if (a instanceof InternalSum)							//to maintain the order in the configuration
-							result.add( intExt(intAction, intSum, extSum) );	// apply int-ext
-						else
-							result.add( intExt(intAction, extSum, intSum) );	// apply int-ext
+							result.add( intExt(p, intAction, intSum, extSum) );	// apply int-ext
 					}
 				}
 			
 			}
 		}
 		
-		return result.toArray(new ContractConfiguration[]{});
+		return result.toArray(new ContractTransition[]{});
 	}
 	
 }

@@ -1,4 +1,6 @@
-package it.unica.co2.model;
+package it.unica.co2.model.process;
+
+import it.unica.co2.model.prefix.Prefix;
 
 
 public class SumOperand {

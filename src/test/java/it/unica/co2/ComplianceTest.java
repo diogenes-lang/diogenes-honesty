@@ -48,6 +48,43 @@ public class ComplianceTest {
 		);
 		rb.setContract(B);
 		assertTrue( ContractComplianceChecker.compliance(ra, rb) );
+		
+		/*
+		 * A = a! (+) b! (+) c!
+		 * B = a?  +  b?
+		 * 
+		 * A |x| B = false
+		 */		
+		A = internalSum("a", "b", "c");
+		B = externalSum("a", "b");
+		assertFalse( ContractComplianceChecker.compliance(A, B) );
+		
+		/*
+		 * A = a! (+) b! . ( a?  +  c? . b! )
+		 * B = a?  +  b? . ( a! (+) c! )
+		 * 
+		 * A |x| B = false
+		 */		
+		A = internalSum(
+				internalAction("a"),
+				internalAction(
+						"b",
+						externalSum(
+								externalAction("a"),
+								externalAction(
+										"c", internalSum("b")
+								)
+						)
+				)
+		);
+		B = externalSum(
+				externalAction("a"),
+				externalAction(
+						"b",
+						internalSum("a","c")
+				)
+		);
+		assertFalse( ContractComplianceChecker.compliance(A, B) );
 	}
 
 }

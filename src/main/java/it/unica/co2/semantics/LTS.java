@@ -1,6 +1,8 @@
 package it.unica.co2.semantics;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ public class LTS {
 	private LTSState currentState;
 
 	private Set<LTSState> alreadyVisitedStates = new HashSet<>();
+	private List<LTSState> path = new ArrayList<>();
 	
 	public LTS(LTSState startState) {
 		this.currentState = startState;
@@ -40,12 +43,13 @@ public class LTS {
 			}
 
 			alreadyVisitedStates.add(currentState);
+			path.add(currentState);
 
-			LTSState[] nextStates = currentState.nextStates();
-			System.out.println("\tnumber of next states: "+ nextStates.length);
+			LTSTransition[] nextTransitions = currentState.getAvailableTransitions();
+			System.out.println("\tnumber of next states: "+ nextTransitions.length);
 			
-			int choice = random.nextInt(nextStates.length);
-			currentState = nextStates[choice];
+			int choice = random.nextInt(nextTransitions.length);
+			currentState = nextTransitions[choice].apply();
 			System.out.println("\tchoosed state: "+ currentState);
 			
 			checkState();
@@ -60,7 +64,7 @@ public class LTS {
 		
 		if (!currentState.check()) {
 			System.out.println("\tthe state violate the property, throwing an exception");
-			throw new LTSPropertyViolatedException(currentState);
+			throw new LTSPropertyViolatedException(currentState, path);
 		}
 	}
 }
