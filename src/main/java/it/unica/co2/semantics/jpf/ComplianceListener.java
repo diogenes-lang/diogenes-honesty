@@ -79,7 +79,6 @@ public class ComplianceListener extends PropertyListenerAdapter {
 		return finalState;
 	}
 
-
 	public List<LTSState> getPath() {
 		return path;
 	}

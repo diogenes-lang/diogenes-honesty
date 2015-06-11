@@ -22,12 +22,15 @@ public class ContractComplianceChecker {
 		
 		Config.enableLogging(false);
 		Config conf = JPF.createConfig(
-				new String[]{"-log", "+site=/home/nicola/xtext_projects/jpf/site.properties", "+shell.port=4242"}
+				new String[]{"+site=/home/nicola/xtext_projects/jpf/site.properties"}
 		);
 		
 		conf.setTarget(ContractComplianceChecker.class.getName());
 		conf.setTargetEntry("jpfEntry([Ljava/lang/String;)V");
 		conf.setTargetArgs(new String[]{aAsString, bAsString});
+		
+		if (conf.getBoolean("print_properties", false))
+			conf.printEntries();
 		
 		JPF jpf = new JPF(conf);
 		
@@ -35,11 +38,14 @@ public class ContractComplianceChecker {
 		jpf.addListener(complianceListener);
 		
 		try {
-			
-			System.out.println("starting JPF for checking compliance");
-			System.out.println("Contract a: "+a);
-			System.out.println("Contract b: "+b);
+			System.out.println("================================================== COMPLIANCE CHECKER ");
+			System.out.println("contract a: "+a);
+			System.out.println("contract b: "+b);
+			System.out.println("starting JPF for checking compliance...");
+			System.out.println("--------------------------------------------------");
 			jpf.run();
+			
+			boolean compliance;
 			
 			if (jpf.foundErrors()){
 				// ... process property violations discovered by JPF
@@ -52,31 +58,33 @@ public class ContractComplianceChecker {
 				if (error.getProperty() instanceof ComplianceListener) {
 					ComplianceListener property = (ComplianceListener) error.getProperty();
 					
-					if (property.getPath()!=null && property.getPath().size()>1) {
+					if (
+							property.getPath()!=null && property.getPath().size()>1 &&
+									conf.getBoolean("compliance.print_path_on_fail", false)
+							) {
 						System.out.println("--------------------------------------------------");
 						printPath(property.getPath());
 					}
 					
 					if (property.getFinalState()!=null) {
 						System.out.println("--------------------------------------------------");
-						System.out.println("the contract-configuration not safe is \n "+property.getFinalState());
+						System.out.println("the contract-configuration not safe is \n"+property.getFinalState());
 					}
 				}
 				
-				System.out.println("--------------------------------------------------");
-				System.out.println("contract a: "+a);
-				System.out.println("contract b: "+b);
-				System.out.println("compliance: false");
-				System.out.println("--------------------------------------------------");
-				return false;
+				compliance = false;
 			}
 			else {
 				System.out.println("JPF ends without errors");
-				System.out.println("contract a: "+a);
-				System.out.println("contract b: "+b);
-				System.out.println("compliance: true");
-				return true;
+				compliance = true;
 			}
+			
+			System.out.println("--------------------------------------------------");
+			System.out.println("contract a: "+a);
+			System.out.println("contract b: "+b);
+			System.out.println("compliance: "+compliance);
+			System.out.println("==================================================");
+			return compliance;
 		}
 		catch (JPFConfigException e){
 			// ... handle configuration exception

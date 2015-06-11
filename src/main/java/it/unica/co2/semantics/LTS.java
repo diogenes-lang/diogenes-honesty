@@ -26,25 +26,23 @@ public class LTS {
 		
 		int iterations=0;
 		
-		System.out.println("-- START --");
+		System.out.println("---- START ----");
 		
-		checkState();
-		
-		while (currentState.hasNext()) {
+		while (
+				currentState.hasNext() && 
+				currentState.check() &&
+				!alreadyVisitedStates.contains(currentState)
+				) {
+			
 			iterations++;
 			System.out.println("iter: "+ iterations);
 			
 			System.out.println("\tcurrentState: "+ currentState);
 			System.out.println("\tstate hash: "+ currentState.hashCode());
 			
-			if (alreadyVisitedStates.contains(currentState)) {
-				System.out.println("\tstate already visited, stop");
-				break;
-			}
-
 			alreadyVisitedStates.add(currentState);
 			path.add(currentState);
-
+			
 			LTSTransition[] nextTransitions = currentState.getAvailableTransitions();
 			System.out.println("\tnumber of next states: "+ nextTransitions.length);
 			
@@ -52,11 +50,16 @@ public class LTS {
 			currentState = nextTransitions[choice].apply();
 			System.out.println("\tchoosed state: "+ currentState);
 			
-			checkState();
 		}
 		
+		System.out.println("---- FINISH ----");
 		System.out.println("iterations: "+iterations);
-		System.out.println("-- FINISH --");
+		System.out.println("final state: "+currentState);
+
+		alreadyVisitedStates.add(currentState);
+		path.add(currentState);
+		checkState();
+		
 		return clazz.cast(currentState);
 	}
 

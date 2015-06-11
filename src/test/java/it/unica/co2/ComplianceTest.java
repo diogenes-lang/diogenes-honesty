@@ -11,10 +11,9 @@ import org.junit.Test;
 public class ComplianceTest {
 
 	@Test
-	public void compliance() throws Exception {
-		
-		Contract A;
-		Contract B;
+	public void test1() throws Exception {
+	
+		System.out.println("\n\n-- TEST 1 --");
 		
 		/*
 		 * A = a! (+) b!
@@ -22,10 +21,16 @@ public class ComplianceTest {
 		 * 
 		 * A |x| B = true
 		 */
-		A = internalSum("a", "b");
-		B = externalSum("a", "b", "c");
+		Contract A = internalSum("a", "b");
+		Contract B = externalSum("a", "b", "c");
 		assertTrue( ContractComplianceChecker.compliance(A, B) );
+	}
+	
+	@Test
+	public void test2() throws Exception {
 		
+		System.out.println("\n\n-- TEST 2 --");
+	
 		/*
 		 * A = rec X. a! (+) b! (+) c!.X
 		 * B = rec X. a?  +  b?  + c?.X
@@ -33,39 +38,51 @@ public class ComplianceTest {
 		 * A |x| B = true
 		 */		
 		Recursion ra = recursion();
-		A = internalSum(
+		Contract A = internalSum(
 				internalAction("a"),
 				internalAction("b"),
 				internalAction("c", ra)
-		);
+				);
 		ra.setContract(A);
 		
 		Recursion rb = recursion();
-		B = externalSum(
+		Contract B = externalSum(
 				externalAction("a"), 
 				externalAction("b"), 
 				externalAction("c", rb)
-		);
+				);
 		rb.setContract(B);
 		assertTrue( ContractComplianceChecker.compliance(ra, rb) );
+	}
+	
+	@Test
+	public void test3() throws Exception {
 		
+		System.out.println("\n\n-- TEST 3 --");
+
 		/*
 		 * A = a! (+) b! (+) c!
 		 * B = a?  +  b?
 		 * 
 		 * A |x| B = false
 		 */		
-		A = internalSum("a", "b", "c");
-		B = externalSum("a", "b");
+		Contract A = internalSum("a", "b", "c");
+		Contract B = externalSum("a", "b");
 		assertFalse( ContractComplianceChecker.compliance(A, B) );
+	}
+	
+	@Test
+	public void test4() throws Exception {
 		
+		System.out.println("\n\n-- TEST 4 --");
+
 		/*
 		 * A = a! (+) b! . ( a?  +  c? . b! )
 		 * B = a?  +  b? . ( a! (+) c! )
 		 * 
 		 * A |x| B = false
 		 */		
-		A = internalSum(
+		Contract A = internalSum(
 				internalAction("a"),
 				internalAction(
 						"b",
@@ -77,7 +94,7 @@ public class ComplianceTest {
 						)
 				)
 		);
-		B = externalSum(
+		Contract B = externalSum(
 				externalAction("a"),
 				externalAction(
 						"b",
