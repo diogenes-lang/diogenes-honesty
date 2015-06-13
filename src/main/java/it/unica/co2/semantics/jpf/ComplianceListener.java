@@ -12,8 +12,8 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
-import it.unica.co2.semantics.LTSPropertyViolatedException;
-import it.unica.co2.semantics.LTSState;
+import it.unica.co2.semantics.lts.LTSPropertyViolatedException;
+import it.unica.co2.semantics.lts.LTSState;
 import it.unica.co2.util.ObjectUtils;
 
 import java.io.IOException;

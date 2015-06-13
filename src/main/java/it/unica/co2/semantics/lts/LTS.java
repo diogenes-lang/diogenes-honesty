@@ -1,4 +1,4 @@
-package it.unica.co2.semantics;
+package it.unica.co2.semantics.lts;
 
 import java.util.ArrayList;
 import java.util.HashSet;

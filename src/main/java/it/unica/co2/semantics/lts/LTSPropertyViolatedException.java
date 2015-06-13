@@ -1,4 +1,4 @@
-package it.unica.co2.semantics;
+package it.unica.co2.semantics.lts;
 
 import it.unica.co2.util.ObjectUtils;
 
@@ -19,6 +19,14 @@ public class LTSPropertyViolatedException extends RuntimeException {
 			this.finalState="an error occur serializing the object";
 			this.path="an error occur serializing the object";
 		}
+	}
+
+	public String getFinalState() {
+		return finalState;
+	}
+
+	public String getPath() {
+		return path;
 	}
 
 }

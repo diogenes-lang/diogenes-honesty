@@ -6,6 +6,8 @@ import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.semantics.jpf.ComplianceListener;
+import it.unica.co2.semantics.lts.LTS;
+import it.unica.co2.semantics.lts.LTSState;
 import it.unica.co2.util.ObjectUtils;
 
 import java.util.List;

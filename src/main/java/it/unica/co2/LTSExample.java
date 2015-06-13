@@ -4,7 +4,7 @@ import static it.unica.co2.model.CO2Factory.*;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.Recursion;
 import it.unica.co2.semantics.ContractConfiguration;
-import it.unica.co2.semantics.LTS;
+import it.unica.co2.semantics.lts.LTS;
 
 public class LTSExample {
 

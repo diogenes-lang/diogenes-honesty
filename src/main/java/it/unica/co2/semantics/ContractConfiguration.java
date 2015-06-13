@@ -7,6 +7,8 @@ import it.unica.co2.model.contract.InternalAction;
 import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Ready;
 import it.unica.co2.model.contract.Recursion;
+import it.unica.co2.semantics.lts.LTSState;
+import it.unica.co2.semantics.lts.LTSTransition;
 
 import java.util.Set;
 

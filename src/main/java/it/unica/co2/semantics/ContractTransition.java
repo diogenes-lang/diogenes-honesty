@@ -1,22 +1,23 @@
 package it.unica.co2.semantics;
 
+import it.unica.co2.semantics.lts.LTSState;
+import it.unica.co2.semantics.lts.LTSTransition;
+
 public class ContractTransition implements LTSTransition {
 
 	private static final long serialVersionUID = 1L;
 
-	public static enum Partecipant {A,B}
-	
-	private final Partecipant partecipant;
+	private final Participant partecipant;
 	private final String actionName;
 	private final ContractConfiguration contractConfiguration;
 	
-	public ContractTransition(Partecipant partecipant, String actionName, ContractConfiguration contractConfiguration) {
+	public ContractTransition(Participant partecipant, String actionName, ContractConfiguration contractConfiguration) {
 		this.partecipant = partecipant;
 		this.actionName = actionName;
 		this.contractConfiguration = contractConfiguration;
 	}
 
-	public Partecipant getPartecipant() {
+	public Participant getPartecipant() {
 		return partecipant;
 	}
 	
