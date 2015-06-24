@@ -11,20 +11,10 @@ public abstract class Action implements Serializable {
 		EXTERNAL
 	}
 	
-	public enum Sort { 
-		UNIT, 
-		INT,
-		STRING
-	}
-	
 	private final String name;
 	private final Sort sort;
-	private final Contract next;
+	private Contract next;
 	private final Type type;
-	
-	public Action(String name, Sort sort, Type type) {
-		this(name, sort, type, null);
-	}
 	
 	public Action(String name, Sort sort, Type type, Contract next) {
 		this.name = name;
@@ -45,6 +35,14 @@ public abstract class Action implements Serializable {
 		return type;
 	}
 
+	
+	public abstract <T extends Action> T next(Contract next);
+	
+	public <T extends Action> T next(Contract next, Class<T> clazz) {
+		this.next=next;
+		return clazz.cast(this);
+	}
+	
 	public Contract getNext() {
 		return next;
 	}
@@ -57,9 +55,10 @@ public abstract class Action implements Serializable {
 		return new InternalAction(action.getName(), action.getSort(), action.getNext());
 	}
 	
+	
 	@Override
 	public String toString() {
-		return name + (this instanceof InternalAction?"!":"?") + (sort!=Sort.UNIT? " :"+sort: "") + (next!=null? "."+next.toString(): "") ;
+		return name + (this instanceof InternalAction?"!":"?") + (sort!=Sort.UNIT? ":"+sort: "") + (next!=null? " . "+next.toString(): "") ;
 	}
 
 	@Override

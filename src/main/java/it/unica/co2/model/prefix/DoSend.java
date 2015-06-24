@@ -1,30 +1,67 @@
 package it.unica.co2.model.prefix;
 
+import it.unica.co2.api.Session2;
+import co2api.TST;
 
-public class DoSend implements Prefix {
 
-	private final String session;
-	private final String action;
+public class DoSend extends Prefix {
+
+	private Session2<TST> session;
+	private Action action;
 	private final String value;
 	
-	public DoSend(String session, String contract) {
-		this(session, contract, null);
+	/* JPF-specific fields */
+	@SuppressWarnings("unused") private String sessionName;
+	@SuppressWarnings("unused") private String actionName;
+	
+	public DoSend(String username, Session2<TST> session, Action action) {
+		this(username, session, action, null);
 	}
 	
-	public DoSend(String session, String action, String value) {
-		super();
+	public DoSend(String username, Session2<TST> session, Action action, String value) {
+		super(username);
 		this.session = session;
 		this.action = action;
 		this.value=value;
+		
+		this.sessionName = session.getSessionName();
+		this.actionName = action.getName();	
 	}
 
 	@Override
 	public void run() {
-		System.out.println("\t>> do "+session+" "+action+"! "+(value!=null? value:""));
+		
+		logger.log("sending action "+action.getName()+"! "+(value!=null? value:""));
+
+		if (session!=null) {
+			switch (action.getSort()) {
+			
+			case INT:
+				assert value!=null;
+				session.send(action.getName(), value);
+				break;
+				
+			case STRING:
+				assert value!=null;
+				session.send(action.getName(), value);
+				break;
+				
+			case UNIT:
+				session.send(action.getName());
+				break;
+			default:
+				throw new RuntimeException();
+			}
+			
+			if (action.getNext()!=null) {
+				logger.log("executing next");
+				action.getNext().run();
+			}
+		}
 	}
 	
 	@Override
 	public String toString() {
-		return "do "+session+" "+action+"! "+(value!=null? value:"");
+		return "do "+session+" "+action.getName()+"! "+(value!=null? value:"");
 	}
 }

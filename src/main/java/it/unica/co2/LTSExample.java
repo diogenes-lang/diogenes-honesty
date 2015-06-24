@@ -1,6 +1,6 @@
 package it.unica.co2;
 
-import static it.unica.co2.model.CO2Factory.*;
+import static it.unica.co2.model.ContractFactory.*;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.Recursion;
 import it.unica.co2.semantics.ContractConfiguration;

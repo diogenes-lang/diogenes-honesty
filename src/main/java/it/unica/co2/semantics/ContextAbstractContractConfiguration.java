@@ -23,10 +23,7 @@ public class ContextAbstractContractConfiguration {
 		return contract;
 	}
 	
-	public static ContextAbstractContractConfiguration convert(Participant p, ContractConfiguration cc) {
-		
-		Contract c = p==Participant.A? cc.getA(): cc.getB();
-		
+	public static ContextAbstractContractConfiguration getInstance(Contract c) {
 		if (c instanceof Ready) {
 			Ready rdy = (Ready) c;
 			return new ContextAbstractContractConfiguration(new CtxAction(Action.toInternal(rdy.getAction())));
@@ -34,6 +31,22 @@ public class ContextAbstractContractConfiguration {
 		else {
 			return new ContextAbstractContractConfiguration(c);
 		}
+	}
+	
+	public static ContextAbstractContractConfiguration getInstance(Participant p, ContractConfiguration cc) {
 		
+		Contract c = null;
+		
+		if (p==Participant.A) {
+			c = cc.getA();
+		}
+		else if (p==Participant.B) {
+			c = cc.getB();
+		}
+		else {
+			throw new AssertionError("unexpected partecipant "+p);
+		}
+		
+		return getInstance(c);
 	}
 }

@@ -1,6 +1,7 @@
-package it.unica.co2.model.process;
+package it.unica.co2.trash;
 
 import it.unica.co2.model.prefix.Prefix;
+import it.unica.co2.model.process.Process;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -11,7 +12,9 @@ public class Sum extends Process {
 	
 	private final SumOperand[] operands;
 	
-	public Sum(Prefix... prefixes) {
+	public Sum(String username, Prefix... prefixes) {
+		super(username);
+		
 		SumOperand[] operands = new SumOperand[prefixes.length];
 		
 		for (int i=0; i<prefixes.length; i++) {
@@ -21,11 +24,13 @@ public class Sum extends Process {
 		this.operands = operands;
 	}
 	
-	public Sum(Prefix prefix, Process process) {
+	public Sum(String username, Prefix prefix, Process process) {
+		super(username);
 		operands = new SumOperand[]{new SumOperand(prefix,process)};
 	}
 	
-	public Sum(SumOperand[] operands) {
+	public Sum(String username, SumOperand[] operands) {
+		super(username);
 		this.operands = operands;
 	}
 
@@ -33,7 +38,7 @@ public class Sum extends Process {
 	public void run() {
 		
 		if (operands.length==0) {
-			System.out.println("empty sum");
+			logger.log("empty sum");
 			return;
 		}
 		
@@ -42,19 +47,19 @@ public class Sum extends Process {
 			return;
 		}
 		
-		System.out.println("sum of "+Arrays.asList(operands));
+		logger.log("sum of "+Arrays.asList(operands));
 		
 		int choice = random.nextInt(operands.length);
 		SumOperand op = operands[choice];
 		
-		System.out.println("choosed operand: "+op);
+		logger.log("choosed operand: "+op);
 
 		this.execute(op);
 	}
 
 	private void execute(SumOperand operand) {
 		
-		System.out.println("executing prefix: "+operand.getPrefix());
+		logger.log("executing prefix: "+operand.getPrefix());
 		try {
 			operand.getPrefix().run();
 		} catch (Exception e) {

@@ -13,7 +13,16 @@ public class ObjectUtils {
 	
 	static final Decoder base64Decoder = Base64.getDecoder();
 	static final Encoder base64Encoder = Base64.getEncoder();
-
+	
+	public static String serializeObjectToStringQuietly(Object object) {
+		try {
+			return serializeObjectToString(object);
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	public static String serializeObjectToString(Object object) throws IOException {
 		
 		try (
@@ -26,7 +35,7 @@ public class ObjectUtils {
 		}
 	}
 
-	public static Object deserializeObjectFromString(String objectString) throws IOException, ClassNotFoundException {
+	private static Object deserializeObjectFromString(String objectString) throws IOException, ClassNotFoundException {
 		
 		try (
 				ByteArrayInputStream arrayInputStream = new ByteArrayInputStream(base64Decoder.decode(objectString));
@@ -38,5 +47,14 @@ public class ObjectUtils {
 
 	public static <T> T deserializeObjectFromString(String objectString, Class<T> clazz) throws ClassNotFoundException, IOException {
 		return clazz.cast( deserializeObjectFromString(objectString) );
+	}
+	
+	public static <T> T deserializeObjectFromStringQuietly(String objectString, Class<T> clazz) {
+		try {
+			return clazz.cast( deserializeObjectFromString(objectString) );
+		}
+		catch (ClassNotFoundException | IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

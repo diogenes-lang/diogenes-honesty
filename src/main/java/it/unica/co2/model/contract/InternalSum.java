@@ -1,6 +1,8 @@
 package it.unica.co2.model.contract;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -9,20 +11,33 @@ public class InternalSum extends Contract{
 
 	private static final long serialVersionUID = 1L;
 	
-	private final InternalAction[] actions;
+	private final List<InternalAction> actions = new ArrayList<>();
 	
 	public InternalSum(InternalAction... actions) {
-		this.actions = actions;
+		this.actions.addAll(Arrays.asList(actions));
 	}
 	
 	public InternalAction[] getActions() {
-		return actions;
+		return actions.toArray(new InternalAction[]{});
 	}
+	
+	
+	public InternalSum add(String action) {
+		actions.add(new InternalAction(action, Sort.UNIT, null));
+		return this;
+	}
+	
+	public InternalSum add(InternalAction action) {
+		actions.add(action);
+		return this;
+	}
+	
+	
 	
 	@Override
 	public String toString() {
-		if (actions.length==1)
-			return actions[0].toString();
+		if (actions.size()==1)
+			return actions.get(0).toString();
 		else
 			return "("+StringUtils.join(actions, " (+) ")+")";
 	}
@@ -31,7 +46,7 @@ public class InternalSum extends Contract{
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + Arrays.hashCode(actions);
+		result = prime * result + ((actions == null) ? 0 : actions.hashCode());
 		return result;
 	}
 
@@ -44,8 +59,13 @@ public class InternalSum extends Contract{
 		if (getClass() != obj.getClass())
 			return false;
 		InternalSum other = (InternalSum) obj;
-		if (!Arrays.equals(actions, other.actions))
+		if (actions == null) {
+			if (other.actions != null)
+				return false;
+		}
+		else if (!actions.equals(other.actions))
 			return false;
 		return true;
 	}
+
 }

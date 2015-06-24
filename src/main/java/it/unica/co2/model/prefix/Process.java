@@ -1,4 +1,4 @@
-package it.unica.co2.model.process;
+package it.unica.co2.model.prefix;
 
 import it.unica.co2.util.Logger;
 

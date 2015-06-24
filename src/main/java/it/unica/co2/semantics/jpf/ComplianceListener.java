@@ -16,7 +16,6 @@ import it.unica.co2.semantics.lts.LTSPropertyViolatedException;
 import it.unica.co2.semantics.lts.LTSState;
 import it.unica.co2.util.ObjectUtils;
 
-import java.io.IOException;
 import java.util.List;
 
 public class ComplianceListener extends PropertyListenerAdapter {
@@ -50,22 +49,12 @@ public class ComplianceListener extends PropertyListenerAdapter {
 			ClassInfo ci = ei.getClassInfo();
 
 			if (ci.getName().equals(LTSPropertyViolatedException.class.getName())) {
-				int stateRef = ei.getReferenceField("finalState");
-				int pathRef = ei.getReferenceField("path");
 				
-				ElementInfo eiState = heap.get(stateRef);
-				ElementInfo eiPath = heap.get(pathRef);
+				String finalStateSerialized = ei.getStringField("finalState");
+				String pathSerialized = ei.getStringField("path");
 				
-				try {
-					if (eiState != null)
-						this.finalState = ObjectUtils.deserializeObjectFromString(eiState.asString(), LTSState.class);
-
-					if (eiPath != null)
-						this.path = ObjectUtils.deserializeObjectFromString(eiPath.asString(), List.class);
-				
-				} catch (ClassNotFoundException | IOException e) {
-					e.printStackTrace();
-				}
+				this.finalState = ObjectUtils.deserializeObjectFromStringQuietly(finalStateSerialized, LTSState.class);
+				this.path = ObjectUtils.deserializeObjectFromStringQuietly(pathSerialized, List.class);
 				
 				msg="found a contract-configuration that is not safe";
 				

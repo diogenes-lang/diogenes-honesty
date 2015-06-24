@@ -1,11 +1,17 @@
-package it.unica.co2.model.process;
+package it.unica.co2.trash;
+
+import it.unica.co2.model.process.Process;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParallelProcess extends Process {
 
-private List<Process> processes = new ArrayList<>();
+	protected ParallelProcess(String username) {
+		super(username);
+	}
+
+	private List<Process> processes = new ArrayList<>();
 	
 	public boolean add(Process system) {
 		return processes.add(system);
@@ -17,10 +23,10 @@ private List<Process> processes = new ArrayList<>();
 	
 	@Override
 	public void run() {
-		System.out.println("number of processes: "+processes.size());
+		logger.log("number of processes: "+processes.size());
 		
 		for (Process p : processes) {
-			System.out.println("starting process "+p);
+			logger.log("starting process "+p);
 			new Thread(p).start();
 		}
 		

@@ -1,6 +1,6 @@
 package it.unica.co2;
 
-import static it.unica.co2.model.CO2Factory.*;
+import static it.unica.co2.model.ContractFactory.*;
 import static org.junit.Assert.*;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.Recursion;
@@ -21,8 +21,8 @@ public class ComplianceTest {
 		 * 
 		 * A |x| B = true
 		 */
-		Contract A = internalSum("a", "b");
-		Contract B = externalSum("a", "b", "c");
+		Contract A = internalSum().add("a").add("b");
+		Contract B = externalSum().add("a").add("b").add("c");
 		assertTrue( ContractComplianceChecker.compliance(A, B) );
 	}
 	
@@ -38,11 +38,11 @@ public class ComplianceTest {
 		 * A |x| B = true
 		 */		
 		Recursion ra = recursion();
-		Contract A = internalSum(
-				internalAction("a"),
-				internalAction("b"),
-				internalAction("c", ra)
-				);
+		Contract A = internalSum()
+				.add("a")
+				.add("b")
+				.add(internalAction("c", ra))
+		;
 		ra.setContract(A);
 		
 		Recursion rb = recursion();
@@ -66,8 +66,8 @@ public class ComplianceTest {
 		 * 
 		 * A |x| B = false
 		 */		
-		Contract A = internalSum("a", "b", "c");
-		Contract B = externalSum("a", "b");
+		Contract A = internalSum().add("a").add("b").add("c");
+		Contract B = externalSum().add("a").add("b");
 		assertFalse( ContractComplianceChecker.compliance(A, B) );
 	}
 	
@@ -86,14 +86,10 @@ public class ComplianceTest {
 				internalAction("a"),
 				internalAction(
 						"b",
-						externalSum(
-								externalAction("a"),
-								externalAction(
-										"c", internalSum("b")
-								)
-						)
+						externalSum().add("a").add(externalAction("c", internalSum("b")))
 				)
 		);
+				
 		Contract B = externalSum(
 				externalAction("a"),
 				externalAction(

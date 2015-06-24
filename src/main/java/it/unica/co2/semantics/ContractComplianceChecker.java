@@ -16,8 +16,6 @@ public class ContractComplianceChecker {
 
 	
 	public static boolean compliance(Contract a, Contract b) throws Exception {
-
-		
 		
 		String aAsString = ObjectUtils.serializeObjectToString(a);
 		String bAsString = ObjectUtils.serializeObjectToString(b);
@@ -31,9 +29,21 @@ public class ContractComplianceChecker {
 		conf.setTargetEntry("jpfEntry([Ljava/lang/String;)V");
 		conf.setTargetArgs(new String[]{aAsString, bAsString});
 		
-		if (conf.getBoolean("print_properties", false))
-			conf.printEntries();
+		if (!conf.getBoolean("compliance.print_SUT_output", false))
+			conf.setProperty("vm.tree_output", "false");
 		
+		if (!conf.getBoolean("compliance.print_JPF_output", false)) {
+			conf.setProperty("report.console.constraint", "constraint,snapshot");
+			conf.remove("report.console.finished");
+			conf.remove("report.console.probe");
+			conf.remove("report.console.property_violation"); 
+			conf.remove("report.console.start"); 
+			conf.remove("report.console.transition"); 
+		}
+		
+		if (conf.getBoolean("compliance.print_JPF_properties", false))
+			conf.printEntries();
+
 		JPF jpf = new JPF(conf);
 		
 		ComplianceListener complianceListener = new ComplianceListener();

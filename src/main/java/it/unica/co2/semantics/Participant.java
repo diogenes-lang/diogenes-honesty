@@ -1,3 +1,7 @@
 package it.unica.co2.semantics;
 
-public enum Participant {A,B}
+public enum Participant {
+	A,
+	B,
+	CTX
+}
