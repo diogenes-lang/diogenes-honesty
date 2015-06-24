@@ -4,7 +4,6 @@ import static it.unica.co2.model.ContractFactory.*;
 import it.unica.co2.api.Session2;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.Sort;
-import it.unica.co2.model.prefix.Variable;
 import it.unica.co2.model.process.Participant;
 
 public class Example2 extends Participant {
@@ -40,7 +39,7 @@ public class Example2 extends Participant {
 				);
 		
 		Session2 session = tell(contract);
-		Variable var = new Variable(Sort.INT);
+//		Variable var = new Variable(Sort.INT);
 		
 //		doReceive(session, var, "amount");
 //

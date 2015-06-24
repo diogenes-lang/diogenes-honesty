@@ -1,3 +1,0 @@
-target=it.unica.co2.ExampleProcess
-
-listener=it.unica.co2.semantics.jpf.HonestyListener

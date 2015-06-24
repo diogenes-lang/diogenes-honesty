@@ -28,11 +28,38 @@ import it.unica.co2.util.ObjectUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 public class MaudeListener extends ListenerAdapter {
 
+	/*
+	 * the process we want to build up
+	 */
+	ProcessDTO co2Process;
+	
+	/*
+	 * D: where do I append the next Process? 
+	 * A: co2CurrentPrefix.next
+	 */
+	PrefixDTO co2CurrentPrefix;
+	
+	/*
+	 * all told contracts
+	 */
+	Map<String, Contract> contracts = new HashMap<>();
+	int contractCount=0;
+	
+	
+	/*
+	 * store the entry-points of if-the-else processes, 
+	 * useful to set the co2CurrentPrefix before analyzing a branch
+	 * (the key is the choice-generator id)
+	 */
 	Map<String, TauDTO> taus = new HashMap<>();
 	int ifThenElseCount=0;
+	
+	List<PrefixDTO> sumPrefixes;
+	int sumPrefixIndex = -1;
 	
 	
 	@Override
@@ -118,23 +145,6 @@ public class MaudeListener extends ListenerAdapter {
 
 		}
 	}
-	
-	
-	/*
-	 * the process we want to build up
-	 */
-	ProcessDTO co2Process;
-	
-	/*
-	 * D: where do I append the next Process? 
-	 * A: co2CurrentPrefix.next
-	 */
-	PrefixDTO co2CurrentPrefix;
-	
-	List<PrefixDTO> sumPrefixes;
-	int sumPrefixIndex = -1;
-	
-	IfThenElseDTO ifThenElse;
 	
 	@Override
 	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
@@ -244,7 +254,7 @@ public class MaudeListener extends ListenerAdapter {
 			return;
 		
 		System.out.println("process --> "+co2Process.toMaude());
-		System.out.println("prefix --> "+co2CurrentPrefix.toMaude());
+		System.out.println("currentPrefix --> "+co2CurrentPrefix.toMaude());
 	}
 	
 	
@@ -294,16 +304,14 @@ public class MaudeListener extends ListenerAdapter {
 	@Override
 	public void searchFinished(Search search) {
 		System.out.println("vvvvvvvvvvvvvvvvv SEARCH FINISHED vvvvvvvvvvvvvvvvvv");
-		System.out.println("process --> "+co2Process.toMaude());
-		System.out.println("prefix --> "+co2CurrentPrefix.toMaude());
+		printInfo();
+		System.out.println("contracts:");
+		for (Entry<String, Contract> entry : contracts.entrySet()) {
+			System.out.println("\t"+entry.getKey()+" --> "+entry.getValue().toMaude());
+		}
 	}
 	
 	
-	
-	
-	
-	Map<String, Contract> contracts = new HashMap<>();
-	int contractCount=0;
 	
 	private String getContractName() {
 		return "C"+contractCount++;

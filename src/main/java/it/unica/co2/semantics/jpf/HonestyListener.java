@@ -4,13 +4,11 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.util.JPFLogger;
-import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.prefix.Tell;
 import it.unica.co2.semantics.ContextAbstractContractConfiguration;
 import it.unica.co2.util.ObjectUtils;
 
@@ -35,10 +33,7 @@ public class HonestyListener extends PropertyListenerAdapter {
 	@Override
 	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
 		
-		ClassInfo ci = enteredMethod.getClassInfo();
-		
 		if (
-				ci.getName().equals(Tell.class.getName()) &&
 				enteredMethod.getName().equals("run")
 				) {
 			

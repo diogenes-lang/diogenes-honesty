@@ -1,26 +1,9 @@
 package it.unica.co2.util;
 
-import java.util.function.Supplier;
 
 
 public class Facilities {
 
-	
-	
-	
-	public static void _if_then_else(
-			Supplier<Boolean> condition,
-			Runnable thenStatement,
-			Runnable elseStatement
-			) {
-	
-		if (condition.get()) {
-			thenStatement.run();
-		}
-		else {
-			elseStatement.run();
-		}
-	}
 	
 	/**
 	 * Execute each case that contains an object equals to the given parameter.

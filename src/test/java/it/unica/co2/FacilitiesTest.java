@@ -8,41 +8,6 @@ import org.junit.Test;
 
 public class FacilitiesTest {
 
-	@Test
-	public void if_then_else1() {
-		
-		final Wrapper wrapper = new Wrapper();
-		
-		_if_then_else(
-				() -> (true), 
-				() -> {
-					wrapper.count++;
-				}, 
-				() -> {
-					fail();
-				}
-		);
-		
-		assertTrue(wrapper.count>0);
-	}
-
-	@Test
-	public void if_then_else2() {
-		
-		final Wrapper wrapper = new Wrapper();
-		
-		_if_then_else(
-				() -> (false), 
-				() -> {
-					fail();
-				}, 
-				() -> {
-					wrapper.count++;
-				}
-		);
-		
-		assertTrue(wrapper.count>0);
-	}
 	
 	@Test
 	public void switch_1() {

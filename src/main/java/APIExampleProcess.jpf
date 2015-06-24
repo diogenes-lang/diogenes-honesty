@@ -1,17 +1,5 @@
-#@using = jpf-nhandler
-#@using = jpf-symbc
 
 target=it.unica.co2.APIExampleProcess
-
-#nhandler.delegateUnhandledNative = true
-#nhandler.spec.skip = \
-#	co2api.CO2ServerConnection.*; \
-#	co2api.Public.waitForSession; \
-#	co2api.Session.*; \
-#	
-#nhandler.spec.delegate = \
-#	co2api.ContractXML.*;
-
 
 listener+=;it.unica.co2.semantics.jpf.MaudeListener
 
