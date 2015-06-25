@@ -47,15 +47,6 @@ public abstract class Action implements Serializable {
 		return next;
 	}
 
-	public static ExternalAction toExternal(InternalAction action) {
-		return new ExternalAction(action.getName(), action.getSort(), action.getNext());
-	}
-	
-	public static InternalAction toInternal(ExternalAction action) {
-		return new InternalAction(action.getName(), action.getSort(), action.getNext());
-	}
-	
-	
 	@Override
 	public String toString() {
 		return name + (this instanceof InternalAction?"!":"?") + (sort!=Sort.UNIT? ":"+sort: "") + (next!=null? " . "+next.toString(): "") ;

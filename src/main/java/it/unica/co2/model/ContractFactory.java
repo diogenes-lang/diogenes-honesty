@@ -14,21 +14,21 @@ import java.util.List;
 
 public class ContractFactory {
 	
-	public static InternalAction internalAction(String actionName) {
-		return internalAction(actionName, Sort.UNIT);
-	}
-	
-	public static InternalAction internalAction(String actionName, Sort sort) {
-		return internalAction(actionName, sort, null);
-	}
-	
-	public static InternalAction internalAction(String actionName, Contract next) {
-		return internalAction(actionName, Sort.UNIT, next);
-	}
-	
-	public static InternalAction internalAction(String actionName, Sort sort, Contract next) {
-		return new InternalAction(actionName, sort, next);
-	}
+//	public static InternalAction internalAction(String actionName) {
+//		return internalAction(actionName, Sort.UNIT);
+//	}
+//	
+//	public static InternalAction internalAction(String actionName, Sort sort) {
+//		return internalAction(actionName, sort, null);
+//	}
+//	
+//	public static InternalAction internalAction(String actionName, Contract next) {
+//		return internalAction(actionName, Sort.UNIT, next);
+//	}
+//	
+//	public static InternalAction internalAction(String actionName, Sort sort, Contract next) {
+//		return new InternalAction(actionName, sort, next);
+//	}
 	
 	
 	public static InternalSum internalSum(String actionName, Sort sort) {
@@ -40,27 +40,27 @@ public class ContractFactory {
 	}
 	
 	public static InternalSum internalSum(String actionName, Sort sort, Contract next) {
-		return internalSum(internalAction(actionName, sort, next));
+		return internalSum().add(actionName, sort, next);
 	}
 	
 	
 	
 	
-	public static ExternalAction externalAction(String actionName) {
-		return externalAction(actionName, Sort.UNIT);
-	}
-	
-	public static ExternalAction externalAction(String actionName, Sort sort) {
-		return externalAction(actionName, sort, null);
-	}
-	
-	public static ExternalAction externalAction(String actionName, Contract next) {
-		return externalAction(actionName, Sort.UNIT, next);
-	}
-	
-	public static ExternalAction externalAction(String actionName, Sort sort, Contract next) {
-		return new ExternalAction(actionName, sort, next);
-	}
+//	public static ExternalAction externalAction(String actionName) {
+//		return externalAction(actionName, Sort.UNIT);
+//	}
+//	
+//	public static ExternalAction externalAction(String actionName, Sort sort) {
+//		return externalAction(actionName, sort, null);
+//	}
+//	
+//	public static ExternalAction externalAction(String actionName, Contract next) {
+//		return externalAction(actionName, Sort.UNIT, next);
+//	}
+//	
+//	public static ExternalAction externalAction(String actionName, Sort sort, Contract next) {
+//		return new ExternalAction(actionName, sort, next);
+//	}
 	
 	
 	public static ExternalSum externalSum(String actionName, Sort sort) {
@@ -72,7 +72,7 @@ public class ContractFactory {
 	}
 	
 	public static ExternalSum externalSum(String actionName, Sort sort, Contract next) {
-		return externalSum(externalAction(actionName, sort, next));
+		return externalSum().add(actionName, sort, next);
 	}
 	
 	

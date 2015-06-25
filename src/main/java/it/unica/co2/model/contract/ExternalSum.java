@@ -27,6 +27,19 @@ public class ExternalSum extends Contract {
 		return this;
 	}
 	
+	public ExternalSum add(String action, Sort sort) {
+		return add(action, sort, null);
+	}
+	
+	public ExternalSum add(String action, Contract next) {
+		return add(action, Sort.UNIT, next);
+	}
+	
+	public ExternalSum add(String action, Sort sort, Contract next) {
+		actions.add(new ExternalAction(action, sort, next));
+		return this;
+	}
+	
 	public ExternalSum add(ExternalAction action) {
 		actions.add(action);
 		return this;

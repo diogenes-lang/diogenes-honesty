@@ -1,5 +1,0 @@
-
-target=it.unica.co2.APIExampleProcess
-
-listener+=;it.unica.co2.semantics.jpf.MaudeListener
-

@@ -1,7 +1,7 @@
 package it.unica.co2.model.contract;
 
-import it.unica.co2.generators.MaudeSyntaxGenerator;
-import it.unica.co2.generators.MiddlewareSyntaxGenerator;
+import it.unica.co2.util.generators.MaudeSyntaxGenerator;
+import it.unica.co2.util.generators.MiddlewareSyntaxGenerator;
 
 import java.io.Serializable;
 

@@ -23,7 +23,19 @@ public class InternalSum extends Contract{
 	
 	
 	public InternalSum add(String action) {
-		actions.add(new InternalAction(action, Sort.UNIT, null));
+		return add(action, Sort.UNIT);
+	}
+
+	public InternalSum add(String action, Sort sort) {
+		return add(action, sort, null);
+	}
+	
+	public InternalSum add(String action, Contract next) {
+		return add(action, Sort.UNIT, next);
+	}
+	
+	public InternalSum add(String action, Sort sort, Contract next) {
+		actions.add(new InternalAction(action, sort, next));
 		return this;
 	}
 	

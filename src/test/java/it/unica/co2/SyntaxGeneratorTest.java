@@ -30,19 +30,19 @@ public class SyntaxGeneratorTest {
 	public void test2() {
 		
 		Recursion ra = recursion();
-		Contract A = internalSum(
-				internalAction("a"),
-				internalAction("b"),
-				internalAction("c", ra)
-				);
+		Contract A = internalSum()
+				.add("a")
+				.add("b")
+				.add("c", ra)
+		;
 		ra.setContract(A);
 		
 		Recursion rb = recursion();
-		Contract B = externalSum(
-				externalAction("a"), 
-				externalAction("b", rb), 
-				externalAction("c", rb)
-				);
+		Contract B = externalSum()
+				.add("a")
+				.add("b", rb) 
+				.add("c", rb)
+		;
 		rb.setContract(B);
 		
 		System.out.println("------------------");
