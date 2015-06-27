@@ -1,10 +1,8 @@
 package it.unica.co2.compliance;
 
-import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.PropertyListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.ATHROW;
 import gov.nasa.jpf.search.Search;
-import gov.nasa.jpf.util.JPFLogger;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Heap;
@@ -19,8 +17,6 @@ import it.unica.co2.util.ObjectUtils;
 import java.util.List;
 
 public class ComplianceListener extends PropertyListenerAdapter {
-
-	static JPFLogger log = JPF.getLogger(ComplianceListener.class.getName());
 
 	String msg = null;
 

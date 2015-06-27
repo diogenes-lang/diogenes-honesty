@@ -1,5 +1,5 @@
 
-target=APIExampleProcess
+target=it.unica.co2.examples.APIExampleProcess
 
-listener+=;it.unica.co2.semantics.jpf.MaudeListener
+listener+=;it.unica.co2.honesty.MaudeListener
 

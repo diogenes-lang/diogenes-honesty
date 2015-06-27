@@ -13,6 +13,8 @@ import co2api.TST;
 
 public abstract class Participant extends Process {
 
+	private static final long serialVersionUID = 1L;
+	
 	protected CO2ServerConnection connection;
 
 	protected Participant(String username, String password) {

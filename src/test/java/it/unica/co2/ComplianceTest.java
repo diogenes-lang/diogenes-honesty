@@ -2,7 +2,7 @@ package it.unica.co2;
 
 import static it.unica.co2.model.ContractFactory.*;
 import static org.junit.Assert.*;
-import it.unica.co2.compliance.ContractComplianceChecker;
+import it.unica.co2.compliance.ComplianceChecker;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.Recursion;
 
@@ -11,7 +11,7 @@ import org.junit.Test;
 public class ComplianceTest {
 
 	@Test
-	public void test1() throws Exception {
+	public void test1() {
 	
 		System.out.println("\n\n-- TEST 1 --");
 		
@@ -23,11 +23,11 @@ public class ComplianceTest {
 		 */
 		Contract A = internalSum().add("a").add("b");
 		Contract B = externalSum().add("a").add("b").add("c");
-		assertTrue( ContractComplianceChecker.compliance(A, B) );
+		assertTrue( ComplianceChecker.compliance(A, B) );
 	}
 	
 	@Test
-	public void test2() throws Exception {
+	public void test2() {
 		
 		System.out.println("\n\n-- TEST 2 --");
 	
@@ -53,11 +53,11 @@ public class ComplianceTest {
 		;
 		rb.setContract(B);
 
-		assertTrue( ContractComplianceChecker.compliance(ra, rb) );
+		assertTrue( ComplianceChecker.compliance(ra, rb) );
 	}
 	
 	@Test
-	public void test3() throws Exception {
+	public void test3() {
 		
 		System.out.println("\n\n-- TEST 3 --");
 
@@ -69,11 +69,11 @@ public class ComplianceTest {
 		 */		
 		Contract A = internalSum().add("a").add("b").add("c");
 		Contract B = externalSum().add("a").add("b");
-		assertFalse( ContractComplianceChecker.compliance(A, B) );
+		assertFalse( ComplianceChecker.compliance(A, B) );
 	}
 	
 	@Test
-	public void test4() throws Exception {
+	public void test4() {
 		
 		System.out.println("\n\n-- TEST 4 --");
 
@@ -97,7 +97,7 @@ public class ComplianceTest {
 						internalSum("a","c")
 				)
 		;
-		assertFalse( ContractComplianceChecker.compliance(A, B) );
+		assertFalse( ComplianceChecker.compliance(A, B) );
 	}
 
 }

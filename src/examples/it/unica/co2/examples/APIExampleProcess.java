@@ -1,3 +1,4 @@
+package it.unica.co2.examples;
 
 
 import static it.unica.co2.model.ContractFactory.*;
@@ -11,10 +12,12 @@ import co2api.TST;
 
 public class APIExampleProcess extends Participant {
 
+	private static final long serialVersionUID = 1L;
+	
 	private static String username = "alice@test.com";
 	private static String password = "alice";
 
-	protected APIExampleProcess() {
+	public APIExampleProcess() {
 		super(username, password);
 	}
 
@@ -44,7 +47,7 @@ public class APIExampleProcess extends Participant {
 			session.send("b");
 			
 			logger.log("receiving message");
-			Message msg = session.waitForReceive("a","b","c");
+			Message msg = session.waitForReceive("a","b"/*,"c"*/);
 			
 			logger.log("received message: "+msg.getLabel()+" "+msg.getStringValue());
 			
@@ -53,19 +56,15 @@ public class APIExampleProcess extends Participant {
 					
 					_case("a", () -> {
 						logger.log("received a?");
-						session.send("pippo_a");
-						
 					}),
 					
 					_case("b", () -> {
 						logger.log("received b?");
-						session.send("pippo_b");
-						
-					}),
+					})
+					,
 					
 					_case("c", () -> {
 						logger.log("received c?");
-						session.send("pippo_c");
 					})
 			);
 			

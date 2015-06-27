@@ -2,7 +2,10 @@ package it.unica.co2.api;
 
 import it.unica.co2.util.ObjectUtils;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import co2api.CO2ServerConnection;
 import co2api.ContractException;
@@ -78,12 +81,25 @@ public class Session2<T extends ContractModel> extends Session<T>{
 	public Message waitForReceive(String... labels) {
 		System.out.println("*** listening for "+ Arrays.toString(labels));
 		
-		/*
-		 * instruct the dummy CO2ServerConnection to return this labels
-		 */
-		CO2ServerConnection.actions.clear();
-		CO2ServerConnection.actions.addAll(Arrays.asList(labels));
-		
+		try {
+			/*
+			 * instruct the dummy CO2ServerConnection to return this labels
+			 */
+			Field actionsField = CO2ServerConnection.class.getDeclaredField("actions");
+			
+			Set<String> actionsSet = new HashSet<String>(Arrays.asList(labels));
+			
+			actionsField.setAccessible(true);
+			actionsField.set(null, actionsSet);
+		}
+		catch (NoSuchFieldException e) {
+			// you are using the real implementation
+			System.out.println("real implementation");
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+			
 		this.labels = ObjectUtils.serializeObjectToStringQuietly(labels);
 		
 		while(true) {

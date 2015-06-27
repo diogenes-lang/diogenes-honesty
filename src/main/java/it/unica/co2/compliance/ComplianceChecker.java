@@ -11,20 +11,20 @@ import it.unica.co2.util.ObjectUtils;
 
 import java.util.List;
 
-public class ContractComplianceChecker {
+public class ComplianceChecker {
 
 	
-	public static boolean compliance(Contract a, Contract b) throws Exception {
+	public static boolean compliance(Contract a, Contract b) {
 		
-		String aAsString = ObjectUtils.serializeObjectToString(a);
-		String bAsString = ObjectUtils.serializeObjectToString(b);
+		String aAsString = ObjectUtils.serializeObjectToStringQuietly(a);
+		String bAsString = ObjectUtils.serializeObjectToStringQuietly(b);
 		
 		Config.enableLogging(false);
 		Config conf = JPF.createConfig(
 				new String[]{"+site=/home/nicola/xtext_projects/jpf/site.properties"}
 		);
 		
-		conf.setTarget(ContractComplianceChecker.class.getName());
+		conf.setTarget(ComplianceChecker.class.getName());
 		conf.setTargetEntry("jpfEntry([Ljava/lang/String;)V");
 		conf.setTargetArgs(new String[]{aAsString, bAsString});
 		
@@ -52,7 +52,7 @@ public class ContractComplianceChecker {
 			System.out.println("================================================== COMPLIANCE CHECKER ");
 			System.out.println("contract a: "+a);
 			System.out.println("contract b: "+b);
-			System.out.println("starting JPF for checking compliance...");
+			System.out.println("starting JPF to checking compliance...");
 			System.out.println("--------------------------------------------------");
 			jpf.run();
 			

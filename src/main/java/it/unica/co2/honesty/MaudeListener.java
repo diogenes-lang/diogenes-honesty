@@ -1,5 +1,7 @@
 package it.unica.co2.honesty;
 
+import gov.nasa.jpf.Config;
+import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.search.Search;
@@ -27,41 +29,58 @@ import it.unica.co2.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class MaudeListener extends ListenerAdapter {
-
+	
+	private static Logger log = JPF.getLogger(MaudeListener.class.getName());
+	
+	public MaudeListener(Config conf) {
+		
+		if (conf.getBoolean("honesty.listener.log", false)) {
+			log.setLevel(Level.ALL);
+		}
+		else {
+			log.setLevel(Level.OFF);
+		}
+	}
+	
 	/*
 	 * the process we want to build up
 	 */
-	ProcessDTO co2Process;
+	private ProcessDTO co2Process;
 	
 	/*
 	 * D: where do I append the next Process? 
 	 * A: co2CurrentPrefix.next
 	 */
-	PrefixDTO co2CurrentPrefix;
+	private PrefixDTO co2CurrentPrefix;
 	
 	/*
 	 * all told contracts
 	 */
-	Map<String, Contract> contracts = new HashMap<>();
-	int contractCount=0;
+	private Map<String, Contract> contracts = new HashMap<>();
+	private int contractCount=0;
 	
-	List<String> sessions = new ArrayList<>();
+	private List<String> sessions = new ArrayList<>();	// all sessions
+	private Set<String> actions = new HashSet<>();	// all actions
 	
 	/*
 	 * store the entry-points of if-the-else processes, 
 	 * useful to set the co2CurrentPrefix before analyzing a branch
 	 * (the key is the choice-generator id)
 	 */
-	Map<String, TauDTO> taus = new HashMap<>();
-	int ifThenElseCount=0;
+	private Map<String, TauDTO> taus = new HashMap<>();
+	private int ifThenElseCount=0;
 	
-	List<PrefixDTO> sumPrefixes;
-	int sumPrefixIndex = -1;
+	private List<PrefixDTO> sumPrefixes;
+	private int sumPrefixIndex = -1;
 	
 	
 	@Override
@@ -76,9 +95,9 @@ public class MaudeListener extends ListenerAdapter {
 			
 			if (!ti.isFirstStepInsn()) { // top half - first execution
 
-				System.out.println();
+				log.info("");
 				printInfo();
-				System.out.println("--IF_THEN_ELSE--");
+				log.info("--IF_THEN_ELSE--");
 				
 				IfThenElseDTO ifThenElse = new IfThenElseDTO();
 				
@@ -108,8 +127,8 @@ public class MaudeListener extends ListenerAdapter {
 				taus.put("then_"+cg.getId(), thenTau);
 				taus.put("else_"+cg.getId(), elseTau);
 				
-				System.out.println("thenTau: "+thenTau);
-				System.out.println("elseTau: "+elseTau);
+				log.info("thenTau: "+thenTau);
+				log.info("elseTau: "+elseTau);
 			}
 			else {
 				// bottom half - reexecution at the beginning of the next
@@ -125,16 +144,16 @@ public class MaudeListener extends ListenerAdapter {
 				TauDTO thenTau = taus.get("then_"+cg.getId());
 				TauDTO elseTau = taus.get("else_"+cg.getId());
 				
-				System.out.println("thenTau: "+thenTau);
-				System.out.println("elseTau: "+elseTau);
+				log.info("thenTau: "+thenTau);
+				log.info("elseTau: "+elseTau);
 				
 				if (myChoice){
-					System.out.println("setting tau, choice: "+myChoice);
+					log.info("setting tau, choice: "+myChoice);
 					co2CurrentPrefix = thenTau;
 					nextInsn = ifInsn.getNext();
 				}
 				else {
-					System.out.println("setting tau, choice: "+myChoice);
+					log.info("setting tau, choice: "+myChoice);
 					co2CurrentPrefix = elseTau;
 					nextInsn = ifInsn.getTarget();
 				}
@@ -152,9 +171,9 @@ public class MaudeListener extends ListenerAdapter {
 	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
 		
 		if (enteredMethod.getBaseName().equals(Participant.class.getName()+".tell")) {
-			System.out.println();
+			log.info("");
 			printInfo();
-			System.out.println("--TELL--");
+			log.info("--TELL--");
 			
 			ElementInfo ei = currentThread.getThisElementInfo();
 			
@@ -175,9 +194,9 @@ public class MaudeListener extends ListenerAdapter {
 		}
 		
 		if (enteredMethod.getBaseName().equals(Session2.class.getName()+".send")) {
-			System.out.println();
+			log.info("");
 			printInfo();
-			System.out.println("--SEND--");
+			log.info("--SEND--");
 
 			ElementInfo ei = currentThread.getThisElementInfo();
 			
@@ -201,9 +220,9 @@ public class MaudeListener extends ListenerAdapter {
 				enteredMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive") && 
 				sumPrefixIndex ==0
 				) {
-			System.out.println();
+			log.info("");
 			printInfo();
-			System.out.println("--SUM OF RECEIVE--");
+			log.info("--SUM OF RECEIVE--");
 			
 			ElementInfo ei = currentThread.getThisElementInfo();
 			
@@ -237,9 +256,9 @@ public class MaudeListener extends ListenerAdapter {
 			
 			
 			if (received) {
-				System.out.println();
+				log.info("");
 				printInfo();
-				System.out.println("--RECEIVE--");
+				log.info("--RECEIVE--");
 				// now I know which action was received and can set the prefix
 				
 				co2CurrentPrefix = sumPrefixes.get(sumPrefixIndex);
@@ -255,8 +274,8 @@ public class MaudeListener extends ListenerAdapter {
 		if (co2Process==null || co2CurrentPrefix==null)
 			return;
 		
-		System.out.println("process --> "+co2Process.toMaude());
-		System.out.println("currentPrefix --> "+co2CurrentPrefix.toMaude());
+		log.info("process --> "+co2Process.toMaude());
+		log.info("currentPrefix --> "+co2CurrentPrefix.toMaude());
 	}
 	
 	
@@ -268,17 +287,17 @@ public class MaudeListener extends ListenerAdapter {
 	
 	@Override
 	public void choiceGeneratorSet (VM vm, ChoiceGenerator<?> newCG) {
-		System.out.println("----------------NEW---------------: "+newCG.getId());
+		log.info("----------------NEW---------------: "+newCG.getId());
 	}
 	
 	@Override
 	public void stateBacktracked(Search search) {
-		System.out.println("<<<<<<<<<<< BACKTRACK <<<<<<<<<<");
+		log.info("<<<<<<<<<<< BACKTRACK <<<<<<<<<<");
 	}
 
 	@Override
 	public void choiceGeneratorProcessed(VM vm, ChoiceGenerator<?> processedCG) {
-		System.out.println("............... PROCESSED ..............: "+processedCG.getId());
+		log.info("............... PROCESSED ..............: "+processedCG.getId());
 		if (processedCG.getId().equals("ifThenElseCG_"+ifThenElseCount)) {
 			ifThenElseCount++;
 		}
@@ -286,16 +305,16 @@ public class MaudeListener extends ListenerAdapter {
 	
 	@Override
 	public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG) {
-		System.out.println(">>>>>>>>>>> ADVANCE >>>>>>>>>>: "+currentCG.getId());
+		log.info(">>>>>>>>>>> ADVANCE >>>>>>>>>>: "+currentCG.getId());
 
 		if (currentCG.getId().equals("verifyGetInt(II)")) {
 			
-			System.out.println("multiple receive occurs");
+			log.info("multiple receive occurs");
 			sumPrefixIndex++;
-			System.out.println("i: "+sumPrefixIndex);
+			log.info("i: "+sumPrefixIndex);
 			
 			if (sumPrefixes!=null && sumPrefixIndex==sumPrefixes.size()) {
-				System.out.println("reset to -1");
+				log.info("reset to -1");
 				sumPrefixIndex=-1;
 			}
 		}
@@ -305,15 +324,15 @@ public class MaudeListener extends ListenerAdapter {
 	
 	@Override
 	public void searchFinished(Search search) {
-		System.out.println("vvvvvvvvvvvvvvvvv SEARCH FINISHED vvvvvvvvvvvvvvvvvv");
+		log.info("vvvvvvvvvvvvvvvvv SEARCH FINISHED vvvvvvvvvvvvvvvvvv");
 		printInfo();
 		
-		System.out.println("contracts:");
+		log.info("contracts:");
 		for (Entry<String, Contract> entry : contracts.entrySet()) {
-			System.out.println("\t"+entry.getKey()+" --> "+entry.getValue().toMaude());
+			log.info("\t"+entry.getKey()+" --> "+entry.getValue().toMaude());
 		}
 		
-		System.out.println("sessions: "+sessions);
+		log.info("sessions: "+sessions);
 	}
 	
 	
@@ -342,6 +361,8 @@ public class MaudeListener extends ListenerAdapter {
 		send.action = ei.getStringField("action"); 
 		send.session = ei.getStringField("sessionName");
 		
+		actions.add(send.action);
+		
 		return send;
 	}
 	
@@ -356,13 +377,37 @@ public class MaudeListener extends ListenerAdapter {
 				);
 		
 		for (String l : labels) {
+			
 			DoReceiveDTO p = new DoReceiveDTO(); 
 			p.session = session;
 			p.action = l;
+			
+			actions.add(l);
 			
 			sum.prefixes.add(p);
 		}
 		
 		return sum;
+	}
+
+	
+	
+	
+	
+	//--------------------------------- GETTERS and SETTERS -------------------------------
+	public ProcessDTO getCo2Process() {
+		return co2Process;
+	}
+	
+	public Map<String, Contract> getContracts() {
+		return contracts;
+	}
+	
+	public List<String> getSessions() {
+		return sessions;
+	}
+	
+	public Set<String> getActions() {
+		return actions;
 	}
 }
