@@ -1,7 +1,5 @@
 package it.unica.co2.api;
 
-import it.unica.co2.util.ObjectUtils;
-
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -30,18 +28,11 @@ public class Session2<T extends ContractModel> extends Session<T>{
 		return sessionName;
 	}
 	
-	/*
-	 * JPF-specific
-	 */
-	@SuppressWarnings("unused")	private String action;
-	@SuppressWarnings("unused")	private String labels;
 	
 	@Override
 	public Boolean send(String action) {
     	System.out.println(">>> sending "+action+"!");
 
-		this.action=action;
-		
 		try {
 			return super.send(action);
 		}
@@ -54,7 +45,6 @@ public class Session2<T extends ContractModel> extends Session<T>{
 	public Boolean send(String action, String value) {
 		System.out.println(">>> sending "+action+"! ["+value+"]");
 
-		this.action=action;
 		try {
 			return super.send(action, value);
 		}
@@ -67,7 +57,6 @@ public class Session2<T extends ContractModel> extends Session<T>{
 	public Boolean send(String action, Integer value) {
 		System.out.println(">>> sending "+action+"! ["+value+"]");
 		
-		this.action=action;
 		try {
 			return super.send(action, value);
 		}
@@ -100,7 +89,6 @@ public class Session2<T extends ContractModel> extends Session<T>{
 			throw new RuntimeException(e);
 		}
 			
-		this.labels = ObjectUtils.serializeObjectToStringQuietly(labels);
 		
 		while(true) {
 			// the super.waitForReceive is blocking, delay is not necessary

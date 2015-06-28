@@ -122,7 +122,7 @@ public class MaudeExecutor {
 		if (checkForWarning(output)) {
 			// the maude checking contains warning
 			System.out.println("[IMPORTANT] Found some warnings in the maude output: rerun with option maude.verbose=true to see the output");
-			return true;
+			return false;
 		}
 		
 		boolean isHonest = checkForHonesty(output);

@@ -2,7 +2,6 @@ package it.unica.co2.examples;
 
 
 import static it.unica.co2.model.ContractFactory.*;
-import static it.unica.co2.util.Facilities.*;
 import it.unica.co2.api.Session2;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.Participant;
@@ -51,24 +50,20 @@ public class APIExampleProcess extends Participant {
 			
 			logger.log("received message: "+msg.getLabel()+" "+msg.getStringValue());
 			
-			_switch(
-					msg.getLabel(),
-					
-					_case("a", () -> {
-						logger.log("received a?");
-					}),
-					
-					_case("b", () -> {
-						logger.log("received b?");
-					})
-					,
-					
-					_case("c", () -> {
-						logger.log("received c?");
-					})
-			);
+			switch (msg.getLabel()) {
 			
-		
+			case "a": 
+				logger.log("received a?");
+				session.send("a_ok");
+				break;
+			
+			case "b":
+				logger.log("received b?");
+				session.send("b_ok");
+				break;
+			}
+			
+			session.send("end");
 			logger.log("FINE");
 		
 		}

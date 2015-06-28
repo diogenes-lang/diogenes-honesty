@@ -4,13 +4,16 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
+import gov.nasa.jpf.jvm.bytecode.SwitchInstruction;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.BooleanChoiceGenerator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
+import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import it.unica.co2.api.Session2;
@@ -24,7 +27,6 @@ import it.unica.co2.honesty.dto.TauDTO;
 import it.unica.co2.honesty.dto.TellDTO;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.Participant;
-import it.unica.co2.util.Facilities.Case;
 import it.unica.co2.util.ObjectUtils;
 
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ public class MaudeListener extends ListenerAdapter {
 	
 	private static Logger log = JPF.getLogger(MaudeListener.class.getName());
 	
-	public MaudeListener(Config conf) {
+	public MaudeListener(Config conf, Class<? extends Participant> processClass) {
 		
 		if (conf.getBoolean("honesty.listener.log", false)) {
 			log.setLevel(Level.ALL);
@@ -49,7 +51,14 @@ public class MaudeListener extends ListenerAdapter {
 		else {
 			log.setLevel(Level.OFF);
 		}
+		
+		this.processClass = processClass;
 	}
+	
+	/*
+	 * the class of the project to analyze
+	 */
+	private final Class<? extends Participant> processClass;
 	
 	/*
 	 * the process we want to build up
@@ -69,7 +78,7 @@ public class MaudeListener extends ListenerAdapter {
 	private int contractCount=0;
 	
 	private List<String> sessions = new ArrayList<>();	// all sessions
-	private Set<String> actions = new HashSet<>();	// all actions
+	private Set<String> allActions = new HashSet<>();	// all actions
 	
 	/*
 	 * store the entry-points of if-the-else processes, 
@@ -82,14 +91,33 @@ public class MaudeListener extends ListenerAdapter {
 	private List<PrefixDTO> sumPrefixes;
 	private int sumPrefixIndex = -1;
 	
+	/*
+	 * if the ifInstruction is into this interval, skip it (means that is related to switch-statement)
+	 */
+	private int startIfExcluded = -1;
+	private int endIfExcluded = -1;
+	
 	
 	@Override
 	public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn, Instruction insn) {
 
 		ClassInfo ci = ti.getExecutingClassInfo();
-		String target = vm.getConfig().getTarget();
 
-		if (insn instanceof IfInstruction && target.equals(ci.getName())) {
+		
+		if (insn instanceof SwitchInstruction && processClass.getName().equals(ci.getName())) {
+			SwitchInstruction switchInsn = (SwitchInstruction) insn;
+			
+			log.info("SWITCH : setting start="+switchInsn.getPosition()+" , end="+switchInsn.getTarget());
+			startIfExcluded = switchInsn.getPosition();		// where the switch starts
+			endIfExcluded = switchInsn.getTarget();		// where the switch ends
+		}
+		
+		
+		if (
+				insn instanceof IfInstruction && 
+				processClass.getName().equals(ci.getName()) && // consider only if into the class under test
+				(insn.getPosition()<startIfExcluded || insn.getPosition()>endIfExcluded) // skip if instructions related to switch statements
+				) {
 			
 			IfInstruction ifInsn = (IfInstruction) insn;
 			
@@ -168,12 +196,12 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	@Override
-	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
+	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo exitedMethod) {
 		
-		if (enteredMethod.getBaseName().equals(Participant.class.getName()+".tell")) {
+		if (exitedMethod.getBaseName().equals(Participant.class.getName()+".tell")) {
 			log.info("");
 			printInfo();
-			log.info("--TELL--");
+			log.info("--TELL-- (method exited)");
 			
 			ElementInfo ei = currentThread.getThisElementInfo();
 			
@@ -193,14 +221,109 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo();
 		}
 		
-		if (enteredMethod.getBaseName().equals(Session2.class.getName()+".send")) {
+		
+		if (
+				exitedMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive")
+				) {
+
 			log.info("");
 			printInfo();
-			log.info("--SEND--");
-
-			ElementInfo ei = currentThread.getThisElementInfo();
+			log.info("--SUM OF RECEIVE-- (method exited)");
 			
-			DoSendDTO send = getDoSend(ei);
+			ElementInfo ei = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
+			
+			/*
+			 * get the returned value
+			 */
+			StackFrame f = currentThread.getTopFrame();
+			
+			int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
+			f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
+			
+			ElementInfo retEi = currentThread.getElementInfo(ref);
+			
+			log.info(""+currentThread.getElementInfo(ref));
+			String label = retEi.getStringField("label");
+			String sessionName = ei.getStringField("sessionName");
+			
+			log.info("label: "+label);
+			
+			DoReceiveDTO received = null;
+			for (PrefixDTO p : sumPrefixes) {
+				
+				if (((DoReceiveDTO) p).action.equals(label)) {
+					received = ((DoReceiveDTO) p);
+				}
+			}
+			
+			if (received==null)
+				throw new IllegalStateException("received cannot be null");
+			
+			received.action = label;
+			received.session = sessionName;
+			
+			co2CurrentPrefix = received;
+			
+			
+			printInfo();
+			
+			
+			
+		}
+		
+		
+	}
+	
+	@Override
+	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
+		
+		if (
+				enteredMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive")
+				) {
+
+			log.info("");
+			printInfo();
+			log.info("--SUM OF RECEIVE-- (entered method)");
+			
+			ElementInfo ei = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
+			
+			String session = ei.getStringField("sessionName");
+			List<String> actions = getStringArrayArgument(currentThread);
+			
+			SumDTO sum = getSumOfReceive(session, actions);
+			
+			if (co2Process==null) {	// you are the first process
+				co2Process = sum;
+			}
+			else {
+				co2CurrentPrefix.next = sum;
+			}
+			
+			/*
+			 * the co2CurrentPrefix is set in methodExited
+			 */
+			sumPrefixes = sum.prefixes;
+			
+			printInfo();
+		}
+	
+		if (
+				enteredMethod.getBaseName().equals(Session2.class.getName()+".send")
+				) {
+
+			log.info("");
+			printInfo();
+			log.info("--SEND-- (entered method)");
+			
+			ElementInfo ei = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
+			
+			String session = ei.getStringField("sessionName");
+			String action = getFirstStringArgument(currentThread);
+			
+			DoSendDTO send = new DoSendDTO();
+			send.session = session;
+			send.action = action;
+			
 			SumDTO sum = new SumDTO();
 			sum.prefixes.add(send);
 			
@@ -215,75 +338,7 @@ public class MaudeListener extends ListenerAdapter {
 
 			printInfo();
 		}
-		
-		if (
-				enteredMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive") && 
-				sumPrefixIndex ==0
-				) {
-			log.info("");
-			printInfo();
-			log.info("--SUM OF RECEIVE--");
-			
-			ElementInfo ei = currentThread.getThisElementInfo();
-			
-			SumDTO sum = getSumOfReceive(ei);
-			
-			if (co2Process==null) {	// you are the first process
-				co2Process = sum;
-			}
-			else {
-				co2CurrentPrefix.next = sum;
-			}
-			/*
-			 * at this point you dont'n know which branch will be chosen (see next method)
-			 */
-			sumPrefixes = sum.prefixes;
-
-			printInfo();
-		}
-		
 	}
-	
-	@Override
-	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
-	
-		if (enteredMethod.getBaseName().equals(Case.class.getName()+".runCase")) {
-			
-			ElementInfo ei = currentThread.getThisElementInfo();
-			
-			String actionName = ei.getStringField("actionName");
-			boolean received = actionName!=null;
-			
-			
-			if (received) {
-				log.info("");
-				printInfo();
-				log.info("--RECEIVE--");
-				// now I know which action was received and can set the prefix
-				
-				co2CurrentPrefix = sumPrefixes.get(sumPrefixIndex);
-				
-				printInfo();
-			}
-			
-		}
-	}
-	
-	
-	private void printInfo() {
-		if (co2Process==null || co2CurrentPrefix==null)
-			return;
-		
-		log.info("process --> "+co2Process.toMaude());
-		log.info("currentPrefix --> "+co2CurrentPrefix.toMaude());
-	}
-	
-	
-	@Override
-	public void executeInstruction(VM vm, ThreadInfo currentThread, Instruction instructionToExecute) {
-		
-	}
-	
 	
 	@Override
 	public void choiceGeneratorSet (VM vm, ChoiceGenerator<?> newCG) {
@@ -311,6 +366,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			log.info("multiple receive occurs");
 			sumPrefixIndex++;
+			
 			log.info("i: "+sumPrefixIndex);
 			
 			if (sumPrefixes!=null && sumPrefixIndex==sumPrefixes.size()) {
@@ -319,8 +375,6 @@ public class MaudeListener extends ListenerAdapter {
 			}
 		}
 	}
-	
-	
 	
 	@Override
 	public void searchFinished(Search search) {
@@ -336,6 +390,16 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	
+	
+	//--------------------------------- UTILS -------------------------------
+	
+	private void printInfo() {
+		if (co2Process==null || co2CurrentPrefix==null)
+			return;
+		
+		log.info("process --> "+co2Process.toMaude());
+		log.info("currentPrefix --> "+co2CurrentPrefix.toMaude());
+	}
 	
 	private String getContractName() {
 		return "C"+contractCount++;
@@ -355,34 +419,17 @@ public class MaudeListener extends ListenerAdapter {
 		return tell;
 	}
 	
-	private DoSendDTO getDoSend(ElementInfo ei) {
-		
-		DoSendDTO send = new DoSendDTO();
-		send.action = ei.getStringField("action"); 
-		send.session = ei.getStringField("sessionName");
-		
-		actions.add(send.action);
-		
-		return send;
-	}
-	
-	private SumDTO getSumOfReceive(ElementInfo ei) {
+	private SumDTO getSumOfReceive(String session, List<String> actions) {
 		
 		SumDTO sum = new SumDTO();
 		
-		String session = ei.getStringField("sessionName");
-		String[] labels = ObjectUtils.deserializeObjectFromStringQuietly(
-				ei.getStringField("labels"), 
-				String[].class
-				);
-		
-		for (String l : labels) {
+		for (String l : actions) {
 			
 			DoReceiveDTO p = new DoReceiveDTO(); 
 			p.session = session;
 			p.action = l;
 			
-			actions.add(l);
+			this.allActions.add(l);
 			
 			sum.prefixes.add(p);
 		}
@@ -390,7 +437,37 @@ public class MaudeListener extends ListenerAdapter {
 		return sum;
 	}
 
+	private String getFirstStringArgument(ThreadInfo currentThread) {
+		
+		//get stack frame
+		StackFrame f = currentThread.getTopFrame();
+		
+		//get first argument: String
+		ElementInfo eiArgument = (ElementInfo) f.getArgumentValues(currentThread)[0];
+		
+		return eiArgument.asString();
+	}
 	
+	private List<String> getStringArrayArgument(ThreadInfo currentThread) {
+		List<String> strings = new ArrayList<String>();
+		
+		//get stack frame
+		StackFrame f = currentThread.getTopFrame();
+		
+		//get first argument: String[]
+		ElementInfo eiArgument = (ElementInfo) f.getArgumentValues(currentThread)[0];
+		ArrayFields af = eiArgument.getArrayFields();
+		
+		//iterate and collect the elements
+		for (int i=0; i<af.arrayLength(); i++) {
+			int ref = af.getReferenceValue(i);
+			ElementInfo s = currentThread.getElementInfo(ref);
+			
+			strings.add(s.asString());
+		}
+		
+		return strings;
+	}
 	
 	
 	
@@ -408,6 +485,6 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	public Set<String> getActions() {
-		return actions;
+		return allActions;
 	}
 }
