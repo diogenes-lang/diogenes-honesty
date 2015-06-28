@@ -89,7 +89,6 @@ public class MaudeListener extends ListenerAdapter {
 	private int ifThenElseCount=0;
 	
 	private List<PrefixDTO> sumPrefixes;
-	private int sumPrefixIndex = -1;
 	
 	/*
 	 * if the ifInstruction is into this interval, skip it (means that is related to switch-statement)
@@ -99,10 +98,12 @@ public class MaudeListener extends ListenerAdapter {
 	
 	
 	@Override
-	public void instructionExecuted(VM vm, ThreadInfo ti, Instruction nextInsn, Instruction insn) {
+	public void executeInstruction(VM vm, ThreadInfo ti, Instruction insn) {
 
 		ClassInfo ci = ti.getExecutingClassInfo();
-
+		
+//		if (ci!=null && processClass.getName().equals(ci.getName()) )
+//			log.info(ci.getName()+" - insn - "+insn.getPosition()+": "+insn);
 		
 		if (insn instanceof SwitchInstruction && processClass.getName().equals(ci.getName())) {
 			SwitchInstruction switchInsn = (SwitchInstruction) insn;
@@ -123,6 +124,8 @@ public class MaudeListener extends ListenerAdapter {
 			
 			if (!ti.isFirstStepInsn()) { // top half - first execution
 
+				log.info("TOP HALF");
+				
 				log.info("");
 				printInfo();
 				log.info("--IF_THEN_ELSE--");
@@ -148,23 +151,28 @@ public class MaudeListener extends ListenerAdapter {
 					co2CurrentPrefix.next = ifThenElse;
 				}
 			
-				BooleanChoiceGenerator cg = new BooleanChoiceGenerator("ifThenElseCG_"+ifThenElseCount);
-				vm.getSystemState().setNextChoiceGenerator(cg);
-				ti.reExecuteInstruction();
-				
+				ifThenElseCount++;		// the counter is reset when the choice generator is PROCESSED
+				BooleanChoiceGenerator cg = new BooleanChoiceGenerator("ifThenElseCG_"+ifThenElseCount, false);
+
 				taus.put("then_"+cg.getId(), thenTau);
 				taus.put("else_"+cg.getId(), elseTau);
 				
-				log.info("thenTau: "+thenTau);
-				log.info("elseTau: "+elseTau);
+				vm.getSystemState().setNextChoiceGenerator(cg);
+				ti.skipInstruction(insn);
+				
 			}
 			else {
+
+				log.info("BOTTOM HALF");
+				
 				// bottom half - reexecution at the beginning of the next
 				// transition
 				BooleanChoiceGenerator cg = vm.getSystemState().getCurrentChoiceGenerator("ifThenElseCG_"+ifThenElseCount, BooleanChoiceGenerator.class);
-				
+
 				assert cg != null : "no 'ifThenElseCG' BooleanChoiceGenerator found";
 				
+				
+				ifInsn.popConditionValue(ti.getModifiableTopFrame());		//remove operands from the stack
 				
 				Boolean myChoice = cg.getNextChoice();
 				
@@ -175,19 +183,25 @@ public class MaudeListener extends ListenerAdapter {
 				log.info("thenTau: "+thenTau);
 				log.info("elseTau: "+elseTau);
 				
+				
 				if (myChoice){
+					/*
+					 * then branch
+					 */
 					log.info("setting tau, choice: "+myChoice);
+					log.info("next insn: "+ifInsn.getNext().getPosition());
 					co2CurrentPrefix = thenTau;
-					nextInsn = ifInsn.getNext();
+					ti.skipInstruction(ifInsn.getNext());
 				}
 				else {
+					/*
+					 * else branch
+					 */
 					log.info("setting tau, choice: "+myChoice);
+					log.info("next insn: "+ifInsn.getTarget().getPosition());
 					co2CurrentPrefix = elseTau;
-					nextInsn = ifInsn.getTarget();
+					ti.skipInstruction(ifInsn.getTarget());
 				}
-				
-				ti.setNextPC(nextInsn);
-				
 				
 				printInfo();
 			}
@@ -266,12 +280,14 @@ public class MaudeListener extends ListenerAdapter {
 			
 			
 			printInfo();
-			
-			
-			
 		}
 		
-		
+		if (
+				exitedMethod.getBaseName().equals(Session2.class.getName()+".send")
+				) {
+
+			log.info("--SEND-- (exited method)");
+		}
 	}
 	
 	@Override
@@ -320,6 +336,8 @@ public class MaudeListener extends ListenerAdapter {
 			String session = ei.getStringField("sessionName");
 			String action = getFirstStringArgument(currentThread);
 			
+			this.allActions.add(action);
+			
 			DoSendDTO send = new DoSendDTO();
 			send.session = session;
 			send.action = action;
@@ -354,26 +372,13 @@ public class MaudeListener extends ListenerAdapter {
 	public void choiceGeneratorProcessed(VM vm, ChoiceGenerator<?> processedCG) {
 		log.info("............... PROCESSED ..............: "+processedCG.getId());
 		if (processedCG.getId().equals("ifThenElseCG_"+ifThenElseCount)) {
-			ifThenElseCount++;
+			ifThenElseCount--;
 		}
 	}
 	
 	@Override
 	public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG) {
 		log.info(">>>>>>>>>>> ADVANCE >>>>>>>>>>: "+currentCG.getId());
-
-		if (currentCG.getId().equals("verifyGetInt(II)")) {
-			
-			log.info("multiple receive occurs");
-			sumPrefixIndex++;
-			
-			log.info("i: "+sumPrefixIndex);
-			
-			if (sumPrefixes!=null && sumPrefixIndex==sumPrefixes.size()) {
-				log.info("reset to -1");
-				sumPrefixIndex=-1;
-			}
-		}
 	}
 	
 	@Override

@@ -10,7 +10,7 @@ public class IfThenElseDTO extends ProcessDTO {
 	@Override
 	public String toMaude() {
 		return 
-				" if exp then "+
+				"if exp then "+
 				(thenStmt!=null?thenStmt.toMaude():"0")+
 				" else "+(elseStmt!=null?elseStmt.toMaude():"0")+"";
 	}

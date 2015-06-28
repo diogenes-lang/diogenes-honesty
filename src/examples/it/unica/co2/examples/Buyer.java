@@ -51,7 +51,6 @@ public class Buyer extends Participant {
 			else {
 				session.send("abort");
 			}
-			
 		}
 		catch (ContractException e) {
 			throw new RuntimeException(e);

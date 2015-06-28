@@ -20,6 +20,9 @@ public class MaudeSyntaxGenerator extends Generator {
 	
 	@Override
 	protected String convert(InternalSum contract) {
+		if (contract.getActions().length==0)
+			return "0";
+		
 		List<String> actions = new ArrayList<>();
 		for (InternalAction a : contract.getActions()) {
 			actions.add(this.convert(a));
@@ -29,6 +32,9 @@ public class MaudeSyntaxGenerator extends Generator {
 	
 	@Override
 	protected String convert(ExternalSum contract) {
+		if (contract.getActions().length==0)
+			return "0";
+			
 		List<String> actions = new ArrayList<>();
 		for (ExternalAction a : contract.getActions()) {
 			actions.add(this.convert(a));
