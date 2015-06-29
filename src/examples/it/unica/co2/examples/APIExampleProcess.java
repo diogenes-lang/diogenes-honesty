@@ -54,12 +54,12 @@ public class APIExampleProcess extends Participant {
 			
 			case "a": 
 				logger.log("received a?");
-				session.send("a_ok");
+				session.send("a.ok");
 				break;
 			
 			case "b":
 				logger.log("received b?");
-				session.send("b_ok");
+				session.send("b.ok");
 				break;
 			}
 			

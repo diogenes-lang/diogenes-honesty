@@ -38,7 +38,7 @@ public class MultipleIfThenElseProcess extends Participant {
 			Session2<TST> session = tell(A);
 			
 			logger.log("sending a!");
-			boolean b = session.send("b");
+			session.send("b");
 			
 			Integer x = new Integer(10);
 			Integer y = 10;
@@ -47,10 +47,10 @@ public class MultipleIfThenElseProcess extends Participant {
 				session.send("then");
 				
 				if (y>5) {
-					session.send("then_1");
+					session.send("then.1");
 				}
 				else {
-					session.send("else_1");
+					session.send("else.1");
 				}
 				
 			}
@@ -58,7 +58,6 @@ public class MultipleIfThenElseProcess extends Participant {
 				session.send("else");
 			}
 			
-			session.send("end");
 			logger.log("FINE");
 		
 		}
