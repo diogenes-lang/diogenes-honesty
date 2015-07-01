@@ -1,4 +1,4 @@
-package it.unica.co2.util.generators;
+package it.unica.co2.model.contract.generators;
 
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.ExternalAction;

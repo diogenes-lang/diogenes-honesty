@@ -32,13 +32,27 @@ public class MultipleIfThenElseProcess extends Participant {
 	public void run() {
 		try {
 			
-			Contract A = internalSum();	//the contract is irrelevant
+			logger.log("START");
+
+			Contract A = internalSum().add("start",
+							internalSum()
+								.add("then", 
+										internalSum()
+											.add("then.1", 
+													internalSum().add("end")
+											)
+											.add("else.1", 
+													internalSum().add("end")
+											)
+								)
+								.add("else", 
+										internalSum().add("end")
+								)
+						);
 			
-			logger.log("tell");
 			Session2<TST> session = tell(A);
 			
-			logger.log("sending a!");
-			session.send("b");
+			session.send("start");
 			
 			Integer x = new Integer(10);
 			Integer y = 10;
@@ -58,7 +72,9 @@ public class MultipleIfThenElseProcess extends Participant {
 				session.send("else");
 			}
 			
-			logger.log("FINE");
+			session.send("end");
+			
+			logger.log("END");
 		
 		}
 		catch (Exception e) {

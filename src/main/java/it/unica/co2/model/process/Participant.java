@@ -11,7 +11,7 @@ import co2api.Session;
 import co2api.TST;
 
 
-public abstract class Participant extends Process {
+public abstract class Participant extends CO2Process {
 
 	private static final long serialVersionUID = 1L;
 	
