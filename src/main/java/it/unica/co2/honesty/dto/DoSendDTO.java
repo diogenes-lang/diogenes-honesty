@@ -8,7 +8,7 @@ public class DoSendDTO extends PrefixDTO {
 	
 	@Override
 	public String toMaude() {
-		return "do \""+session+"\" "+action+" ! unit . "+(next==null? "0": next.toMaude());
+		return "do \""+session+"\" \""+action+"\" ! unit . "+(next==null? "0": next.toMaude());
 	}
 
 	@Override

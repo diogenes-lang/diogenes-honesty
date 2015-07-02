@@ -1,16 +1,11 @@
 package it.unica.co2.honesty;
 
 import it.unica.co2.honesty.dto.ProcessDTO;
-import it.unica.co2.model.contract.Action;
 import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.ExternalSum;
-import it.unica.co2.model.contract.InternalSum;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,18 +22,12 @@ public class MaudeTemplate {
 
 		String moduleName = "JAVA-PROCESS";
 		String processName = "P";
-		String actionNames = StringUtils.join(
-				getActions(
-						maudeListener.getActions(), maudeListener.getContracts().values()	//merge contract actions and process actions
-						), 
-				", ");
 		String contractNames = StringUtils.join(maudeListener.getContracts().keySet(), ", ");
 		String contractList = getContractList(maudeListener.getContracts());
 		String process = getProcess(processName, maudeListener.getSessions(), maudeListener.getCo2Process());
 		
 		maudeProcess = maudeProcess.replace("${moduleName}", moduleName);
 		maudeProcess = maudeProcess.replace("${processName}", processName);
-		maudeProcess = maudeProcess.replace("${actions}", actionNames);
 		maudeProcess = maudeProcess.replace("${processes}", processName);
 		maudeProcess = maudeProcess.replace("${processesIde}", "");
 		maudeProcess = maudeProcess.replace("${contracts}", contractNames);
@@ -93,28 +82,6 @@ public class MaudeTemplate {
 		return sb.toString();
 	}
 	
-	private static Set<String> getActions(Set<String> actions, Collection<Contract> contracts) {
-		for (Contract c : contracts)
-			getActions(actions, c);
-		return actions;
-	}
-	
-	private static void getActions(Set<String> actions, Contract c) {
-		
-		if (c instanceof InternalSum) {
-			for (Action a : ((InternalSum)c).getActions()) {
-				actions.add(a.getName());
-				getActions(actions, a.getNext());
-			}
-		}
-		else if (c instanceof ExternalSum) {
-			for (Action a : ((ExternalSum)c).getActions()) {
-				actions.add(a.getName());
-				getActions(actions, a.getNext());
-			}
-		}
-		
-	}
 	
 	
 	private static final String contractTemplate = 
@@ -130,11 +97,12 @@ public class MaudeTemplate {
 			"mod ${moduleName} is\n" + 
 			"\n" + 
 			"    including CO2-ABS-SEM .\n" + 
-			"    \n" + 
+			"    including STRING .\n" + 
+			"\n" + 
+			"    subsort String < ActName .\n" + 
 			"    ops unit int string : -> BType [ctor] .\n" + 
 			"    ops exp : -> Expression [ctor] .\n" + 
 			"    \n" + 
-			"    ops ${actions} : -> ActName [ctor] .\n" + 
 			"    ops ${contracts} : -> UniContract .\n" + 
 			"    ops ${processes} : -> Process .\n" + 
 			"\n" + 

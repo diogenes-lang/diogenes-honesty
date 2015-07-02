@@ -14,8 +14,15 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MaudeSyntaxGenerator extends Generator {
 	
+	private final boolean actionsAsString;
+	
 	public MaudeSyntaxGenerator(Contract c) {
+		this(c, true);
+	}
+	
+	public MaudeSyntaxGenerator(Contract c, boolean actionsAsString) {
 		super(c);
+		this.actionsAsString = actionsAsString;
 	}
 	
 	@Override
@@ -46,10 +53,15 @@ public class MaudeSyntaxGenerator extends Generator {
 	protected String convert(InternalAction action) {
 		StringBuilder sb = new StringBuilder();
 		
-		sb
-		.append(action.getName())
-		.append(" ! ")
-		.append(action.getSort().toString().toLowerCase());
+		if (actionsAsString)
+			sb.append("\"");
+		
+		sb.append(action.getName());
+		
+		if (actionsAsString)
+			sb.append("\"");
+		
+		sb.append(" ! ").append(action.getSort().toString().toLowerCase());
 		
 		if (action.getNext()!=null)
 			sb.append(" . ( ")
@@ -65,10 +77,15 @@ public class MaudeSyntaxGenerator extends Generator {
 	protected String convert(ExternalAction action) {
 		StringBuilder sb = new StringBuilder();
 		
-		sb
-		.append(action.getName())
-		.append(" ? ")
-		.append(action.getSort().toString().toLowerCase());
+		if (actionsAsString)
+			sb.append("\"");
+		
+		sb.append(action.getName());
+		
+		if (actionsAsString)
+			sb.append("\"");
+		
+		sb.append(" ? ").append(action.getSort().toString().toLowerCase());
 		
 		if (action.getNext()!=null)
 			sb.append(" . ( ")

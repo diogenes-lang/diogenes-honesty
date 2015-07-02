@@ -16,7 +16,7 @@ public class DelimitedProcessDTO extends ProcessDTO {
 	
 	@Override
 	public String toMaude() {
-		return name+"("+StringUtils.join(freeNames, ",")+") =eq "+process.toMaude();
+		return name+"("+StringUtils.join(freeNames, " ; ")+") =def "+process.toMaude();
 	}
 
 	@Override

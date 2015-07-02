@@ -38,10 +38,10 @@ public class MultipleIfThenElseProcess extends Participant {
 							internalSum()
 								.add("then", 
 										internalSum()
-											.add("then.1", 
+											.add("then_1", 
 													internalSum().add("end")
 											)
-											.add("else.1", 
+											.add("else_1", 
 													internalSum().add("end")
 											)
 								)
@@ -61,10 +61,10 @@ public class MultipleIfThenElseProcess extends Participant {
 				session.send("then");
 				
 				if (y>5) {
-					session.send("then.1");
+					session.send("then_1");
 				}
 				else {
-					session.send("else.1");
+					session.send("else_1");
 				}
 				
 			}

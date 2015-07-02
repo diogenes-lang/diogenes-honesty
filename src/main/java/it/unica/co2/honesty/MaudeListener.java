@@ -33,11 +33,9 @@ import it.unica.co2.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,7 +77,6 @@ public class MaudeListener extends ListenerAdapter {
 	private int contractCount=0;
 	
 	private List<String> sessions = new ArrayList<>();	// all sessions of the process under test
-	private Set<String> allActions = new HashSet<>();	// all actions of all processes
 	
 	/*
 	 * store the entry-points of if-the-else processes, 
@@ -344,8 +341,6 @@ public class MaudeListener extends ListenerAdapter {
 			String session = ei.getStringField("sessionName");
 			String action = getFirstStringArgument(currentThread);
 			
-			this.allActions.add(action);
-			
 			DoSendDTO send = new DoSendDTO();
 			send.session = session;
 			send.action = action;
@@ -541,8 +536,6 @@ public class MaudeListener extends ListenerAdapter {
 			p.session = session;
 			p.action = l;
 			
-			this.allActions.add(l);
-			
 			sum.prefixes.add(p);
 		}
 		
@@ -608,10 +601,6 @@ public class MaudeListener extends ListenerAdapter {
 	
 	public List<String> getSessions() {
 		return sessions;
-	}
-	
-	public Set<String> getActions() {
-		return allActions;
 	}
 	
 	
