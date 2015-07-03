@@ -16,13 +16,14 @@ import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
+import gov.nasa.jpf.vm.bytecode.InvokeInstruction;
 import it.unica.co2.api.Session2;
-import it.unica.co2.honesty.dto.DelimitedProcessDTO;
 import it.unica.co2.honesty.dto.DoReceiveDTO;
 import it.unica.co2.honesty.dto.DoSendDTO;
 import it.unica.co2.honesty.dto.IfThenElseDTO;
 import it.unica.co2.honesty.dto.PrefixDTO;
 import it.unica.co2.honesty.dto.ProcessDTO;
+import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
 import it.unica.co2.honesty.dto.SumDTO;
 import it.unica.co2.honesty.dto.TauDTO;
 import it.unica.co2.honesty.dto.TellDTO;
@@ -32,6 +33,7 @@ import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,7 +99,7 @@ public class MaudeListener extends ListenerAdapter {
 	/*
 	 * env
 	 */
-	private Map<String, DelimitedProcessDTO> envProcesses = new HashMap<>();
+	private Map<String, ProcessDefinitionDTO> envProcesses = new HashMap<>();
 	private int envProcessesCount=0;
 	
 	
@@ -107,21 +109,81 @@ public class MaudeListener extends ListenerAdapter {
 
 		ClassInfo ci = ti.getExecutingClassInfo();
 		
-//		if (ci!=null && processClass.getName().equals(ci.getName()) )
-//			log.info(ci.getName()+" - insn - "+insn.getPosition()+": "+insn);
+//		if (insn instanceof InvokeInstruction && ci.getName().startsWith("it.unica.co2.examples"))
+//			log.info(ci.getName()+" INVOKE insn - "+insn.getPosition()+": "+insn);
 		
-		if (insn instanceof SwitchInstruction && processUnderTestClass.getName().equals(ci.getName())) {
-			SwitchInstruction switchInsn = (SwitchInstruction) insn;
+		if (
+				insn instanceof InvokeInstruction && 
+				ci.isInstanceOf(CO2Process.class.getName()) 
+				) {
 			
+			InvokeInstruction invokeInsn = (InvokeInstruction) insn;
+			
+			MethodInfo invokedMethod = invokeInsn.getInvokedMethod();
+			ClassInfo invokedClass = invokedMethod.getClassInfo();
+			ClassInfo callerClass = ci;
+			
+			if (
+					invokedMethod.getName().equals("run") &&
+					envProcesses.containsKey(invokedClass.getName())
+					) {
+
+				log.info("INVOKE : caller "+callerClass.getName()+" --> "+invokedClass.getName()+"#"+invokedMethod.getName());
+				
+				ProcessDefinitionDTO proc = envProcesses.get(invokedClass.getName());
+				
+				ProcessDefinitionDTO processCall = (ProcessDefinitionDTO) proc.copy();
+				processCall.isDefinition = false;
+				
+				setCurrentProcess(processCall);
+				setCurrentPrefix(null);
+				
+				if (checkForRecursion(proc)) {
+					/*
+					 * the call is recursive: stop search
+					 */
+					log.info("recursive call, terminating");
+					Instruction nextInsn = invokeInsn.getNext();
+					
+					log.info("INVOKE INSN - "+invokeInsn.getPosition()+": "+invokeInsn);
+					log.info("INVOKE NEXT - "+nextInsn.getPosition()+": "+nextInsn);
+					
+					ti.skipInstruction(nextInsn);
+				}
+				else {
+					log.info("NOT recursive call");
+					
+					CO2StackFrame frame = new CO2StackFrame();
+					frame.prefix = proc.firstPrefix;
+					frame.process = proc;
+					
+					log.info("adding processCall onto the stack");
+					this.co2ProcessesStack.push(frame);
+					
+					log.info(proc.toMaude());
+				}
+			}
+			
+		}
+		
+		
+		if (
+				insn instanceof SwitchInstruction && 
+				ci.isInstanceOf(CO2Process.class.getName())
+				) {
+			SwitchInstruction switchInsn = (SwitchInstruction) insn;
+			/*
+			 * switch statements use if-instructions that must be not considered for branch exploration
+			 */
 			log.info("SWITCH : setting start="+switchInsn.getPosition()+" , end="+switchInsn.getTarget());
 			startIfExcluded = switchInsn.getPosition();		// where the switch starts
-			endIfExcluded = switchInsn.getTarget();		// where the switch ends
+			endIfExcluded = switchInsn.getTarget();			// where the switch ends
 		}
 		
 		
 		if (
 				insn instanceof IfInstruction && 
-				processUnderTestClass.getName().equals(ci.getName()) && // consider only if into the class under test
+				ci.isInstanceOf(CO2Process.class.getName()) && // consider only if into the class under test
 				(insn.getPosition()<startIfExcluded || insn.getPosition()>endIfExcluded) // skip if instructions related to switch statements
 				) {
 			
@@ -245,7 +307,7 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo();
 			log.info("--SUM OF RECEIVE-- (method exited)");
 			
-			ElementInfo ei = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
+			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
 			
 			/*
 			 * get the returned value
@@ -255,11 +317,11 @@ public class MaudeListener extends ListenerAdapter {
 			int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
 			f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
 			
-			ElementInfo retEi = currentThread.getElementInfo(ref);
+			ElementInfo messageReceived = currentThread.getElementInfo(ref);
 			
 			log.info(""+currentThread.getElementInfo(ref));
-			String label = retEi.getStringField("label");
-			String sessionName = ei.getStringField("sessionName");
+			String label = messageReceived.getStringField("label");
+			String sessionName = session2.getStringField("sessionName");
 			
 			log.info("label: "+label);
 			
@@ -285,13 +347,17 @@ public class MaudeListener extends ListenerAdapter {
 		
 		if (
 				exitedMethod.getName().equals("run") &&
-				ci.isInstanceOf(CO2Process.class.getName()) &&
-				!ci.getName().equals(processUnderTestClass.getName())
+				envProcesses.containsKey(ci.getName())
 				) {
-			
+			/*
+			 * the process is finished
+			 */
 			log.info("");
 			printInfo();
-			log.info("--NEW PROCESS-- (method exited) -> "+ci.getSimpleName());
+			log.info("--RUN ENV PROCESS-- (method exited) -> "+ci.getSimpleName());
+			
+			log.info("removing process from stack");
+			this.co2ProcessesStack.pop();
 			
 			printInfo();
 		}
@@ -310,12 +376,12 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo();
 			log.info("--SUM OF RECEIVE-- (entered method)");
 			
-			ElementInfo ei = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
+			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
 			
-			String session = ei.getStringField("sessionName");
+			String sessionName = session2.getStringField("sessionName");
 			List<String> actions = getStringArrayArgument(currentThread);
 			
-			SumDTO sum = getSumOfReceive(session, actions);
+			SumDTO sum = getSumOfReceive(sessionName, actions);
 			
 			
 			setCurrentProcess(sum);		//set the current process
@@ -336,13 +402,13 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo();
 			log.info("--SEND-- (entered method)");
 			
-			ElementInfo ei = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
+			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
 			
-			String session = ei.getStringField("sessionName");
+			String sessionName = session2.getStringField("sessionName");
 			String action = getFirstStringArgument(currentThread);
 			
 			DoSendDTO send = new DoSendDTO();
-			send.session = session;
+			send.session = sessionName;
 			send.action = action;
 			
 			SumDTO sum = new SumDTO();
@@ -359,6 +425,7 @@ public class MaudeListener extends ListenerAdapter {
 		if (
 				enteredMethod.getName().equals("<init>") &&
 				ci.isInstanceOf(CO2Process.class.getName()) &&
+				!ci.getName().equals(Participant.class.getName()) &&		//ignore super construction
 				!ci.getName().equals(CO2Process.class.getName()) &&		//ignore super construction
 				!ci.getName().equals(processUnderTestClass.getName())
 				) {
@@ -371,50 +438,83 @@ public class MaudeListener extends ListenerAdapter {
 			
 			String className = ci.getName();
 			
-			DelimitedProcessDTO proc = new DelimitedProcessDTO();
-			proc.name = getEnvProcessName();
-			proc.firstPrefix = new TauDTO();
-			proc.process = new SumDTO(proc.firstPrefix);
-			
-			List<ElementInfo> args = getArguments(currentThread);
-			
-			for (ElementInfo ei : args) {
-				log.info(ei.toString());
-				
-				if (ei.getClassInfo().getName().equals(Session2.class.getName())) {
-					String sessionName = ei.getStringField("sessionName");
-					proc.freeNames.add("\""+sessionName+"\"");
-					log.info("arg: Session2 ("+sessionName+")");
-				}
-				else if (ei.getClassInfo().isInstanceOf(Number.class.getName())) {
-					log.info("arg: Number");
-				}
-				else if (ei.getClassInfo().isInstanceOf(String.class.getName())) {
-					log.info("arg: String");
-				}
+			if (envProcesses.containsKey(className)) {
+				log.info("envProcess "+className+" already exists");
 			}
-			
-			// store the process for future retrieve (when another one1 call it)
-			envProcesses.put(className, proc);
+			else {
+				
+				ProcessDefinitionDTO proc = new ProcessDefinitionDTO();
+				proc.name = getEnvProcessName();
+				proc.firstPrefix = new TauDTO();
+				proc.process = new SumDTO(proc.firstPrefix);
+				
+				List<ElementInfo> args = getArguments(currentThread);
+				
+				for (ElementInfo ei : args) {
+					log.info(ei.toString());
+					
+					if (ei.getClassInfo().getName().equals(Session2.class.getName())) {
+						String sessionName = ei.getStringField("sessionName");
+						proc.freeNames.add("\""+sessionName+"\"");
+						log.info("arg: Session2 ("+sessionName+")");
+					}
+					else if (ei.getClassInfo().isInstanceOf(Number.class.getName())) {
+						log.info("arg: Number");
+					}
+					else if (ei.getClassInfo().isInstanceOf(String.class.getName())) {
+						log.info("arg: String");
+					}
+				}
+				
+				// store the process for future retrieve (when another one1 call it)
+				log.info("saving envProcess "+className);
+				envProcesses.put(className, proc);
+			}
 		}
 		
 		
-		if (
-				enteredMethod.getName().equals("run") &&
-				envProcesses.containsKey(ci.getName())
-				) {
-			
-			/*
-			 * the main process is starting a new process
-			 */
-			log.info("");
-			log.info("--NEW ENV PROCESS-- (method entered) -> "+ci.getSimpleName());
-			
-			DelimitedProcessDTO proc = envProcesses.get(ci.getName());
-			
-			log.info(proc.toMaude());
-			
-		}
+//		if (
+//				enteredMethod.getName().equals("run") &&
+//				envProcesses.containsKey(ci.getName())
+//				) {
+//			
+//			/*
+//			 * the main process is starting a new process
+//			 */
+//			log.info("");
+//			log.info("--RUN ENV PROCESS-- (method entered) -> "+ci.getSimpleName());
+//			
+//			
+//			ProcessDefinitionDTO proc = envProcesses.get(ci.getName());
+//			
+//			if (checkForRecursion(proc)) {
+//				/*
+//				 * the call is recursive: stop search
+//				 */
+//				log.info("recursive call, terminating");
+//				Instruction lastInsn = enteredMethod.getLastInsn();
+//				log.info("insn -> "+lastInsn.getPosition()+": "+lastInsn);
+//				
+//				currentThread.skipInstruction(lastInsn);
+//			}
+//			else {
+//				
+//				ProcessDefinitionDTO processCall = (ProcessDefinitionDTO) proc.copy();
+//				processCall.isDefinition = false;
+//				
+//				setCurrentProcess(processCall);
+//				setCurrentPrefix(null);
+//				
+//				CO2StackFrame frame = new CO2StackFrame();
+//				frame.prefix = proc.firstPrefix;
+//				frame.process = proc;
+//				
+//				log.info("adding processCall onto the stack");
+//				this.co2ProcessesStack.push(frame);
+//				
+//				log.info(proc.toMaude());
+//			}
+//		}
 		
 		
 	}
@@ -426,7 +526,6 @@ public class MaudeListener extends ListenerAdapter {
 		
 	}
 	
-	
 	@Override
 	public void choiceGeneratorSet (VM vm, ChoiceGenerator<?> newCG) {
 		log.info("----------------NEW---------------: "+newCG.getId());
@@ -434,7 +533,7 @@ public class MaudeListener extends ListenerAdapter {
 	
 	@Override
 	public void stateBacktracked(Search search) {
-		log.info("<<<<<<<<<<< BACKTRACK <<<<<<<<<<");
+		log.info("<<<<<<<<<< BACKTRACK <<<<<<<<<<");
 	}
 
 	@Override
@@ -447,17 +546,22 @@ public class MaudeListener extends ListenerAdapter {
 	
 	@Override
 	public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG) {
-		log.info(">>>>>>>>>>> ADVANCE >>>>>>>>>>: "+currentCG.getId());
+		log.info(">>>>>>>>>> ADVANCE >>>>>>>>>>: "+currentCG.getId());
 	}
 	
 	@Override
 	public void searchFinished(Search search) {
-		log.info("vvvvvvvvvvvvvvvvv SEARCH FINISHED vvvvvvvvvvvvvvvvvv");
+		log.info("vvvvvvvvvvvvvvvvv SEARCH FINISHED vvvvvvvvvvvvvvvvv");
 		printInfo();
 		
 		log.info("contracts:");
 		for (Entry<String, Contract> entry : contracts.entrySet()) {
 			log.info("\t"+entry.getKey()+" --> "+entry.getValue().toMaude());
+		}
+		
+		log.info("env processes:");
+		for (Entry<String, ProcessDefinitionDTO> entry : envProcesses.entrySet()) {
+			log.info("\t"+entry.getValue().toMaude());
 		}
 		
 		log.info("sessions: "+sessions);
@@ -466,6 +570,20 @@ public class MaudeListener extends ListenerAdapter {
 	
 	
 	//--------------------------------- UTILS -------------------------------
+	
+	private boolean checkForRecursion(ProcessDefinitionDTO process) {
+		
+		for (CO2StackFrame frame : co2ProcessesStack) {
+			if (
+					frame.process instanceof ProcessDefinitionDTO &&
+					process.name.equals( ((ProcessDefinitionDTO) frame.process).name )
+					) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
 	private void setCurrentProcess(ProcessDTO p) {
 
@@ -499,7 +617,7 @@ public class MaudeListener extends ListenerAdapter {
 		if (co2ProcessesStack.size()>0) {
 			CO2StackFrame frame = co2ProcessesStack.peek();
 			log.info("top-process --> "+frame.process.toMaude());
-			log.info("top-currentPrefix --> "+frame.prefix.toMaude());
+			log.info("top-currentPrefix --> "+(frame.prefix!=null? frame.prefix.toMaude():"null"));
 		}
 		
 	}
@@ -589,7 +707,6 @@ public class MaudeListener extends ListenerAdapter {
 		return args;
 	}
 	
-	
 	//--------------------------------- GETTERS and SETTERS -------------------------------
 	public ProcessDTO getCo2Process() {
 		return co2ProcessesStack.firstElement().process;
@@ -601,6 +718,10 @@ public class MaudeListener extends ListenerAdapter {
 	
 	public List<String> getSessions() {
 		return sessions;
+	}
+	
+	public Collection<ProcessDefinitionDTO> getEnvProcesses() {
+		return envProcesses.values();
 	}
 	
 	

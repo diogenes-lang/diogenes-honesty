@@ -11,8 +11,9 @@ public class Recursion extends Contract {
 		return contract;
 	}
 	
-	public void setContract(Contract contract) {
+	public Recursion setContract(Contract contract) {
 		this.contract = contract;
+		return this;
 	}
 
 	@Override

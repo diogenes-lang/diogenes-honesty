@@ -7,6 +7,7 @@ import it.unica.co2.model.contract.InternalAction;
 import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Recursion;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,4 +53,8 @@ public abstract class Generator {
 	protected abstract String convert(ExternalAction action);
 	
 	protected abstract String convert(Recursion recursion);
+	
+	public Collection<String> getRecursionNames() {
+		return recursions.values();
+	}
 }

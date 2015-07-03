@@ -6,6 +6,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
+import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
@@ -99,10 +100,17 @@ public class HonestyChecker {
 				
 				//jpf.getListenerOfType(MaudeListener.class);
 				System.out.println("CO2 maude process:\n\t"+maudeListener.getCo2Process().toMaude());
-				System.out.println("CO2 maude contracts: ");
+				System.out.println("\t"+maudeListener.getCo2Process().toMaude());
+				
+				System.out.println("CO2 maude contracts:");
 				
 				for (Entry<String, Contract> c : maudeListener.getContracts().entrySet()) {
 					System.out.println("\t"+c.getKey()+": "+c.getValue().toMaude());
+				}
+				
+				System.out.println("CO2 maude defined process:");
+				for (ProcessDefinitionDTO p : maudeListener.getEnvProcesses()) {
+					System.out.println("\t"+p.toMaude());
 				}
 				
 				String maudeProcess = MaudeTemplate.getMaudeProcess(maudeListener);

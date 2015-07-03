@@ -3,6 +3,7 @@ package it.unica.co2.examples;
 import static it.unica.co2.model.ContractFactory.*;
 import it.unica.co2.api.Session2;
 import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.contract.Recursion;
 import it.unica.co2.model.process.CO2Process;
 import it.unica.co2.model.process.Participant;
 import co2api.ContractException;
@@ -25,6 +26,8 @@ public class ProcessCompositionExample {
 		@Override
 		public void run() {
 			session.send("a");
+			
+			new ProcessA(session).run();
 		}
 	}
 	
@@ -59,7 +62,8 @@ public class ProcessCompositionExample {
 		@Override
 		public void run() {
 			
-			Contract C = externalSum().add("request", internalSum().add("a").add("b"));
+			Recursion rec = recursion().setContract(internalSum().add("a"));
+			Contract C = externalSum().add("request", internalSum().add("a", rec).add("b"));
 			
 			Session2<TST> session = tell(C);
 
@@ -73,10 +77,12 @@ public class ProcessCompositionExample {
 				n=0;
 			}
 			
-			if (n>0)
+			if (n>=0)
 				new ProcessA(session).run();
 			else
 				new ProcessB(session).run();
+			
+//			session.send("end");		//JPF fails
 		}
 
 		@Override

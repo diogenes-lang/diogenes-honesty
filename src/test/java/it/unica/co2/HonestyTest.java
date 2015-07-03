@@ -9,6 +9,7 @@ import it.unica.co2.examples.ProcessCompositionExample.ComposedProcess;
 import it.unica.co2.honesty.HonestyChecker;
 import it.unica.co2.model.process.Participant;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 
@@ -48,6 +49,7 @@ public class HonestyTest {
 	}
 	
 	@Test
+	@Ignore
 	public void parallel() {
 		
 		Participant p = new ParallelProcess();
