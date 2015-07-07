@@ -11,6 +11,7 @@ import gov.nasa.jpf.vm.BooleanChoiceGenerator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
+import gov.nasa.jpf.vm.ExceptionInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
@@ -274,6 +275,7 @@ public class MaudeListener extends ListenerAdapter {
 			}
 
 		}
+
 	}
 	
 	@Override
@@ -300,7 +302,8 @@ public class MaudeListener extends ListenerAdapter {
 		
 		
 		if (
-				exitedMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive")
+				exitedMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive") &&
+				exitedMethod.getSignature().equals("(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;")
 				) {
 
 			log.info("");
@@ -314,34 +317,54 @@ public class MaudeListener extends ListenerAdapter {
 			 */
 			StackFrame f = currentThread.getTopFrame();
 			
-			int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
-			f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
+			ExceptionInfo ex = currentThread.getPendingException();
 			
-			ElementInfo messageReceived = currentThread.getElementInfo(ref);
-			
-			log.info(""+currentThread.getElementInfo(ref));
-			String label = messageReceived.getStringField("label");
-			String sessionName = session2.getStringField("sessionName");
-			
-			log.info("label: "+label);
-			
-			DoReceiveDTO received = null;
-			for (PrefixDTO p : sumPrefixes) {
+			if (ex!=null) {
+				/* 
+				 * if you were here, you have call waitForReceive(Integer,String...) with a timeout
+				 * a prefix tau must be present at this time
+				 */
+				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
+				assert sumPrefixes.size()>0;
+				assert sumPrefixes.get(sumPrefixes.size()-1) instanceof TauDTO;
 				
-				if (((DoReceiveDTO) p).action.equals(label)) {
-					received = ((DoReceiveDTO) p);
+				setCurrentPrefix(sumPrefixes.get(sumPrefixes.size()-1));		//set the current prefix
+			}
+			else {
+				
+				int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
+				f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
+				
+				ElementInfo messageReceived = currentThread.getElementInfo(ref);
+				
+				log.info(""+currentThread.getElementInfo(ref));
+				String label = messageReceived.getStringField("label");
+				String sessionName = session2.getStringField("sessionName");
+				
+				log.info("label: "+label);
+				
+				DoReceiveDTO received = null;
+				for (PrefixDTO p : sumPrefixes) {
+					
+					if (
+							(p instanceof DoReceiveDTO) && 
+							((DoReceiveDTO) p).action.equals(label)
+							) {
+						received = ((DoReceiveDTO) p);
+					}
 				}
+				
+				if (received==null)
+					throw new IllegalStateException("received cannot be null");
+				
+				received.action = label;
+				received.session = sessionName;
+				
+				setCurrentPrefix(received);		//set the current prefix
+				
+				printInfo();
 			}
 			
-			if (received==null)
-				throw new IllegalStateException("received cannot be null");
-			
-			received.action = label;
-			received.session = sessionName;
-			
-			setCurrentPrefix(received);		//set the current prefix
-			
-			printInfo();
 		}
 		
 		
@@ -369,7 +392,8 @@ public class MaudeListener extends ListenerAdapter {
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		
 		if (
-				enteredMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive")
+				enteredMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive")&&
+				enteredMethod.getSignature().equals("(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;")
 				) {
 
 			log.info("");
@@ -379,10 +403,22 @@ public class MaudeListener extends ListenerAdapter {
 			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
 			
 			String sessionName = session2.getStringField("sessionName");
+			
+			
+			Integer timeout = getFirstIntegerArgument(currentThread);
 			List<String> actions = getStringArrayArgument(currentThread);
+			
 			
 			SumDTO sum = getSumOfReceive(sessionName, actions);
 			
+			log.info("timeout: "+timeout);
+			if (timeout==-1) {
+				/* nothing to do */
+			}
+			else {
+				/* add tau prefix, used if TimeExpiredException */
+				sum.prefixes.add(new TauDTO());
+			}
 			
 			setCurrentProcess(sum);		//set the current process
 
@@ -472,51 +508,6 @@ public class MaudeListener extends ListenerAdapter {
 			}
 		}
 		
-		
-//		if (
-//				enteredMethod.getName().equals("run") &&
-//				envProcesses.containsKey(ci.getName())
-//				) {
-//			
-//			/*
-//			 * the main process is starting a new process
-//			 */
-//			log.info("");
-//			log.info("--RUN ENV PROCESS-- (method entered) -> "+ci.getSimpleName());
-//			
-//			
-//			ProcessDefinitionDTO proc = envProcesses.get(ci.getName());
-//			
-//			if (checkForRecursion(proc)) {
-//				/*
-//				 * the call is recursive: stop search
-//				 */
-//				log.info("recursive call, terminating");
-//				Instruction lastInsn = enteredMethod.getLastInsn();
-//				log.info("insn -> "+lastInsn.getPosition()+": "+lastInsn);
-//				
-//				currentThread.skipInstruction(lastInsn);
-//			}
-//			else {
-//				
-//				ProcessDefinitionDTO processCall = (ProcessDefinitionDTO) proc.copy();
-//				processCall.isDefinition = false;
-//				
-//				setCurrentProcess(processCall);
-//				setCurrentPrefix(null);
-//				
-//				CO2StackFrame frame = new CO2StackFrame();
-//				frame.prefix = proc.firstPrefix;
-//				frame.process = proc;
-//				
-//				log.info("adding processCall onto the stack");
-//				this.co2ProcessesStack.push(frame);
-//				
-//				log.info(proc.toMaude());
-//			}
-//		}
-		
-		
 	}
 	
 	
@@ -551,6 +542,7 @@ public class MaudeListener extends ListenerAdapter {
 	
 	@Override
 	public void searchFinished(Search search) {
+		log.info("");
 		log.info("vvvvvvvvvvvvvvvvv SEARCH FINISHED vvvvvvvvvvvvvvvvv");
 		printInfo();
 		
@@ -673,6 +665,17 @@ public class MaudeListener extends ListenerAdapter {
 		return eiArgument.asString();
 	}
 	
+	private Integer getFirstIntegerArgument(ThreadInfo currentThread) {
+		
+		//get stack frame
+		StackFrame f = currentThread.getTopFrame();
+		
+		//get first argument: String
+		ElementInfo eiArgument = (ElementInfo) f.getArgumentValues(currentThread)[0];
+		
+		return (Integer) eiArgument.asBoxObject();
+	}
+	
 	private List<String> getStringArrayArgument(ThreadInfo currentThread) {
 		List<String> strings = new ArrayList<String>();
 		
@@ -680,7 +683,7 @@ public class MaudeListener extends ListenerAdapter {
 		StackFrame f = currentThread.getTopFrame();
 		
 		//get first argument: String[]
-		ElementInfo eiArgument = (ElementInfo) f.getArgumentValues(currentThread)[0];
+		ElementInfo eiArgument = (ElementInfo) f.getArgumentValues(currentThread)[1];
 		ArrayFields af = eiArgument.getArrayFields();
 		
 		//iterate and collect the elements

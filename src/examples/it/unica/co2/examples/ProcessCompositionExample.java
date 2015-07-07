@@ -67,8 +67,10 @@ public class ProcessCompositionExample {
 			
 			Session2<TST> session = tell(C);
 
-			Message msg = session.waitForReceive("request");
+			Message msg = null;
 			
+			msg = session.waitForReceive("request");
+
 			int n;
 			try {
 				n = Integer.valueOf(msg.getStringValue());
@@ -81,8 +83,9 @@ public class ProcessCompositionExample {
 				new ProcessA(session).run();
 			else
 				new ProcessB(session).run();
-			
+				
 //			session.send("end");		//JPF fails
+			
 		}
 
 		@Override

@@ -11,6 +11,7 @@ import co2api.ContractModel;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
+import co2api.TimeExpiredException;
 
 
 public class Session2<T extends ContractModel> extends Session<T>{
@@ -66,8 +67,11 @@ public class Session2<T extends ContractModel> extends Session<T>{
 	}
 	
 	
-	
 	public Message waitForReceive(String... labels) {
+		return waitForReceive(-1, labels);
+	}
+	
+	public Message waitForReceive(Integer msec, String... labels) throws TimeExpiredException {
 		System.out.println("*** listening for "+ Arrays.toString(labels));
 		
 		try {
@@ -82,7 +86,7 @@ public class Session2<T extends ContractModel> extends Session<T>{
 			actionsField.set(null, actionsSet);
 		}
 		catch (NoSuchFieldException e) {
-			// you are using the real implementation
+			// you are using the real implementation, this is not an error
 			System.out.println("real implementation");
 		}
 		catch (Exception e) {
@@ -96,7 +100,10 @@ public class Session2<T extends ContractModel> extends Session<T>{
 			
 			Message msg;
 			try {
-				msg = super.waitForReceive();
+				if (msec.equals(-1))
+					msg = super.waitForReceive();
+				else
+					msg = super.waitForReceive(msec);
 			}
 			catch (ContractException e) {
 				throw new RuntimeException(e);
