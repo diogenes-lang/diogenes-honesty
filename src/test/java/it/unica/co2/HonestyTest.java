@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import it.unica.co2.examples.APIExampleProcess;
 import it.unica.co2.examples.MultipleIfThenElseProcess;
 import it.unica.co2.examples.ParallelProcessExample.ParallelProcess;
+import it.unica.co2.examples.ProcessComposition2Example.Composed2Process;
 import it.unica.co2.examples.ProcessCompositionExample.ComposedProcess;
 import it.unica.co2.examples.SimpleBuyer;
 import it.unica.co2.examples.ebookstore.Buyer;
@@ -49,6 +50,15 @@ public class HonestyTest {
 	public void composition() {
 		
 		Participant p = new ComposedProcess();
+		boolean honesty = HonestyChecker.isHonest(p);
+		
+		assertTrue(honesty);
+	}
+	
+	@Test
+	public void composition2() {
+		
+		Participant p = new Composed2Process();
 		boolean honesty = HonestyChecker.isHonest(p);
 		
 		assertTrue(honesty);

@@ -40,7 +40,7 @@ public class Example2 extends Participant {
 							.add("abort")
 				);
 		
-		Session2 session = tell(contract);
+		Session2 session = tellAndWait(contract);
 //		Variable var = new Variable(Sort.INT);
 		
 //		doReceive(session, var, "amount");

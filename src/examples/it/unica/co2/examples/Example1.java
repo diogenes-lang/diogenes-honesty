@@ -39,7 +39,7 @@ public class Example1 extends Participant {
 							.add("abort")
 				);
 		
-		Session2 session = tell(contract);
+		Session2 session = tellAndWait(contract);
 //		
 //		doSend(session, "amount", 42);
 //		

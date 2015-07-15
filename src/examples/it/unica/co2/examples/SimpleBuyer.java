@@ -3,7 +3,6 @@ package it.unica.co2.examples;
 import static it.unica.co2.model.ContractFactory.*;
 import it.unica.co2.api.Session2;
 import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.Sort;
 import it.unica.co2.model.process.Participant;
 import co2api.ContractException;
 import co2api.Message;
@@ -24,10 +23,10 @@ public class SimpleBuyer extends Participant {
 	
 	private Contract contract = 
 			internalSum().add(
-					"item", Sort.STRING, 
-					externalSum().add("amount", Sort.INT, 
+					"item", //Sort.STRING, 
+					externalSum().add("amount", //Sort.INT, 
 							internalSum()
-							.add("pay", Sort.INT, externalSum().add("item"))
+							.add("pay", /*Sort.INT,*/ externalSum().add("item"))
 							.add("abort")
 							)
 			);
@@ -36,7 +35,7 @@ public class SimpleBuyer extends Participant {
 	public void run() {
 		
 		try {
-			Session2<TST> session = tell(contract);
+			Session2<TST> session = tellAndWait(contract);
 			
 			session.send("item", "01234");
 			

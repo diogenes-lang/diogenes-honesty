@@ -40,13 +40,13 @@ public class APIExampleProcess extends Participant {
 			;
 			
 			logger.log("tell");
-			Session2<TST> session = tell(A);
+			Session2<TST> session = tellAndWait(A);
 			
-			logger.log("sending a!");
+			logger.log("sending b!");
 			session.send("b");
 			
 			logger.log("receiving message");
-			Message msg = session.waitForReceive("a","b"/*,"c"*/);
+			Message msg = session.waitForReceive("a","b","c");
 			
 			logger.log("received message: "+msg.getLabel()+" "+msg.getStringValue());
 			

@@ -3,9 +3,11 @@ package it.unica.co2.examples.ebookstore;
 import static it.unica.co2.model.ContractFactory.*;
 import it.unica.co2.api.Session2;
 import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.process.CO2Process;
 import it.unica.co2.model.process.Participant;
 import co2api.ContractException;
 import co2api.Message;
+import co2api.Public;
 import co2api.TST;
 import co2api.TimeExpiredException;
 
@@ -39,7 +41,7 @@ public class Seller extends Participant {
 		);
 		
 		
-		Session2<TST> sessionB = tell(cB);
+		Session2<TST> sessionB = tellAndWait(cB);
 		
 		sessionB.waitForReceive("book");
 		
@@ -67,9 +69,11 @@ public class Seller extends Participant {
 			}
 			else { // handled with the distributor
 				
-				try {
+				Public<TST> pbl = tell(cD);
 				
-					Session2<TST> sessionD = tell(cD, 10000);
+				try {
+					
+					Session2<TST> sessionD = waitForSession(pbl, 10000);
 					
 					sessionD.send("book", chosenBook);
 					
@@ -121,15 +125,7 @@ public class Seller extends Participant {
 						sessionB.send("abort");		//this action make you honest in sessionB
 						
 						//and now, if the distributor sent you something? you are culpable in sessionD!
-						Message msgD = sessionB.waitForReceive("abort", "confirm");		//no timeout
-						
-						switch(msgD.getLabel()) {
-						
-						case "abort" :
-							break;
-						case "confirm" : sessionD.send("quit");
-							break;
-						}
+						new AbortSessionD(sessionD).run();
 						//you are honest
 					}
 				}
@@ -138,7 +134,11 @@ public class Seller extends Participant {
 					sessionB.send("abort");		//this action make you honest in sessionB
 					
 					//and now, if the session is fused?
+					Session2<TST> sessionD = waitForSession(pbl);	//blocking
 					
+					//and now, if the distributor sent you something? you are culpable in sessionD!
+					new AbortSessionD(sessionD).run();
+					//you are honest
 				}
 			}
 			
@@ -178,6 +178,30 @@ public class Seller extends Participant {
 
 
 	
+	private static class AbortSessionD extends CO2Process {
+		
+		private static final long serialVersionUID = 1L;
+		private Session2<TST> sessionD;
+		
+		protected AbortSessionD(Session2<TST> session) {
+			super("AbortSessionD");
+			this.sessionD = session;
+		}
+		
+		@Override
+		public void run() {
+			Message msgD = sessionD.waitForReceive("abort", "confirm");		//no timeout
+			
+			switch(msgD.getLabel()) {
+			
+			case "abort" :
+				break;
+			case "confirm" : sessionD.send("quit");
+				break;
+			}
+		}
+	}
+
 	
 	
 //	private static class HandleInternally extends CO2Process {

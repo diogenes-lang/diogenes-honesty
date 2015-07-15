@@ -124,14 +124,14 @@ public class MaudeListener extends ListenerAdapter {
 			
 			MethodInfo invokedMethod = invokeInsn.getInvokedMethod();
 			ClassInfo invokedClass = invokedMethod.getClassInfo();
-			ClassInfo callerClass = ci;
+//			ClassInfo callerClass = ci;
 			
 			if (
 					invokedMethod.getName().equals("run") &&
 					envProcesses.containsKey(invokedClass.getName())
 					) {
 
-				log.info("INVOKE : caller "+callerClass.getName()+" --> "+invokedClass.getName()+"#"+invokedMethod.getName());
+//				log.info("INVOKE : caller "+callerClass.getName()+" --> "+invokedClass.getName()+"#"+invokedMethod.getName());
 				
 				ProcessDefinitionDTO proc = envProcesses.get(invokedClass.getName());
 				
@@ -145,11 +145,11 @@ public class MaudeListener extends ListenerAdapter {
 					/*
 					 * the call is recursive: stop search
 					 */
-					log.info("recursive call, terminating");
+					log.info("recursive call detected, terminating");
 					Instruction nextInsn = invokeInsn.getNext();
 					
-					log.info("INVOKE INSN - "+invokeInsn.getPosition()+": "+invokeInsn);
-					log.info("INVOKE NEXT - "+nextInsn.getPosition()+": "+nextInsn);
+//					log.info("INVOKE INSN - "+invokeInsn.getPosition()+": "+invokeInsn);
+//					log.info("INVOKE NEXT - "+nextInsn.getPosition()+": "+nextInsn);
 					
 					ti.skipInstruction(nextInsn);
 				}
@@ -159,6 +159,7 @@ public class MaudeListener extends ListenerAdapter {
 					CO2StackFrame frame = new CO2StackFrame();
 					frame.prefix = proc.firstPrefix;
 					frame.process = proc;
+					frame.id = co2ProcessesStack.peek().id+1;
 					
 					log.info("adding processCall onto the stack");
 					this.co2ProcessesStack.push(frame);
@@ -288,7 +289,7 @@ public class MaudeListener extends ListenerAdapter {
 		
 		if (
 				exitedMethod.getBaseName().equals(Participant.class.getName()+".tell") &&
-				exitedMethod.getSignature().equals("(Lit/unica/co2/model/contract/Contract;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;")
+				exitedMethod.getSignature().equals("(Lit/unica/co2/model/contract/Contract;)Lco2api/Public;")
 				) {
 			log.info("");
 			printInfo();
@@ -299,6 +300,9 @@ public class MaudeListener extends ListenerAdapter {
 			SumDTO sum = sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
 			
 			if (ex!=null) {
+				
+				assert false: "you should not be here";
+				
 				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
 				
 				assert sum.prefixes.size()>1;
@@ -422,8 +426,13 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo();
 			log.info("--RUN ENV PROCESS-- (method exited) -> "+ci.getSimpleName());
 			
-			log.info("removing process from stack");
-			this.co2ProcessesStack.pop();
+			if (checkPendingSum()) {
+				log.info("there are some pending sum, not removing from stack");
+			}
+			else {
+				log.info("removing process from stack");
+				this.co2ProcessesStack.pop();
+			}
 			
 			printInfo();
 		}
@@ -436,25 +445,25 @@ public class MaudeListener extends ListenerAdapter {
 		
 		if (
 				enteredMethod.getBaseName().equals(Participant.class.getName()+".tell") &&
-				enteredMethod.getSignature().equals("(Lit/unica/co2/model/contract/Contract;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;")
+				enteredMethod.getSignature().equals("(Lit/unica/co2/model/contract/Contract;)Lco2api/Public;")
 				) {
 			log.info("");
 			printInfo();
-			log.info("--TELL-- (method extered)");
+			log.info("--TELL-- (method entered)");
 			
-			Integer timeout = getIntegerArgument(currentThread,1);
-			log.info("timeout: "+timeout);
+//			Integer timeout = getIntegerArgument(currentThread,1);
+//			log.info("timeout: "+timeout);
 			
 			SumDTO sum = new SumDTO();
 			sum.prefixes.add(new TellDTO());
 			
-			if (timeout==-1) {
-				/* nothing to do */
-			}
-			else {
-				/* add tau prefix, used if TimeExpiredException */
-				sum.prefixes.add(new TauDTO());
-			}
+//			if (timeout==-1) {
+//				/* nothing to do */
+//			}
+//			else {
+//				/* add tau prefix, used if TimeExpiredException */
+//				sum.prefixes.add(new TauDTO());
+//			}
 			
 			setCurrentProcess(sum);		//set the current process
 
@@ -672,6 +681,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			CO2StackFrame frame = new CO2StackFrame();
 			frame.process = p;
+			frame.id=0;
 			co2ProcessesStack.push(frame);
 		}
 		else {
@@ -798,6 +808,7 @@ public class MaudeListener extends ListenerAdapter {
 		SumStackFrame frame = new SumStackFrame();
 		frame.sum = sum;
 		frame.toReceive = toReceive;
+		frame.ownerProcessFrame = co2ProcessesStack.peek().id;
 		
 		sumStack.push(frame);
 	}
@@ -826,6 +837,18 @@ public class MaudeListener extends ListenerAdapter {
 			sumStack.pop();
 	}
 	
+	private boolean checkPendingSum() {
+		
+		int currentProcessFrameId = co2ProcessesStack.peek().id;
+		
+		for (SumStackFrame frame : sumStack) {
+			if (frame.ownerProcessFrame==currentProcessFrameId)
+				return true;
+		}
+		
+		return false;
+	}
+	
 	//--------------------------------- GETTERS and SETTERS -------------------------------
 	public ProcessDTO getCo2Process() {
 		return co2ProcessesStack.firstElement().process;
@@ -849,11 +872,13 @@ public class MaudeListener extends ListenerAdapter {
 	private static class CO2StackFrame {
 		ProcessDTO process;		// the current process that you are building up
 		PrefixDTO prefix;		// the current prefix (owned by the above process) where you append incoming events
+		int id;
 	}
 	
 	private static class SumStackFrame {
 		SumDTO sum;
 		Set<String> toReceive;
+		int ownerProcessFrame;	//the process that own the sum
 	}
 	
 }

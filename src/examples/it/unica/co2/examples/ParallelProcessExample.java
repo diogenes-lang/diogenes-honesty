@@ -61,7 +61,7 @@ public class ParallelProcessExample {
 			
 			Contract C = internalSum().add("a").add("b");
 			
-			Session2<TST> session = tell(C);
+			Session2<TST> session = tellAndWait(C);
 			
 			Thread tA = new Thread(new ProcessA(session));
 			Thread tB = new Thread(new ProcessB(session));

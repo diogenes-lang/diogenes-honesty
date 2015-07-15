@@ -40,21 +40,37 @@ public abstract class Participant extends CO2Process {
 	@SuppressWarnings("unused") private String serializedContract;
 	@SuppressWarnings("unused") private String sessionName;
 	
-	protected Session2<TST> tell(Contract c) {
-		return tell(c, -1);
+	protected Session2<TST> tellAndWait(Contract c) {
+		return tellAndWait(c, -1);
 	}
 	
-	protected Session2<TST> tell(Contract c, Integer timeout) {
+	protected Session2<TST> tellAndWait(Contract c, Integer timeout) {
+		return waitForSession( tell(c) , timeout);
+	}
+	
+	protected Public<TST> tell (Contract c) {
 		try {
 			serializedContract=ObjectUtils.serializeObjectToStringQuietly(c);
+			sessionName = Session2.getNextSessionName();
 			
 			TST tstA = new TST(c.toMiddleware());
 			Private<TST> pvtA = tstA.toPrivate(connection);
 			
 			logger.log("telling contract <"+c+">");
-			Public<TST> pbl = pvtA.tell();
-			
-			logger.log("waiting for session, timeout "+timeout);
+			return pvtA.tell();
+
+		}
+		catch (ContractException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	protected Session2<TST> waitForSession(Public<TST> pbl) {
+		return waitForSession(pbl, -1);
+	}
+	
+	protected Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) {
+		try {
 			
 			Session<TST> session = null;
 			if (timeout==-1) {
@@ -64,20 +80,11 @@ public abstract class Participant extends CO2Process {
 				session = pbl.waitForSession(timeout);
 			}
 			
-			Session2<TST> session2 = new Session2<TST>(connection, session.getContract());	//wrap to the session2
 			logger.log("session fused");
-			
-			sessionName = session2.getSessionName();
-			
-			return session2;
+			return new Session2<TST>(connection, session.getContract());
 		}
 		catch (ContractException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	
-	
-	
-	
 }

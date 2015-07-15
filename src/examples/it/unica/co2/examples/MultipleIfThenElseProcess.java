@@ -50,7 +50,7 @@ public class MultipleIfThenElseProcess extends Participant {
 								)
 						);
 			
-			Session2<TST> session = tell(A);
+			Session2<TST> session = tellAndWait(A);
 			
 			session.send("start");
 			

@@ -29,7 +29,7 @@ public class Session2<T extends ContractModel> extends Session<T>{
 		return sessionName;
 	}
 	
-	public static String nextSessionName() {
+	public static String getNextSessionName() {
 		return "x_"+count;
 	}
 	

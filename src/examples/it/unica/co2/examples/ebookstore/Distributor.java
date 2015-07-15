@@ -28,7 +28,7 @@ public class Distributor extends Participant {
 					.add("abort")
 		);
 		
-		Session2<TST> session = tell(c);
+		Session2<TST> session = tellAndWait(c);
 		
 		Message msg;	
 		String isbn;
