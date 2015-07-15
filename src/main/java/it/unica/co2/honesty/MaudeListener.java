@@ -36,9 +36,11 @@ import it.unica.co2.util.ObjectUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,7 +91,7 @@ public class MaudeListener extends ListenerAdapter {
 	private Map<String, TauDTO> taus = new HashMap<>();
 	private int ifThenElseCount=0;
 	
-	private List<PrefixDTO> sumPrefixes;
+	private Stack<SumStackFrame> sumStack = new Stack<SumStackFrame>();
 	
 	/*
 	 * if the ifInstruction is into this interval, skip it (means that is related to switch-statement)
@@ -184,7 +186,8 @@ public class MaudeListener extends ListenerAdapter {
 		
 		if (
 				insn instanceof IfInstruction && 
-				ci.isInstanceOf(CO2Process.class.getName()) && // consider only if into the class under test
+				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into the class under test
+				!ci.getName().equals(Participant.class.getName()) && 	// ignore if instructions into Participant.class
 				(insn.getPosition()<startIfExcluded || insn.getPosition()>endIfExcluded) // skip if instructions related to switch statements
 				) {
 			
@@ -283,19 +286,48 @@ public class MaudeListener extends ListenerAdapter {
 		
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		
-		if (exitedMethod.getBaseName().equals(Participant.class.getName()+".tell")) {
+		if (
+				exitedMethod.getBaseName().equals(Participant.class.getName()+".tell") &&
+				exitedMethod.getSignature().equals("(Lit/unica/co2/model/contract/Contract;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;")
+				) {
 			log.info("");
 			printInfo();
 			log.info("--TELL-- (method exited)");
 			
-			ElementInfo ei = currentThread.getThisElementInfo();
+			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
-			TellDTO tell = getTell(ei);
-			SumDTO sum = new SumDTO();
-			sum.prefixes.add(tell);
+			SumDTO sum = sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
 			
-			setCurrentProcess(sum);		//set the current process
-			setCurrentPrefix(tell);		//set the current prefix
+			if (ex!=null) {
+				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
+				
+				assert sum.prefixes.size()>1;
+				assert sum.prefixes.get(1) instanceof TauDTO;
+				
+				TauDTO p = (TauDTO) sum.prefixes.get(1);
+				
+				popSum(p);
+				setCurrentPrefix(p);
+			}
+			else {
+				assert sum.prefixes.size()>0;
+				assert sum.prefixes.get(0) instanceof TellDTO;
+				
+				TellDTO tell = (TellDTO) sum.prefixes.get(0);
+				
+				ElementInfo ei = currentThread.getThisElementInfo();
+				
+				String cName = getContractName();
+				String sessionName = ei.getStringField("sessionName");
+				contracts.put(cName, ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), Contract.class));
+				sessions.add(sessionName);
+				
+				tell.contractName = cName;
+				tell.session = sessionName;
+				
+				popSum(tell);
+				setCurrentPrefix(tell);
+			}
 
 			printInfo();
 		}
@@ -310,14 +342,10 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo();
 			log.info("--SUM OF RECEIVE-- (method exited)");
 			
-			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
 			
-			/*
-			 * get the returned value
-			 */
-			StackFrame f = currentThread.getTopFrame();
+			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
-			ExceptionInfo ex = currentThread.getPendingException();
+			SumDTO sum = sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
 			
 			if (ex!=null) {
 				/* 
@@ -325,33 +353,48 @@ public class MaudeListener extends ListenerAdapter {
 				 * a prefix tau must be present at this time
 				 */
 				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
-				assert sumPrefixes.size()>0;
-				assert sumPrefixes.get(sumPrefixes.size()-1) instanceof TauDTO;
 				
-				setCurrentPrefix(sumPrefixes.get(sumPrefixes.size()-1));		//set the current prefix
+				assert sum.prefixes.size()>0;
+				assert sum.prefixes.get(sum.prefixes.size()-1) instanceof TauDTO;
+				
+				TauDTO p = (TauDTO) sum.prefixes.get(sum.prefixes.size()-1);
+				
+				popSum(p);
+				setCurrentPrefix(p);
 			}
 			else {
+				
+				ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
+
+				/*
+				 * get the returned value
+				 */
+				StackFrame f = currentThread.getTopFrame();
 				
 				int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
 				f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
 				
 				ElementInfo messageReceived = currentThread.getElementInfo(ref);
 				
-				log.info(""+currentThread.getElementInfo(ref));
 				String label = messageReceived.getStringField("label");
 				String sessionName = session2.getStringField("sessionName");
 				
 				log.info("label: "+label);
 				
 				DoReceiveDTO received = null;
-				for (PrefixDTO p : sumPrefixes) {
+				
+				for (int i=0; i<sum.prefixes.size(); i++) {
+					
+					PrefixDTO p = sum.prefixes.get(i);
 					
 					if (
 							(p instanceof DoReceiveDTO) && 
 							((DoReceiveDTO) p).action.equals(label)
 							) {
-						received = ((DoReceiveDTO) p);
+						received = ((DoReceiveDTO) sum.prefixes.get(i));
+						break;
 					}
+					
 				}
 				
 				if (received==null)
@@ -360,11 +403,11 @@ public class MaudeListener extends ListenerAdapter {
 				received.action = label;
 				received.session = sessionName;
 				
+				popSum(received);
 				setCurrentPrefix(received);		//set the current prefix
-				
-				printInfo();
 			}
 			
+			printInfo();
 		}
 		
 		
@@ -392,6 +435,39 @@ public class MaudeListener extends ListenerAdapter {
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		
 		if (
+				enteredMethod.getBaseName().equals(Participant.class.getName()+".tell") &&
+				enteredMethod.getSignature().equals("(Lit/unica/co2/model/contract/Contract;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;")
+				) {
+			log.info("");
+			printInfo();
+			log.info("--TELL-- (method extered)");
+			
+			Integer timeout = getIntegerArgument(currentThread,1);
+			log.info("timeout: "+timeout);
+			
+			SumDTO sum = new SumDTO();
+			sum.prefixes.add(new TellDTO());
+			
+			if (timeout==-1) {
+				/* nothing to do */
+			}
+			else {
+				/* add tau prefix, used if TimeExpiredException */
+				sum.prefixes.add(new TauDTO());
+			}
+			
+			setCurrentProcess(sum);		//set the current process
+
+			/*
+			 * the co2CurrentPrefix is set in methodExited
+			 */
+			log.info("pushing the sum onto the stack");
+			pushSum(sum);
+			
+			printInfo();
+		}
+		
+		if (
 				enteredMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive")&&
 				enteredMethod.getSignature().equals("(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;")
 				) {
@@ -409,9 +485,21 @@ public class MaudeListener extends ListenerAdapter {
 			List<String> actions = getStringArrayArgument(currentThread);
 			
 			
-			SumDTO sum = getSumOfReceive(sessionName, actions);
+			SumDTO sum = new SumDTO();
+			
+			for (String l : actions) {
+				
+				DoReceiveDTO p = new DoReceiveDTO(); 
+				p.session = sessionName;
+				p.action = l;
+				
+				sum.prefixes.add(p);
+			}
+			
 			
 			log.info("timeout: "+timeout);
+			log.info("actions: "+actions);
+			
 			if (timeout==-1) {
 				/* nothing to do */
 			}
@@ -425,7 +513,8 @@ public class MaudeListener extends ListenerAdapter {
 			/*
 			 * the co2CurrentPrefix is set in methodExited
 			 */
-			sumPrefixes = sum.prefixes;		//save all possible choices
+			log.info("pushing the sum onto the stack");
+			pushSum(sum);
 			
 			printInfo();
 		}
@@ -588,8 +677,7 @@ public class MaudeListener extends ListenerAdapter {
 		else {
 			assert co2ProcessesStack.size()>0;
 			
-			CO2StackFrame frame = co2ProcessesStack.peek();
-			frame.prefix.next = p;
+			co2ProcessesStack.peek().prefix.next=p;
 		}
 	}
 	
@@ -597,10 +685,16 @@ public class MaudeListener extends ListenerAdapter {
 		
 		assert co2ProcessesStack.size()>0;
 		
-		CO2StackFrame frame = co2ProcessesStack.peek();
-		frame.prefix = p;
-		
+		co2ProcessesStack.peek().prefix = p;
 	}
+	
+//	private ProcessDTO getCurrentProcess() {
+//		return co2ProcessesStack.peek().process;
+//	}
+//	
+//	private PrefixDTO getCurrentPrefix() {
+//		return co2ProcessesStack.peek().prefix;
+//	}
 	
 	private void printInfo() {
 		
@@ -622,38 +716,6 @@ public class MaudeListener extends ListenerAdapter {
 		return "P"+envProcessesCount++;
 	}
 	
-	private TellDTO getTell(ElementInfo ei) {
-		
-		String cName = getContractName();
-		String sessionName = ei.getStringField("sessionName");
-		contracts.put(cName, ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), Contract.class));
-		sessions.add(sessionName);
-		
-		TellDTO tell = new TellDTO();
-		tell.contractName = cName;
-		tell.session = sessionName;
-		
-		return tell;
-	}
-	
-	private SumDTO getSumOfReceive(String session, List<String> actions) {
-		
-		SumDTO sum = new SumDTO();
-		
-		for (String l : actions) {
-			
-			DoReceiveDTO p = new DoReceiveDTO(); 
-			p.session = session;
-			p.action = l;
-			
-			sum.prefixes.add(p);
-		}
-		
-		return sum;
-	}
-
-	
-	
 	private String getFirstStringArgument(ThreadInfo currentThread) {
 		
 		//get stack frame
@@ -666,12 +728,16 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	private Integer getFirstIntegerArgument(ThreadInfo currentThread) {
+		return getIntegerArgument(currentThread, 0);
+	}
+	
+	private Integer getIntegerArgument(ThreadInfo currentThread, int position) {
 		
 		//get stack frame
 		StackFrame f = currentThread.getTopFrame();
 		
 		//get first argument: String
-		ElementInfo eiArgument = (ElementInfo) f.getArgumentValues(currentThread)[0];
+		ElementInfo eiArgument = (ElementInfo) f.getArgumentValues(currentThread)[position];
 		
 		return (Integer) eiArgument.asBoxObject();
 	}
@@ -710,6 +776,56 @@ public class MaudeListener extends ListenerAdapter {
 		return args;
 	}
 	
+	private void pushSum(SumDTO sum) {
+		
+		Set<String> toReceive = new HashSet<>();
+		
+		for (PrefixDTO p : sum.prefixes) {
+			
+			if (p instanceof TauDTO) {
+				if(!toReceive.add("t"))
+					throw new IllegalStateException("the set already contain a tau");
+			}
+			else if (p instanceof TellDTO) {
+				if(!toReceive.add("tell"))
+					throw new IllegalStateException("the set already contain a tell");
+			}
+			else if (p instanceof DoReceiveDTO) {
+				toReceive.add(((DoReceiveDTO) p).action);
+			}
+		}
+		
+		SumStackFrame frame = new SumStackFrame();
+		frame.sum = sum;
+		frame.toReceive = toReceive;
+		
+		sumStack.push(frame);
+	}
+	
+	private void popSum(TauDTO prefix) {
+		popSum("t");
+	}
+	
+	private void popSum(TellDTO prefix) {
+		popSum("tell");
+	}
+	
+	private void popSum(DoReceiveDTO prefix) {
+		popSum(prefix.action);
+	}
+
+	private void popSum(String prefix) {
+		
+		Set<String> prefixToReceive = sumStack.peek().toReceive;
+	
+		assert prefixToReceive.contains(prefix);
+		
+		prefixToReceive.remove(prefix);
+		
+		if (prefixToReceive.isEmpty())
+			sumStack.pop();
+	}
+	
 	//--------------------------------- GETTERS and SETTERS -------------------------------
 	public ProcessDTO getCo2Process() {
 		return co2ProcessesStack.firstElement().process;
@@ -733,6 +849,11 @@ public class MaudeListener extends ListenerAdapter {
 	private static class CO2StackFrame {
 		ProcessDTO process;		// the current process that you are building up
 		PrefixDTO prefix;		// the current prefix (owned by the above process) where you append incoming events
+	}
+	
+	private static class SumStackFrame {
+		SumDTO sum;
+		Set<String> toReceive;
 	}
 	
 }

@@ -41,6 +41,10 @@ public abstract class Participant extends CO2Process {
 	@SuppressWarnings("unused") private String sessionName;
 	
 	protected Session2<TST> tell(Contract c) {
+		return tell(c, -1);
+	}
+	
+	protected Session2<TST> tell(Contract c, Integer timeout) {
 		try {
 			serializedContract=ObjectUtils.serializeObjectToStringQuietly(c);
 			
@@ -50,8 +54,15 @@ public abstract class Participant extends CO2Process {
 			logger.log("telling contract <"+c+">");
 			Public<TST> pbl = pvtA.tell();
 			
-			logger.log("waiting for session");
-			Session<TST> session = pbl.waitForSession();
+			logger.log("waiting for session, timeout "+timeout);
+			
+			Session<TST> session = null;
+			if (timeout==-1) {
+				session = pbl.waitForSession();
+			}
+			else {
+				session = pbl.waitForSession(timeout);
+			}
 			
 			Session2<TST> session2 = new Session2<TST>(connection, session.getContract());	//wrap to the session2
 			logger.log("session fused");
@@ -64,5 +75,9 @@ public abstract class Participant extends CO2Process {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	
+	
+	
 	
 }

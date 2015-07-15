@@ -2,10 +2,13 @@ package it.unica.co2;
 
 import static org.junit.Assert.*;
 import it.unica.co2.examples.APIExampleProcess;
-import it.unica.co2.examples.Buyer;
 import it.unica.co2.examples.MultipleIfThenElseProcess;
 import it.unica.co2.examples.ParallelProcessExample.ParallelProcess;
 import it.unica.co2.examples.ProcessCompositionExample.ComposedProcess;
+import it.unica.co2.examples.SimpleBuyer;
+import it.unica.co2.examples.ebookstore.Buyer;
+import it.unica.co2.examples.ebookstore.Distributor;
+import it.unica.co2.examples.ebookstore.Seller;
 import it.unica.co2.honesty.HonestyChecker;
 import it.unica.co2.model.process.Participant;
 
@@ -16,18 +19,21 @@ import org.junit.Test;
 public class HonestyTest {
 
 	@Test
-	public void test() {
+	public void apiExample() {
 		
 		Participant p = new APIExampleProcess();
+		boolean honesty = HonestyChecker.isHonest(p);
 		
-		HonestyChecker.isHonest(p);
+		assertTrue(honesty);
 	}
 	
 	@Test
-	public void buyer() {
+	public void simpleBuyer() {
 		
-		Participant p = new Buyer();
-		HonestyChecker.isHonest(p);
+		Participant p = new SimpleBuyer();
+		boolean honesty = HonestyChecker.isHonest(p);
+		
+		assertTrue(honesty);
 	}
 	
 	@Test
@@ -55,6 +61,30 @@ public class HonestyTest {
 		Participant p = new ParallelProcess();
 		boolean honesty = HonestyChecker.isHonest(p);
 		
+		assertTrue(honesty);
+	}
+	
+	@Test
+	public void buyer() {
+		
+		Participant p = new Buyer();
+		boolean honesty = HonestyChecker.isHonest(p);
+		assertTrue(honesty);
+	}
+	
+	@Test
+	public void distributor() {
+		
+		Participant p = new Distributor();
+		boolean honesty = HonestyChecker.isHonest(p);
+		assertTrue(honesty);
+	}
+	
+	@Test
+	public void seller() {
+		
+		Participant p = new Seller();
+		boolean honesty = HonestyChecker.isHonest(p);
 		assertTrue(honesty);
 	}
 }

@@ -21,11 +21,14 @@ public class HonestyChecker {
 		
 		String maudeProcess = getMaudeProcess(participant);
 		
-		if (maudeProcess==null) {
-			return false;
-		}
+		boolean honesty;
 		
-		boolean honesty = MaudeExecutor.invokeMaudeHonestyChecker(maudeProcess);
+		if (maudeProcess==null) {
+			honesty = false;
+		}
+		else {
+			honesty = MaudeExecutor.invokeMaudeHonestyChecker(maudeProcess);
+		}
 		
 		System.out.println("--------------------------------------------------");
 		System.out.println("honesty: "+honesty);
@@ -99,7 +102,7 @@ public class HonestyChecker {
 				System.out.println("JPF ends without errors");
 				
 				//jpf.getListenerOfType(MaudeListener.class);
-				System.out.println("CO2 maude process:\n\t"+maudeListener.getCo2Process().toMaude());
+				System.out.println("CO2 maude process:");
 				System.out.println("\t"+maudeListener.getCo2Process().toMaude());
 				
 				System.out.println("CO2 maude contracts:");

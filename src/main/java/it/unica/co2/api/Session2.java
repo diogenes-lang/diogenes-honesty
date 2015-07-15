@@ -29,6 +29,10 @@ public class Session2<T extends ContractModel> extends Session<T>{
 		return sessionName;
 	}
 	
+	public static String nextSessionName() {
+		return "x_"+count;
+	}
+	
 	
 	@Override
 	public Boolean send(String action) {

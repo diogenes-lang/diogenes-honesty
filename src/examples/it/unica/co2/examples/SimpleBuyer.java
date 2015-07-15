@@ -10,14 +10,14 @@ import co2api.Message;
 import co2api.TST;
 
 
-public class Buyer extends Participant {
+public class SimpleBuyer extends Participant {
 
 	private static final long serialVersionUID = 1L;
 	
 	private static final String username = "alice@test.com";
 	private static final String password = "alice";
 	
-	public Buyer() {
+	public SimpleBuyer() {
 		super(username, password);
 	}
 
@@ -63,7 +63,7 @@ public class Buyer extends Participant {
 	}
 	
 	public static void main(String[] args) {
-		new Buyer().run();
+		new SimpleBuyer().run();
 	}
 
 }
