@@ -103,17 +103,17 @@ public class HonestyChecker {
 				
 				//jpf.getListenerOfType(MaudeListener.class);
 				System.out.println("CO2 maude process:");
-				System.out.println("\t"+maudeListener.getCo2Process().toMaude());
+				System.out.println("    "+maudeListener.getCo2Process().toMaude("    "));
 				
 				System.out.println("CO2 maude contracts:");
 				
 				for (Entry<String, Contract> c : maudeListener.getContracts().entrySet()) {
-					System.out.println("\t"+c.getKey()+": "+c.getValue().toMaude());
+					System.out.println("    "+c.getKey()+": "+c.getValue().toMaude());
 				}
 				
 				System.out.println("CO2 maude defined process:");
 				for (ProcessDefinitionDTO p : maudeListener.getEnvProcesses()) {
-					System.out.println("\t"+p.toMaude());
+					System.out.println("    "+p.toMaude("    "));
 				}
 				
 				String maudeProcess = MaudeTemplate.getMaudeProcess(maudeListener);

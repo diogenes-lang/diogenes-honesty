@@ -99,6 +99,7 @@ public class MaudeListener extends ListenerAdapter {
 	 */
 	private int startIfExcluded = -1;
 	private int endIfExcluded = -1;
+	private MethodInfo methodInfoIfExcluded;
 	
 	/*
 	 * env
@@ -112,9 +113,6 @@ public class MaudeListener extends ListenerAdapter {
 	public void executeInstruction(VM vm, ThreadInfo ti, Instruction insn) {
 
 		ClassInfo ci = ti.getExecutingClassInfo();
-		
-//		if (insn instanceof InvokeInstruction && ci.getName().startsWith("it.unica.co2.examples"))
-//			log.info(ci.getName()+" INVOKE insn - "+insn.getPosition()+": "+insn);
 		
 		if (
 				insn instanceof InvokeInstruction && 
@@ -165,12 +163,11 @@ public class MaudeListener extends ListenerAdapter {
 					log.info("adding processCall onto the stack");
 					this.co2ProcessesStack.push(frame);
 					
-					log.info(proc.toMaude());
+					log.info(proc.toString());
 				}
 			}
 			
 		}
-		
 		
 		if (
 				insn instanceof SwitchInstruction && 
@@ -180,17 +177,37 @@ public class MaudeListener extends ListenerAdapter {
 			/*
 			 * switch statements use if-instructions that must be not considered for branch exploration
 			 */
+			log.info("");
 			log.info("SWITCH : setting start="+switchInsn.getPosition()+" , end="+switchInsn.getTarget());
 			startIfExcluded = switchInsn.getPosition();		// where the switch starts
 			endIfExcluded = switchInsn.getTarget();			// where the switch ends
+			methodInfoIfExcluded = switchInsn.getMethodInfo();
+			log.info("jjjjjjjjjjjjjjj: "+methodInfoIfExcluded);
 		}
 		
+		
+//		if (insn instanceof IfInstruction&& 
+//				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into the class under test
+//				!ci.getName().equals(Participant.class.getName()) 	// ignore if instructions into Participant.class
+//		) {
+//			log.info("::::::::::::::::::::::::::::::::::::::::::::::");
+//			log.info(""+methodInfoIfExcluded);
+//			log.info(""+startIfExcluded);
+//			log.info(""+endIfExcluded);
+//			log.info("--"+insn.getPosition());
+//			log.info("--"+insn.getMethodInfo());
+//			log.info("::::::::::::::::::::::::::::::::::::::::::::::");
+//		}
 		
 		if (
 				insn instanceof IfInstruction && 
 				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into the class under test
 				!ci.getName().equals(Participant.class.getName()) && 	// ignore if instructions into Participant.class
-				(insn.getPosition()<startIfExcluded || insn.getPosition()>endIfExcluded) // skip if instructions related to switch statements
+					(
+						insn.getPosition()<startIfExcluded || 
+						insn.getPosition()>endIfExcluded || 
+						!insn.getMethodInfo().equals(methodInfoIfExcluded)
+					)// skip if instructions related to switch statements
 				) {
 			
 			IfInstruction ifInsn = (IfInstruction) insn;
@@ -257,7 +274,7 @@ public class MaudeListener extends ListenerAdapter {
 					/*
 					 * then branch
 					 */
-					log.info("setting tau, choice: "+myChoice);
+					log.info("THEN branch, setting tau, choice: "+myChoice);
 					log.info("next insn: "+ifInsn.getNext().getPosition());
 					
 					setCurrentPrefix(thenTau);		//set the current prefix
@@ -268,7 +285,7 @@ public class MaudeListener extends ListenerAdapter {
 					/*
 					 * else branch
 					 */
-					log.info("setting tau, choice: "+myChoice);
+					log.info("ELSE branch, setting tau, choice: "+myChoice);
 					log.info("next insn: "+ifInsn.getTarget().getPosition());
 
 					setCurrentPrefix(elseTau);		//set the current prefix
@@ -328,7 +345,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			SumDTO sum = sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
 			
-			log.info("sumStack.peek(): "+sum.toMaude());
+			log.info("sumStack.peek(): "+sum.toString());
 			
 			if (ex!=null) {
 				/* 
@@ -407,7 +424,7 @@ public class MaudeListener extends ListenerAdapter {
 			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
 			SumDTO sum = sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
-			log.info("sumStack.peek(): "+sum.toMaude());
+			log.info("sumStack.peek(): "+sum.toString());
 			
 			if (ex!=null) {
 				/* 
@@ -711,7 +728,7 @@ public class MaudeListener extends ListenerAdapter {
 		
 		log.info("env processes:");
 		for (Entry<String, ProcessDefinitionDTO> entry : envProcesses.entrySet()) {
-			log.info("\t"+entry.getValue().toMaude());
+			log.info("\t"+entry.getValue().toString());
 		}
 		
 		log.info("sessions: "+sessions);
@@ -758,13 +775,13 @@ public class MaudeListener extends ListenerAdapter {
 		co2ProcessesStack.peek().prefix = p;
 	}
 	
-	private ProcessDTO getCurrentProcess() {
-		return co2ProcessesStack.peek().process;
-	}
-	
-	private PrefixDTO getCurrentPrefix() {
-		return co2ProcessesStack.peek().prefix;
-	}
+//	private ProcessDTO getCurrentProcess() {
+//		return co2ProcessesStack.peek().process;
+//	}
+//	
+//	private PrefixDTO getCurrentPrefix() {
+//		return co2ProcessesStack.peek().prefix;
+//	}
 	
 	private void printInfo() {
 		
@@ -772,8 +789,8 @@ public class MaudeListener extends ListenerAdapter {
 		
 		if (co2ProcessesStack.size()>0) {
 			CO2StackFrame frame = co2ProcessesStack.peek();
-			log.info("top-process --> "+frame.process.toMaude());
-			log.info("top-currentPrefix --> "+(frame.prefix!=null? frame.prefix.toMaude():"null"));
+			log.info("top-process --> "+frame.process.toString());
+			log.info("top-currentPrefix --> "+(frame.prefix!=null? frame.prefix.toString():"null"));
 		}
 		
 	}

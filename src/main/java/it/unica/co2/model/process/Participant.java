@@ -87,4 +87,8 @@ public abstract class Participant extends CO2Process {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	
+	
+	protected void startNewMacro(String name) {}
 }

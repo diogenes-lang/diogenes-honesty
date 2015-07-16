@@ -1,4 +1,4 @@
-package it.unica.co2.model.contract.generators;
+package it.unica.co2.generators;
 
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.ExternalAction;
@@ -11,17 +11,17 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public abstract class Generator {
+public abstract class AbstractContractGenerator {
 
 	protected Contract contract;
 	private int count = 0;
 	protected Map<Recursion,String> recursions = new HashMap<Recursion,String>();
 
-	public Generator() {
+	public AbstractContractGenerator() {
 		super();
 	}
 
-	public Generator(Contract c) {
+	public AbstractContractGenerator(Contract c) {
 		this.contract=c;
 	}
 

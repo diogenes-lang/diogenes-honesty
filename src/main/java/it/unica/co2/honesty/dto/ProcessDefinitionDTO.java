@@ -3,8 +3,6 @@ package it.unica.co2.honesty.dto;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 
 public class ProcessDefinitionDTO extends ProcessDTO {
 
@@ -16,11 +14,6 @@ public class ProcessDefinitionDTO extends ProcessDTO {
 	public ProcessDTO process;
 	public PrefixDTO firstPrefix;
 	
-	@Override
-	public String toMaude() {
-		return name+"("+StringUtils.join(freeNames, " ; ")+")"+(isDefinition?" =def "+process.toMaude(): "");
-	}
-
 	@Override
 	public ProcessDTO copy() {
 		ProcessDefinitionDTO tmp = new ProcessDefinitionDTO();

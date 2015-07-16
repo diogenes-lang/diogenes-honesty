@@ -43,11 +43,11 @@ public class Seller extends Participant {
 		
 		Session2<TST> sessionB = tellAndWait(cB);
 		
-		sessionB.waitForReceive("book");
+		Message msg = sessionB.waitForReceive("book");
 		
 		try {
 			
-			String chosenBook = sessionB.waitForReceive().getStringValue();
+			String chosenBook = msg.getStringValue();
 			
 			if (isInStock(chosenBook)) { // handled internally
 				
@@ -224,11 +224,13 @@ public class Seller extends Participant {
 
 	
 	
-//	private static class HandleInternally extends CO2Process {
+//	private static class BuyerDirectInteraction extends CO2Process {
 //
+//		private static final long serialVersionUID = 1L;
+//		
 //		private Session2<TST> session;
 //		
-//		protected HandleInternally(Session2<TST> session) {
+//		protected BuyerDirectInteraction(Session2<TST> session) {
 //			super("HandleInternally");
 //			this.session = session;
 //		}
@@ -251,7 +253,6 @@ public class Seller extends Participant {
 //					handlePayment(msgB.getStringValue());
 //				}
 //				catch (ContractException e) {
-//					// TODO Auto-generated catch block
 //					throw new RuntimeException(e);
 //				}
 //				break;

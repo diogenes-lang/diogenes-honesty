@@ -52,8 +52,6 @@ public class MaudeExecutor {
 		
 		try {
 			
-			System.out.println("................................................."+process.getBytes().length);
-			
 			/*
 			 * write the maude code to tempFile
 			 */

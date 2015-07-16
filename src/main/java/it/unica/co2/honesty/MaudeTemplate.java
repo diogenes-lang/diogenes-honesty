@@ -1,9 +1,9 @@
 package it.unica.co2.honesty;
 
+import it.unica.co2.generators.MaudeContractGenerator;
 import it.unica.co2.honesty.dto.ProcessDTO;
 import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
 import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.generators.MaudeSyntaxGenerator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,7 +75,7 @@ public class MaudeTemplate {
 		
 		for (Contract c : contracts) {
 			
-			MaudeSyntaxGenerator gen = new MaudeSyntaxGenerator(c);
+			MaudeContractGenerator gen = new MaudeContractGenerator(c);
 			gen.generate();
 			
 			set.addAll(gen.getRecursionNames());
@@ -208,7 +208,7 @@ public class MaudeTemplate {
 			sb.append("\"").append(session).append("\"");
 		}
 		sb.append(") ");
-		sb.append(process.toMaude());
+		sb.append(process.toMaude("    "));
 		
 		return sb.toString();
 	}
@@ -240,7 +240,7 @@ public class MaudeTemplate {
 		for (ProcessDefinitionDTO p : processes) {
 			if (i++>0)
 				sb.append("        &\n");
-			sb.append("        ").append(p.toMaude()).append("\n");
+			sb.append("        ").append(p.toMaude("        ")).append("\n");
 		}
 		
 		sb.append("    )");

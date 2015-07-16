@@ -7,11 +7,6 @@ public class TellDTO extends PrefixDTO {
 	public String contractName;
 	
 	@Override
-	public String toMaude() {
-		return "tell \""+session+"\" "+" "+contractName+" . "+(next==null? "0": next.toMaude());
-	}
-
-	@Override
 	public PrefixDTO copy() {
 		TellDTO tell = new TellDTO();
 		tell.contractName = contractName;

@@ -1,4 +1,4 @@
-package it.unica.co2.model.contract.generators;
+package it.unica.co2.generators;
 
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.ExternalAction;
@@ -12,55 +12,87 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class MiddlewareSyntaxGenerator extends Generator{
+public class MaudeContractGenerator extends AbstractContractGenerator {
 	
-	public MiddlewareSyntaxGenerator(Contract c) {
-		super(c);
+	private final boolean actionsAsString;
+	
+	public MaudeContractGenerator(Contract c) {
+		this(c, true);
 	}
-
+	
+	public MaudeContractGenerator(Contract c, boolean actionsAsString) {
+		super(c);
+		this.actionsAsString = actionsAsString;
+	}
 	
 	@Override
 	protected String convert(InternalSum contract) {
+		if (contract.getActions().length==0)
+			return "0";
+		
 		List<String> actions = new ArrayList<>();
 		for (InternalAction a : contract.getActions()) {
+			actions.add(this.convert(a));
+		}
+		return StringUtils.join(actions, " (+) ");
+	}
+	
+	@Override
+	protected String convert(ExternalSum contract) {
+		if (contract.getActions().length==0)
+			return "0";
+			
+		List<String> actions = new ArrayList<>();
+		for (ExternalAction a : contract.getActions()) {
 			actions.add(this.convert(a));
 		}
 		return StringUtils.join(actions, " + ");
 	}
 	
 	@Override
-	protected String convert(ExternalSum contract) {
-		List<String> actions = new ArrayList<>();
-		for (ExternalAction a : contract.getActions()) {
-			actions.add(this.convert(a));
-		}
-		return StringUtils.join(actions, " & ");
-	}
-	
-	@Override
-	protected String convert(InternalAction contract) {
+	protected String convert(InternalAction action) {
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("!").append(contract.getName());
+		if (actionsAsString)
+			sb.append("\"");
 		
-		if (contract.getNext()!=null)
-			sb.append(" . (")
-			.append( this.convert(contract.getNext()))
-			.append(" ) ");
+		sb.append(action.getName());
+		
+		if (actionsAsString)
+			sb.append("\"");
+		
+		sb.append(" ! ").append(action.getSort().toString().toLowerCase());
+		
+		if (action.getNext()!=null)
+			sb.append(" . ( ")
+			.append( this.convert(action.getNext()))
+			.append(" )");
+		else
+			sb.append(" . 0");
 
 		return sb.toString();
 	}
 	
 	@Override
-	protected String convert(ExternalAction contract) {
+	protected String convert(ExternalAction action) {
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("?").append(contract.getName());
+		if (actionsAsString)
+			sb.append("\"");
 		
-		if (contract.getNext()!=null)
+		sb.append(action.getName());
+		
+		if (actionsAsString)
+			sb.append("\"");
+		
+		sb.append(" ? ").append(action.getSort().toString().toLowerCase());
+		
+		if (action.getNext()!=null)
 			sb.append(" . ( ")
-			.append( this.convert(contract.getNext()))
-			.append(" ) ");
+			.append( this.convert(action.getNext()))
+			.append(" )");
+		else
+			sb.append(" . 0");
 
 		return sb.toString();
 	}
@@ -75,6 +107,5 @@ public class MiddlewareSyntaxGenerator extends Generator{
 		
 		return "rec "+recName+" . ( "+ this.convert(recursion.getContract()) +" ) ";
 	}
-	
 	
 }

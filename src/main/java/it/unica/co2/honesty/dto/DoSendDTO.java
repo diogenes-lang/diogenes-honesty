@@ -7,11 +7,6 @@ public class DoSendDTO extends PrefixDTO {
 	public String action;
 	
 	@Override
-	public String toMaude() {
-		return "do \""+session+"\" \""+action+"\" ! unit . "+(next==null? "0": next.toMaude());
-	}
-
-	@Override
 	public PrefixDTO copy() {
 		DoSendDTO tmp = new DoSendDTO();
 		tmp.session = session;
