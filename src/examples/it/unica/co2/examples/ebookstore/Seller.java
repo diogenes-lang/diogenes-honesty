@@ -99,6 +99,7 @@ public class Seller extends Participant {
 								
 								case "quit" :
 									logger.log("quit received");
+									sessionD.send("quit");							//quit the distributor
 									break;
 									
 								case "pay" : 
@@ -125,7 +126,7 @@ public class Seller extends Participant {
 						sessionB.send("abort");		//this action make you honest in sessionB
 						
 						//and now, if the distributor sent you something? you are culpable in sessionD!
-						new AbortSessionD(sessionD).run();
+						new AbortSessionD2(sessionD).run();
 						//you are honest
 					}
 				}
@@ -137,7 +138,7 @@ public class Seller extends Participant {
 					Session2<TST> sessionD = waitForSession(pbl);	//blocking
 					
 					//and now, if the distributor sent you something? you are culpable in sessionD!
-					new AbortSessionD(sessionD).run();
+					new AbortSessionD1(sessionD).run();
 					//you are honest
 				}
 			}
@@ -178,13 +179,32 @@ public class Seller extends Participant {
 
 
 	
-	private static class AbortSessionD extends CO2Process {
+	private static class AbortSessionD1 extends CO2Process {
 		
 		private static final long serialVersionUID = 1L;
 		private Session2<TST> sessionD;
 		
-		protected AbortSessionD(Session2<TST> session) {
-			super("AbortSessionD");
+		protected AbortSessionD1(Session2<TST> session) {
+			super("AbortSessionD1");
+			this.sessionD = session;
+		}
+		
+		@Override
+		public void run() {
+			
+			sessionD.send("book");
+			
+			new AbortSessionD2(sessionD).run();
+		}
+	}
+
+	private static class AbortSessionD2 extends CO2Process {
+		
+		private static final long serialVersionUID = 1L;
+		private Session2<TST> sessionD;
+		
+		protected AbortSessionD2(Session2<TST> session) {
+			super("AbortSessionD2");
 			this.sessionD = session;
 		}
 		

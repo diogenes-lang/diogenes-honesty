@@ -7,7 +7,9 @@ import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.Participant;
 import co2api.ContractException;
 import co2api.Message;
+import co2api.Public;
 import co2api.TST;
+import co2api.TimeExpiredException;
 
 public class APIExampleProcess extends Participant {
 
@@ -40,31 +42,42 @@ public class APIExampleProcess extends Participant {
 			;
 			
 			logger.log("tell");
-			Session2<TST> session = tellAndWait(A);
 			
-			logger.log("sending b!");
-			session.send("b");
+			Public<TST> pbl = tell(A);
 			
-			logger.log("receiving message");
-			Message msg = session.waitForReceive("a","b","c");
-			
-			logger.log("received message: "+msg.getLabel()+" "+msg.getStringValue());
-			
-			switch (msg.getLabel()) {
-			
-			case "a": 
-				logger.log("received a?");
-				session.send("a.ok");
-				break;
-			
-			case "b":
-				logger.log("received b?");
-				session.send("b.ok");
-				break;
+			try {
+				
+				Session2<TST> session = waitForSession(pbl, 10000);
+				
+				logger.log("sending b!");
+				session.send("b");
+				
+				logger.log("receiving message");
+				Message msg = session.waitForReceive("a","b","c");
+				
+				logger.log("received message: "+msg.getLabel()+" "+msg.getStringValue());
+				
+				switch (msg.getLabel()) {
+				
+				case "a": 
+					logger.log("received a?");
+					session.send("a.ok");
+					break;
+					
+				case "b":
+					logger.log("received b?");
+					session.send("b.ok");
+					break;
+				}
+				
+				session.send("end");
+				logger.log("FINE");
+			}
+			catch (TimeExpiredException e) {
+				Session2<TST> session = waitForSession(pbl);
+				session.send("a");
 			}
 			
-			session.send("end");
-			logger.log("FINE");
 		
 		}
 		catch (ContractException e) {

@@ -44,7 +44,7 @@ public abstract class Participant extends CO2Process {
 		return tellAndWait(c, -1);
 	}
 	
-	protected Session2<TST> tellAndWait(Contract c, Integer timeout) {
+	private Session2<TST> tellAndWait(Contract c, Integer timeout) {
 		return waitForSession( tell(c) , timeout);
 	}
 	

@@ -19,6 +19,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.bytecode.InvokeInstruction;
 import it.unica.co2.api.Session2;
+import it.unica.co2.honesty.dto.AskDTO;
 import it.unica.co2.honesty.dto.DoReceiveDTO;
 import it.unica.co2.honesty.dto.DoSendDTO;
 import it.unica.co2.honesty.dto.IfThenElseDTO;
@@ -295,47 +296,103 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo();
 			log.info("--TELL-- (method exited)");
 			
-			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
+			TellDTO tell = new TellDTO();
+			SumDTO sum = new SumDTO(tell);
 			
-			SumDTO sum = sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			ElementInfo ei = currentThread.getThisElementInfo();
 			
-			if (ex!=null) {
-				
-				assert false: "you should not be here";
-				
-				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
-				
-				assert sum.prefixes.size()>1;
-				assert sum.prefixes.get(1) instanceof TauDTO;
-				
-				TauDTO p = (TauDTO) sum.prefixes.get(1);
-				
-				popSum(p);
-				setCurrentPrefix(p);
-			}
-			else {
-				assert sum.prefixes.size()>0;
-				assert sum.prefixes.get(0) instanceof TellDTO;
-				
-				TellDTO tell = (TellDTO) sum.prefixes.get(0);
-				
-				ElementInfo ei = currentThread.getThisElementInfo();
-				
-				String cName = getContractName();
-				String sessionName = ei.getStringField("sessionName");
-				contracts.put(cName, ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), Contract.class));
-				sessions.add(sessionName);
-				
-				tell.contractName = cName;
-				tell.session = sessionName;
-				
-				popSum(tell);
-				setCurrentPrefix(tell);
-			}
+			String cName = getContractName();
+			String sessionName = ei.getStringField("sessionName");
+			contracts.put(cName, ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), Contract.class));
+			sessions.add(sessionName);
+			
+			tell.contractName = cName;
+			tell.session = sessionName;
+			
+			setCurrentProcess(sum);		//set the current process
+			setCurrentPrefix(tell);
 
 			printInfo();
 		}
 		
+		if (
+				exitedMethod.getBaseName().equals(Participant.class.getName()+".waitForSession")&&
+				exitedMethod.getSignature().equals("(Lco2api/Public;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;")
+				) {
+
+			log.info("");
+			printInfo();
+			log.info("--WAIT FOR SESSION-- (method exited)");
+			
+			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
+			
+			SumDTO sum = sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			
+			log.info("sumStack.peek(): "+sum.toMaude());
+			
+			if (ex!=null) {
+				/* 
+				 * if you were here, you invoke waitForSession() with a timeout
+				 */
+				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
+
+				assert sum.prefixes.size()==2;		// t . (...) + ask "" (True) . (...)
+				
+				//get the tau prefix
+				TauDTO tau = null;
+				
+				if (sum.prefixes.get(0) instanceof TauDTO)
+					tau=(TauDTO) sum.prefixes.get(0);
+				else
+					tau=(TauDTO) sum.prefixes.get(1);
+				
+				popSum(tau);
+				setCurrentPrefix(tau);
+			}
+			else {
+				
+				/*
+				 * get the returned value
+				 */
+				StackFrame f = currentThread.getTopFrame();
+				
+				int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
+				f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
+				
+				ElementInfo session2 = currentThread.getElementInfo(ref);
+				
+				String sessionName = session2.getStringField("sessionName");
+				
+				log.info("session: "+sessionName);
+				
+				assert sum.prefixes.size()==1 || sum.prefixes.size()==2;		// the t prefix can not be present when waitForSession is invoked without timeout
+				
+				AskDTO ask = null;
+
+				if (sum.prefixes.size()==1) {
+					ask = (AskDTO) sum.prefixes.get(0);
+				}
+				else if (sum.prefixes.get(0) instanceof AskDTO) {
+					//sum.prefixes.size()==2
+					ask = (AskDTO) sum.prefixes.get(0);
+				}
+				else {
+					//sum.prefixes.size()==2
+					ask = (AskDTO) sum.prefixes.get(1);
+				}
+				
+				if (ask==null)
+					throw new IllegalStateException("ask cannot be null");
+				
+				
+				ask.session = sessionName;
+				
+				popSum(ask);
+				setCurrentPrefix(ask);		//set the current prefix
+			}
+			
+			printInfo();
+		}
 		
 		if (
 				exitedMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive") &&
@@ -350,6 +407,7 @@ public class MaudeListener extends ListenerAdapter {
 			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
 			SumDTO sum = sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			log.info("sumStack.peek(): "+sum.toMaude());
 			
 			if (ex!=null) {
 				/* 
@@ -444,26 +502,28 @@ public class MaudeListener extends ListenerAdapter {
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		
 		if (
-				enteredMethod.getBaseName().equals(Participant.class.getName()+".tell") &&
-				enteredMethod.getSignature().equals("(Lit/unica/co2/model/contract/Contract;)Lco2api/Public;")
+				enteredMethod.getBaseName().equals(Participant.class.getName()+".waitForSession")&&
+				enteredMethod.getSignature().equals("(Lco2api/Public;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;")
 				) {
+
 			log.info("");
 			printInfo();
-			log.info("--TELL-- (method entered)");
+			log.info("--WAIT FOR SESSION-- (entered method)");
 			
-//			Integer timeout = getIntegerArgument(currentThread,1);
-//			log.info("timeout: "+timeout);
+			Integer timeout = getIntegerArgument(currentThread, 1);
 			
+			log.info("timeout: "+timeout);
+
 			SumDTO sum = new SumDTO();
-			sum.prefixes.add(new TellDTO());
+			sum.prefixes.add(new AskDTO());
 			
-//			if (timeout==-1) {
-//				/* nothing to do */
-//			}
-//			else {
-//				/* add tau prefix, used if TimeExpiredException */
-//				sum.prefixes.add(new TauDTO());
-//			}
+			if (timeout==-1) {
+				/* nothing to do */
+			}
+			else {
+				/* add tau prefix, used if TimeExpiredException */
+				sum.prefixes.add(new TauDTO());
+			}
 			
 			setCurrentProcess(sum);		//set the current process
 
@@ -698,13 +758,13 @@ public class MaudeListener extends ListenerAdapter {
 		co2ProcessesStack.peek().prefix = p;
 	}
 	
-//	private ProcessDTO getCurrentProcess() {
-//		return co2ProcessesStack.peek().process;
-//	}
-//	
-//	private PrefixDTO getCurrentPrefix() {
-//		return co2ProcessesStack.peek().prefix;
-//	}
+	private ProcessDTO getCurrentProcess() {
+		return co2ProcessesStack.peek().process;
+	}
+	
+	private PrefixDTO getCurrentPrefix() {
+		return co2ProcessesStack.peek().prefix;
+	}
 	
 	private void printInfo() {
 		
@@ -800,6 +860,10 @@ public class MaudeListener extends ListenerAdapter {
 				if(!toReceive.add("tell"))
 					throw new IllegalStateException("the set already contain a tell");
 			}
+			else if (p instanceof AskDTO) {
+				if(!toReceive.add("ask"))
+					throw new IllegalStateException("the set already contain an ask");
+			}
 			else if (p instanceof DoReceiveDTO) {
 				toReceive.add(((DoReceiveDTO) p).action);
 			}
@@ -817,8 +881,8 @@ public class MaudeListener extends ListenerAdapter {
 		popSum("t");
 	}
 	
-	private void popSum(TellDTO prefix) {
-		popSum("tell");
+	private void popSum(AskDTO prefix) {
+		popSum("ask");
 	}
 	
 	private void popSum(DoReceiveDTO prefix) {

@@ -57,6 +57,7 @@ public class ProcessComposition2Example {
 			
 			msg = session.waitForReceive("request");
 
+			@SuppressWarnings("unused")
 			int n;
 			try {
 				n = Integer.valueOf(msg.getStringValue());

@@ -1,11 +1,9 @@
 package it.unica.co2.honesty;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,26 +51,24 @@ public class MaudeExecutor {
 		pb.redirectErrorStream(true);
 		
 		try {
-			Process pr = pb.start();
+			
+			System.out.println("................................................."+process.getBytes().length);
 			
 			/*
 			 * write the maude code to tempFile
 			 */
 			try (
-					BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(tmpFile));
-					BufferedInputStream input = new BufferedInputStream(new ByteArrayInputStream(process.getBytes()));
+					BufferedWriter output = new BufferedWriter(new FileWriter(tmpFile));
 			)
 			{
-				byte[] data = new byte[1024];
-
-				while (input.read(data)!=-1) {
-					output.write(data);
-				}
+				output.write(process);
 				output.flush();
 			}
 			
-			//wait until the process stop
-			pr.waitFor();
+			//the file is written
+			
+			Process pr = pb.start();
+			pr.waitFor();				//wait until the process stop
 			
 			/*
 			 * read the process output
