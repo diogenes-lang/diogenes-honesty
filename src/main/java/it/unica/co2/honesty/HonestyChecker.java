@@ -1,7 +1,5 @@
 package it.unica.co2.honesty;
 
-import java.util.Map.Entry;
-
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
@@ -11,13 +9,26 @@ import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
 
-public class HonestyChecker {
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map.Entry;
 
+public class HonestyChecker {
 	
-	public static boolean isHonest(Participant participant) {
+	
+	public static <T extends Participant> boolean isHonest(Class<T> participantClass) {
 		
 		System.out.println("================================================== HONESTY CHECKER ");
-		System.out.println("checking the honesty of "+participant.getClass().getName());
+		System.out.println("checking the honesty of "+participantClass.getName());
+		
+		Participant participant;
+		try {
+			participant = participantClass.newInstance();
+		}
+		catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
+			throw new RuntimeException("error instatiating the class "+participantClass, e);
+		}
+		
 		
 		String maudeProcess = getMaudeProcess(participant);
 		
@@ -52,6 +63,16 @@ public class HonestyChecker {
 		Config conf = JPF.createConfig(
 				new String[]{"+site=/home/nicola/xtext_projects/jpf/site.properties"}
 		);
+		
+		try (
+				InputStream in = HonestyChecker.class.getResourceAsStream("/jpf.properties");
+				)
+		{
+			conf.load(in);
+		}
+		catch (IOException e1) {
+			throw new RuntimeException("unable to load the jpf config file", e1);
+		}
 		
 		conf.setTarget(HonestyChecker.class.getName());
 		conf.setTargetEntry("runProcess([Ljava/lang/String;)V");

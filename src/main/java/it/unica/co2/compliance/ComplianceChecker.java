@@ -9,6 +9,8 @@ import it.unica.co2.lts.LTSState;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.util.ObjectUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 public class ComplianceChecker {
@@ -23,6 +25,17 @@ public class ComplianceChecker {
 		Config conf = JPF.createConfig(
 				new String[]{"+site=/home/nicola/xtext_projects/jpf/site.properties"}
 		);
+		
+		try (
+				InputStream in = ComplianceChecker.class.getResourceAsStream("/jpf.properties");
+				)
+		{
+			conf.load(in);
+		}
+		catch (IOException e1) {
+			throw new RuntimeException("unable to load the jpf config file", e1);
+		}
+		
 		
 		conf.setTarget(ComplianceChecker.class.getName());
 		conf.setTargetEntry("jpfEntry([Ljava/lang/String;)V");

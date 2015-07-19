@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Logger {
-
+	
 	private static final Map<String, Logger> instances = new HashMap<>();
 	
 	private final PrintStream out;

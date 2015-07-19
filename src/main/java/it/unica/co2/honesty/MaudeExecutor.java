@@ -20,13 +20,13 @@ public class MaudeExecutor {
 	
 	static {
 		
-		MAUDE_EXEC = MaudeProperties.getProperty("maude.exec");
-		CO2_MAUDE_DIR = MaudeProperties.getProperty("maude.co2-maude");
-		DELETE_MAUDE_TMP_FILE = MaudeProperties.getBooleanProperty("maude.delete_temp_file", true);
-		VERBOSE = MaudeProperties.getBooleanProperty("maude.verbose", false);
+		MAUDE_EXEC = MaudeProperties.getProperty("honesty.maude.exec");
+		CO2_MAUDE_DIR = MaudeProperties.getProperty("honesty.maude.co2-maude");
+		DELETE_MAUDE_TMP_FILE = MaudeProperties.getBooleanProperty("honesty.maude.delete_temp_file", true);
+		VERBOSE = MaudeProperties.getBooleanProperty("honesty.maude.verbose", false);
 		
-		Validate.notNull(MAUDE_EXEC, "property 'maude.exec' is mandatory");
-		Validate.notNull(CO2_MAUDE_DIR, "property 'maude.co2-maude' is mandatory");
+		Validate.notNull(MAUDE_EXEC, "property 'honesty.maude.exec' is mandatory");
+		Validate.notNull(CO2_MAUDE_DIR, "property 'honesty.maude.co2-maude' is mandatory");
 	}
 	
 	public static boolean invokeMaudeHonestyChecker(String process) {
@@ -115,7 +115,7 @@ public class MaudeExecutor {
 
 		if (checkForWarning(output)) {
 			// the maude checking contains warning
-			System.out.println("[IMPORTANT] Found some warnings in the maude output: rerun with option maude.verbose=true to see the output");
+			System.out.println("[IMPORTANT] Found some warnings in the maude output: rerun with option honesty.maude.verbose=true to see the output");
 			return false;
 		}
 		

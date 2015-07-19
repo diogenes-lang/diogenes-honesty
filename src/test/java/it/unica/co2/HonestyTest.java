@@ -11,7 +11,6 @@ import it.unica.co2.examples.ebookstore.Buyer;
 import it.unica.co2.examples.ebookstore.Distributor;
 import it.unica.co2.examples.ebookstore.Seller;
 import it.unica.co2.honesty.HonestyChecker;
-import it.unica.co2.model.process.Participant;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,8 +21,7 @@ public class HonestyTest {
 	@Test
 	public void apiExample() {
 		
-		Participant p = new APIExampleProcess();
-		boolean honesty = HonestyChecker.isHonest(p);
+		boolean honesty = HonestyChecker.isHonest(APIExampleProcess.class);
 		
 		assertTrue(honesty);
 	}
@@ -31,8 +29,7 @@ public class HonestyTest {
 	@Test
 	public void simpleBuyer() {
 		
-		Participant p = new SimpleBuyer();
-		boolean honesty = HonestyChecker.isHonest(p);
+		boolean honesty = HonestyChecker.isHonest(SimpleBuyer.class);
 		
 		assertTrue(honesty);
 	}
@@ -40,8 +37,7 @@ public class HonestyTest {
 	@Test
 	public void multipleIfThenElse() {
 		
-		Participant p = new MultipleIfThenElseProcess();
-		boolean honesty = HonestyChecker.isHonest(p);
+		boolean honesty = HonestyChecker.isHonest(MultipleIfThenElseProcess.class);
 		
 		assertTrue(honesty);
 	}
@@ -49,8 +45,7 @@ public class HonestyTest {
 	@Test
 	public void composition() {
 		
-		Participant p = new ComposedProcess();
-		boolean honesty = HonestyChecker.isHonest(p);
+		boolean honesty = HonestyChecker.isHonest(ComposedProcess.class);
 		
 		assertTrue(honesty);
 	}
@@ -58,8 +53,7 @@ public class HonestyTest {
 	@Test
 	public void composition2() {
 		
-		Participant p = new Composed2Process();
-		boolean honesty = HonestyChecker.isHonest(p);
+		boolean honesty = HonestyChecker.isHonest(Composed2Process.class);
 		
 		assertTrue(honesty);
 	}
@@ -68,8 +62,7 @@ public class HonestyTest {
 	@Ignore
 	public void parallel() {
 		
-		Participant p = new ParallelProcess();
-		boolean honesty = HonestyChecker.isHonest(p);
+		boolean honesty = HonestyChecker.isHonest(ParallelProcess.class);
 		
 		assertTrue(honesty);
 	}
@@ -77,19 +70,15 @@ public class HonestyTest {
 	@Test
 	public void ebookstore() {
 		
-		Participant p;
 		boolean honesty;
 		
-		p = new Buyer();
-		honesty = HonestyChecker.isHonest(p);
+		honesty = HonestyChecker.isHonest(Buyer.class);
 		assertTrue(honesty);
 		
-		p = new Distributor();
-		honesty = HonestyChecker.isHonest(p);
+		honesty = HonestyChecker.isHonest(Distributor.class);
 		assertTrue(honesty);
 		
-		p = new Seller();
-		honesty = HonestyChecker.isHonest(p);
+		honesty = HonestyChecker.isHonest(Seller.class);
 		assertTrue(honesty);
 	}
 	

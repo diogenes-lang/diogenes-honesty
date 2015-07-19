@@ -12,7 +12,7 @@ public class MaudeProperties {
 	static {
 
 		try (
-				InputStream in = HonestyChecker.class.getResourceAsStream("/maude.properties");
+				InputStream in = MaudeProperties.class.getResourceAsStream("/jpf.properties");
 				)
 		{
 			prop.load(in);
