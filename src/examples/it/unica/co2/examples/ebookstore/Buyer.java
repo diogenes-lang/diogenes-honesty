@@ -11,8 +11,8 @@ import co2api.TST;
 public class Buyer extends Participant {
 	
 	private static final long serialVersionUID = 1L;
-	private static String username = "alice@test.com";
-	private static String password = "alice";
+	private static String username = "nicola.a@test.com";
+	private static String password = "cicciolina";
 	
 	public Buyer() {
 		super(username, password);
@@ -59,10 +59,12 @@ public class Buyer extends Participant {
 				
 			}
 		}
-		catch (NumberFormatException | ContractException tee) {
-
+		catch (NumberFormatException | ContractException e) {
+			logger.log("exception: "+e.getMessage());
 		}
-
+		
+		logger.log("I'm on duty: "+session.amIOnDuty());
+		logger.log("I'm culpable: "+session.amICulpable());
 	}
 
 	@Override
@@ -70,7 +72,7 @@ public class Buyer extends Participant {
 		return username;
 	}
 	
-	public void main(String args[]) throws ContractException {
+	public static void main(String args[]) throws ContractException {
 		new Buyer().run();
 	}
 

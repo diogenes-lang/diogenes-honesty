@@ -9,6 +9,7 @@ import co2api.Private;
 import co2api.Public;
 import co2api.Session;
 import co2api.TST;
+import co2api.TimeExpiredException;
 
 
 public abstract class Participant extends CO2Process {
@@ -41,10 +42,16 @@ public abstract class Participant extends CO2Process {
 	@SuppressWarnings("unused") private String sessionName;
 	
 	protected Session2<TST> tellAndWait(Contract c) {
-		return tellAndWait(c, -1);
+		try {
+			return tellAndWait(c, -1);
+		}
+		catch (TimeExpiredException e) {
+			/* you never go here */
+			throw new RuntimeException(e);
+		}
 	}
 	
-	private Session2<TST> tellAndWait(Contract c, Integer timeout) {
+	private Session2<TST> tellAndWait(Contract c, Integer timeout) throws TimeExpiredException {
 		return waitForSession( tell(c) , timeout);
 	}
 	
@@ -53,11 +60,13 @@ public abstract class Participant extends CO2Process {
 			serializedContract=ObjectUtils.serializeObjectToStringQuietly(c);
 			sessionName = Session2.getNextSessionName();
 			
-			TST tstA = new TST(c.toMiddleware());
-			Private<TST> pvtA = tstA.toPrivate(connection);
+			logger.log("middleware syntax contract <"+c.toMiddleware()+">");
+
+			TST tst = new TST(c.toMiddleware());
+			Private<TST> pvt = tst.toPrivate(connection);
 			
 			logger.log("telling contract <"+c+">");
-			return pvtA.tell();
+			return pvt.tell();
 
 		}
 		catch (ContractException e) {
@@ -66,11 +75,18 @@ public abstract class Participant extends CO2Process {
 	}
 	
 	protected Session2<TST> waitForSession(Public<TST> pbl) {
-		return waitForSession(pbl, -1);
+		try {
+			return waitForSession(pbl, -1);
+		}
+		catch (TimeExpiredException e) {
+			/* you never go here */
+			throw new RuntimeException(e);
+		}
 	}
 	
-	protected Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) {
+	protected Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) throws TimeExpiredException {
 		try {
+			logger.log("waiting for a session");
 			
 			Session<TST> session = null;
 			if (timeout==-1) {

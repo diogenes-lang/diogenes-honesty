@@ -8,6 +8,7 @@ import java.util.Set;
 import co2api.CO2ServerConnection;
 import co2api.ContractException;
 import co2api.ContractModel;
+import co2api.ContractViolationException;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
@@ -72,7 +73,13 @@ public class Session2<T extends ContractModel> extends Session<T>{
 	
 	
 	public Message waitForReceive(String... labels) {
-		return waitForReceive(-1, labels);
+		try {
+			return waitForReceive(-1, labels);
+		}
+		catch (TimeExpiredException e) {
+			/* you never go here */
+			throw new RuntimeException(e);
+		}
 	}
 	
 	public Message waitForReceive(Integer msec, String... labels) throws TimeExpiredException {
@@ -91,7 +98,7 @@ public class Session2<T extends ContractModel> extends Session<T>{
 		}
 		catch (NoSuchFieldException e) {
 			// you are using the real implementation, this is not an error
-			System.out.println("real implementation");
+			System.out.println("(real implementation)");
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
@@ -109,7 +116,7 @@ public class Session2<T extends ContractModel> extends Session<T>{
 				else
 					msg = super.waitForReceive(msec);
 			}
-			catch (ContractException e) {
+			catch (ContractException | ContractViolationException e) {
 				throw new RuntimeException(e);
 			}
 			
@@ -117,7 +124,12 @@ public class Session2<T extends ContractModel> extends Session<T>{
 			
 			for (String l : labels) {
 				if (l.equals(label)) {
-					System.out.println("<<< received "+ msg.getLabel()+"?");
+					try {
+						System.out.println("<<< received "+ msg.getLabel()+"? ["+msg.getStringValue()+"]");
+					}
+					catch (ContractException e) {
+						System.out.println("<<< received "+ msg.getLabel()+"? [unknown]");
+					}
 					return msg;
 				}
 			}

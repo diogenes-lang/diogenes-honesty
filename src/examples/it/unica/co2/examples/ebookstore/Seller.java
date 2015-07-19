@@ -14,8 +14,8 @@ import co2api.TimeExpiredException;
 public class Seller extends Participant {
 
 	private static final long serialVersionUID = 1L;
-	private static String username = "alice@test.com";
-	private static String password = "alice";
+	private static String username = "n.atzei@test.com";
+	private static String password = "cavallo";
 	
 	public Seller() {
 		super(username, password);
@@ -34,10 +34,10 @@ public class Seller extends Participant {
 		
 		// the contract to interact with the distributor
 		Contract cD = internalSum().add(
-				"book",
+				"bookdistrib",
 				externalSum()
-					.add("confirm", internalSum().add("pay").add("quit"))
-					.add("abort")
+					.add("confirmdistr", internalSum().add("paydistrib").add("quitdistr"))
+					.add("abortdistrib")
 		);
 		
 		
@@ -66,6 +66,9 @@ public class Seller extends Participant {
 					handlePayment(msgB.getStringValue());
 					break;
 				}
+				
+				logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
+				logger.log("I'm culpable (sessionB): "+sessionB.amICulpable());
 			}
 			else { // handled with the distributor
 				
@@ -75,20 +78,20 @@ public class Seller extends Participant {
 					
 					Session2<TST> sessionD = waitForSession(pbl, 10000);
 					
-					sessionD.send("book", chosenBook);
+					sessionD.send("bookdistrib", chosenBook);
 					
 					try {
-						Message msgD = sessionD.waitForReceive(10000, "abort", "confirm");
+						Message msgD = sessionD.waitForReceive(10000, "abortdistrib", "confirmdistr");
 						
 						switch(msgD.getLabel()) {
 						
-						case "abort" :
-							logger.log("abort received");
+						case "abortdistrib" :
+							logger.log("abort received from the distributor");
 							sessionB.send("abort");						//complete the session that involve the buyer
 							break;
 							
-						case "confirm" : 
-							logger.log("confirm received");
+						case "confirmdistr" : 
+							logger.log("confirm received from the distributor");
 							
 							sessionB.send("confirm");					//continue the interaction with the buyer
 							
@@ -99,19 +102,19 @@ public class Seller extends Participant {
 								
 								case "quit" :
 									logger.log("quit received");
-									sessionD.send("quit");							//quit the distributor
+									sessionD.send("quitdistr");							//quit the distributor
 									break;
 									
 								case "pay" : 
 									logger.log("pay received");
 									handlePayment(msgB.getStringValue());			//the buyer sent you the money
-									sessionD.send("pay", bookPrice(chosenBook));	//pay the distributor
+									sessionD.send("paydistrib", bookPrice(chosenBook));	//pay the distributor
 									break;
 								}
 							}
 							catch (TimeExpiredException e) {
 								//if the buyer not sent 'quit' or 'pay', you are culpable with the distributor
-								sessionD.send("quit");
+								sessionD.send("quitdistr");
 								
 								//and now, if the buyer sent you something? you are culpable in sessionB?
 								//no, because the buyer does not expect anything
@@ -120,17 +123,36 @@ public class Seller extends Participant {
 								//maybe this waitForReceive is unnecessary
 							}
 						}
+						
+						logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
+						logger.log("I'm culpable (sessionB): "+sessionB.amICulpable());
+						
+						logger.log("I'm on duty (sessionD): "+sessionD.amIOnDuty());
+						logger.log("I'm culpable (sessionD): "+sessionD.amICulpable());
+						
 					}
 					catch (TimeExpiredException e){
+						
+						logger.log("no action was received in time");
+						
 						//if the distributor not sent 'abort' or 'confirm', you are culpable in sessionB
 						sessionB.send("abort");		//this action make you honest in sessionB
 						
 						//and now, if the distributor sent you something? you are culpable in sessionD!
 						new AbortSessionD2(sessionD).run();
 						//you are honest
+						
+						logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
+						logger.log("I'm culpable (sessionB): "+sessionB.amICulpable());
+						
+						logger.log("I'm on duty (sessionD): "+sessionD.amIOnDuty());
+						logger.log("I'm culpable (sessionD): "+sessionD.amICulpable());
 					}
 				}
 				catch (TimeExpiredException e){
+					
+					logger.log("sessionD not fused in time");
+					
 					//if the session is never fused, you are culpable in sessionB
 					sessionB.send("abort");		//this action make you honest in sessionB
 					
@@ -140,6 +162,12 @@ public class Seller extends Participant {
 					//and now, if the distributor sent you something? you are culpable in sessionD!
 					new AbortSessionD1(sessionD).run();
 					//you are honest
+					
+					logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
+					logger.log("I'm culpable (sessionB): "+sessionB.amICulpable());
+					
+					logger.log("I'm on duty (sessionD): "+sessionD.amIOnDuty());
+					logger.log("I'm culpable (sessionD): "+sessionD.amICulpable());
 				}
 			}
 			
@@ -148,7 +176,6 @@ public class Seller extends Participant {
 			throw new RuntimeException(e);
 		}
 		
-		
 	}
 
 	@Override
@@ -156,7 +183,7 @@ public class Seller extends Participant {
 		return username;
 	}
 	
-	public void main(String args[]) throws ContractException {
+	public static void main(String args[]) throws ContractException {
 		new Seller().run();
 	}
 	
@@ -192,7 +219,7 @@ public class Seller extends Participant {
 		@Override
 		public void run() {
 			
-			sessionD.send("book");
+			sessionD.send("bookdistrib");
 			
 			new AbortSessionD2(sessionD).run();
 		}
@@ -210,55 +237,16 @@ public class Seller extends Participant {
 		
 		@Override
 		public void run() {
-			Message msgD = sessionD.waitForReceive("abort", "confirm");		//no timeout
+			Message msgD = sessionD.waitForReceive("abortdistrib", "confirmdistr");		//no timeout
 			
 			switch(msgD.getLabel()) {
 			
-			case "abort" :
+			case "abortdistrib" :
 				break;
-			case "confirm" : sessionD.send("quit");
+			case "confirmdistr" : sessionD.send("quitdistr");
 				break;
 			}
 		}
 	}
 
-	
-	
-//	private static class BuyerDirectInteraction extends CO2Process {
-//
-//		private static final long serialVersionUID = 1L;
-//		
-//		private Session2<TST> session;
-//		
-//		protected BuyerDirectInteraction(Session2<TST> session) {
-//			super("HandleInternally");
-//			this.session = session;
-//		}
-//
-//		@Override
-//		public void run() {
-//			session.send("confirm");
-//			
-//			Message msgB = session.waitForReceive("quit", "pay");
-//
-//			switch(msgB.getLabel()) {
-//			
-//			case "quit" :
-//				logger.log("quit received");
-//				break;
-//				
-//			case "pay" : 
-//				logger.log("pay received");
-//				try {
-//					handlePayment(msgB.getStringValue());
-//				}
-//				catch (ContractException e) {
-//					throw new RuntimeException(e);
-//				}
-//				break;
-//			}
-//		}
-//		
-//	}
-	
 }

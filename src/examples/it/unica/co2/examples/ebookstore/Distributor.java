@@ -11,8 +11,8 @@ import co2api.TST;
 public class Distributor extends Participant {
 	
 	private static final long serialVersionUID = 1L;
-	private static String username = "alice@test.com";
-	private static String password = "alice";
+	private static String username = "bob@test.com";
+	private static String password = "bob";
 	
 	public Distributor() {
 		super(username, password);
@@ -22,10 +22,10 @@ public class Distributor extends Participant {
 	public void run() {
 		
 		Contract c = externalSum().add(
-				"book",
+				"bookdistrib",
 				internalSum()
-					.add("confirm", externalSum().add("pay").add("quit"))
-					.add("abort")
+					.add("confirmdistr", externalSum().add("paydistrib").add("quitdistr"))
+					.add("abortdistrib")
 		);
 		
 		Session2<TST> session = tellAndWait(c);
@@ -35,34 +35,36 @@ public class Distributor extends Participant {
 		
 
 		try {
-			msg = session.waitForReceive("book");
+			msg = session.waitForReceive("bookdistrib");
 			isbn = msg.getStringValue();
 			
 			if (isPresent(isbn)) {
-				session.send("confirm");
+				session.send("confirmdistr");
 				
-				msg = session.waitForReceive("pay", "quit");
+				msg = session.waitForReceive("paydistrib", "quitdistr");
 				
 				switch (msg.getLabel()) {
 				
-				case "pay":	
+				case "paydistrib":	
 					logger.log("pay received");
 					break;
 				
-				case "quit": 
+				case "quitdistr": 
 					logger.log("quit received");
 					break;
 				}
 			}
 			else {
-				session.send("abort");
+				session.send("abortdistrib");
 			} 
 			
 		}
 		catch (ContractException e) {
-
+			logger.log("exception: "+e.getMessage());
 		}
-			
+		
+		logger.log("I'm on duty: "+session.amIOnDuty());
+		logger.log("I'm culpable: "+session.amICulpable());
 	}
 
 	@Override
@@ -70,7 +72,7 @@ public class Distributor extends Participant {
 		return username;
 	}
 	
-	public void main(String args[]) throws ContractException {
+	public static void main(String args[]) throws ContractException {
 		new Distributor().run();
 	}
 

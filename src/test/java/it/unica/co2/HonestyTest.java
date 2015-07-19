@@ -75,26 +75,22 @@ public class HonestyTest {
 	}
 	
 	@Test
-	public void buyer() {
+	public void ebookstore() {
 		
-		Participant p = new Buyer();
-		boolean honesty = HonestyChecker.isHonest(p);
+		Participant p;
+		boolean honesty;
+		
+		p = new Buyer();
+		honesty = HonestyChecker.isHonest(p);
+		assertTrue(honesty);
+		
+		p = new Distributor();
+		honesty = HonestyChecker.isHonest(p);
+		assertTrue(honesty);
+		
+		p = new Seller();
+		honesty = HonestyChecker.isHonest(p);
 		assertTrue(honesty);
 	}
 	
-	@Test
-	public void distributor() {
-		
-		Participant p = new Distributor();
-		boolean honesty = HonestyChecker.isHonest(p);
-		assertTrue(honesty);
-	}
-	
-	@Test
-	public void seller() {
-		
-		Participant p = new Seller();
-		boolean honesty = HonestyChecker.isHonest(p);
-		assertTrue(honesty);
-	}
 }
