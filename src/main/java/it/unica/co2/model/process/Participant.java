@@ -17,10 +17,17 @@ public abstract class Participant extends CO2Process {
 	private static final long serialVersionUID = 1L;
 	
 	protected transient CO2ServerConnection connection;
-
+	private final String username;
+	private final String password;
+	
 	protected Participant(String username, String password) {
 		super(username);
-		
+		this.username = username;
+		this.password = password;
+	}
+	
+	
+	private void setConnection() {
 		try {
 			logger.log("creating new connection: username=<"+username+"> password=<"+password+">");
 			connection = new CO2ServerConnection(username, password);
@@ -29,7 +36,6 @@ public abstract class Participant extends CO2Process {
 			throw new RuntimeException(e);
 		}
 	}
-	
 	
 	
 	abstract protected String getUsername();
@@ -56,6 +62,10 @@ public abstract class Participant extends CO2Process {
 	}
 	
 	protected Public<TST> tell (Contract c) {
+		
+		if (connection==null)
+			setConnection();
+		
 		try {
 			serializedContract=ObjectUtils.serializeObjectToStringQuietly(c);
 			sessionName = Session2.getNextSessionName();

@@ -37,8 +37,8 @@ public class MaudeExecutor {
 		File maudeExecutable = new File(MAUDE_EXEC);
 		File co2MaudeDir = new File(CO2_MAUDE_DIR);
 		
-		Validate.isTrue(maudeExecutable.isFile());
-		Validate.isTrue(co2MaudeDir.isDirectory());
+		Validate.isTrue(maudeExecutable.isFile(), "file "+maudeExecutable+" is not a file or not exists");
+		Validate.isTrue(co2MaudeDir.isDirectory(), "file "+maudeExecutable+" is not a directory or not exists");
 		
 		File tmpFile = new File(co2MaudeDir, System.currentTimeMillis()+"_java_honesty.maude");
 		
