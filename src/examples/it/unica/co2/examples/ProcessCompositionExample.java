@@ -10,7 +10,7 @@ import co2api.ContractException;
 import co2api.Message;
 import co2api.TST;
 
-public class ProcessComposition2Example {
+public class ProcessCompositionExample {
 
 	public static class ProcessA extends CO2Process {
 
@@ -25,31 +25,45 @@ public class ProcessComposition2Example {
 
 		@Override
 		public void run() {
-			session.waitForReceive("a", "b");
+			session.send("a");
 			
 			new ProcessA(session).run();
 		}
 	}
 	
-	public static class Composed2Process extends Participant {
+	public static class ProcessB extends CO2Process {
+
+		private static final long serialVersionUID = 1L;
+
+		private final Session2<TST> session;
+		
+		protected ProcessB(Session2<TST> session) {
+			super("ProcessB");
+			this.session = session;
+		}
+
+		@Override
+		public void run() {
+			session.send("b");
+		}
+	}
+	
+	public static class ComposedProcess extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
 		private static String username = "alice@test.com";
 		private static String password = "alice";
 
-		public Composed2Process() {
+		public ComposedProcess() {
 			super(username, password);
 		}
 
 		@Override
 		public void run() {
 			
-			Recursion rec = recursion();
-			Contract recBody = externalSum().add("a", rec).add("b", rec);
-			rec.setContract(recBody);
-			
-			Contract C = externalSum().add("request", rec);
+			Recursion rec = recursion().setContract(internalSum().add("a"));
+			Contract C = externalSum().add("request", internalSum().add("a", rec).add("b"));
 			
 			Session2<TST> session = tellAndWait(C);
 
@@ -65,20 +79,19 @@ public class ProcessComposition2Example {
 				n=0;
 			}
 			
-			new ProcessA(session).run();
+			if (n>=0)
+				new ProcessA(session).run();
+			else
+				new ProcessB(session).run();
 				
 //			session.send("end");		//JPF fails
 			
 		}
 
-		@Override
-		protected String getUsername() {
-			return username;
-		}
 	}
 	
 	
 	public static void main(String[] args) throws ContractException {
-		new Composed2Process().run();
+		new ComposedProcess().run();
 	}
 }

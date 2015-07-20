@@ -70,11 +70,6 @@ public class ParallelProcessExample {
 			tB.start();
 		}
 
-		@Override
-		protected String getUsername() {
-			return username;
-		}
-		
 	}
 	
 	public static void main(String[] args) {

@@ -38,8 +38,6 @@ public abstract class Participant extends CO2Process {
 	}
 	
 	
-	abstract protected String getUsername();
-	
 	
 	/*
 	 * JPF-fields

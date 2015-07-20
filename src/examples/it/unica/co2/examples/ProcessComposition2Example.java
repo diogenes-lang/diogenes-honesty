@@ -72,10 +72,6 @@ public class ProcessComposition2Example {
 			
 		}
 
-		@Override
-		protected String getUsername() {
-			return username;
-		}
 	}
 	
 	

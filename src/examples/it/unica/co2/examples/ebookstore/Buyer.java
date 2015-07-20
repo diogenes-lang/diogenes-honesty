@@ -66,11 +66,6 @@ public class Buyer extends Participant {
 		logger.log("I'm on duty: "+session.amIOnDuty());
 		logger.log("I'm culpable: "+session.amICulpable());
 	}
-
-	@Override
-	protected String getUsername() {
-		return username;
-	}
 	
 	public static void main(String args[]) throws ContractException {
 		new Buyer().run();

@@ -7,6 +7,7 @@ import it.unica.co2.examples.ParallelProcessExample.ParallelProcess;
 import it.unica.co2.examples.ProcessComposition2Example.Composed2Process;
 import it.unica.co2.examples.ProcessCompositionExample.ComposedProcess;
 import it.unica.co2.examples.SimpleBuyer;
+import it.unica.co2.examples.blackjack.Dealer;
 import it.unica.co2.examples.ebookstore.Buyer;
 import it.unica.co2.examples.ebookstore.Distributor;
 import it.unica.co2.examples.ebookstore.Seller;
@@ -79,6 +80,14 @@ public class HonestyTest {
 		assertTrue(honesty);
 		
 		honesty = HonestyChecker.isHonest(Seller.class);
+		assertTrue(honesty);
+	}
+	
+	@Test
+	public void blackjack() {
+		
+		boolean honesty = HonestyChecker.isHonest(Dealer.class);
+		
 		assertTrue(honesty);
 	}
 	

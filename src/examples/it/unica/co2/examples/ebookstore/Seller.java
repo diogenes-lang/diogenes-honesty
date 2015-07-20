@@ -178,11 +178,6 @@ public class Seller extends Participant {
 		
 	}
 
-	@Override
-	protected String getUsername() {
-		return username;
-	}
-	
 	public static void main(String args[]) throws ContractException {
 		new Seller().run();
 	}

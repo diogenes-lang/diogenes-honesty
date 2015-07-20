@@ -19,11 +19,6 @@ public class MultipleIfThenElseProcess extends Participant {
 		super(username, password);
 	}
 
-	@Override
-	protected String getUsername() {
-		return username;
-	}
-	
 	public static void main(String[] args) throws ContractException {
 		new MultipleIfThenElseProcess().run();
 	}
