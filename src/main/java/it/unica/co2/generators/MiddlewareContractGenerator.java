@@ -46,7 +46,7 @@ public class MiddlewareContractGenerator extends AbstractContractGenerator{
 		if (contract.getNext()!=null)
 			sb.append(" . (")
 			.append( this.convert(contract.getNext()))
-			.append(" ) ");
+			.append(" )");
 
 		return sb.toString();
 	}
@@ -60,7 +60,7 @@ public class MiddlewareContractGenerator extends AbstractContractGenerator{
 		if (contract.getNext()!=null)
 			sb.append(" . ( ")
 			.append( this.convert(contract.getNext()))
-			.append(" ) ");
+			.append(" )");
 
 		return sb.toString();
 	}
@@ -68,12 +68,12 @@ public class MiddlewareContractGenerator extends AbstractContractGenerator{
 	@Override
 	protected String convert(Recursion recursion) {
 		if (recursions.containsKey(recursion))
-			return recursions.get(recursion);
+			return "'"+recursions.get(recursion)+"'";
 		
 		String recName = getRecursionName();
 		recursions.put(recursion, recName);
 		
-		return "rec "+recName+" . ( "+ this.convert(recursion.getContract()) +" ) ";
+		return "REC '"+recName+"' [ "+ this.convert(recursion.getContract()) +" ] ";
 	}
 	
 	

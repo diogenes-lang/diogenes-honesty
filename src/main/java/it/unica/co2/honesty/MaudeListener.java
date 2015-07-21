@@ -92,7 +92,9 @@ public class MaudeListener extends ListenerAdapter {
 	private Map<String, TauDTO> taus = new HashMap<>();
 	private int ifThenElseCount=0;
 	
-	private Stack<SumStackFrame> sumStack = new Stack<SumStackFrame>();
+	private Stack<SumStackFrame> sumStack = new Stack<>();
+	
+	private Stack<IfThenElseStackFrame> ifElseStack = new Stack<>();
 	
 	/*
 	 * if the ifInstruction is into this interval, skip it (means that is related to switch-statement)
@@ -123,14 +125,11 @@ public class MaudeListener extends ListenerAdapter {
 			
 			MethodInfo invokedMethod = invokeInsn.getInvokedMethod();
 			ClassInfo invokedClass = invokedMethod.getClassInfo();
-//			ClassInfo callerClass = ci;
 			
 			if (
 					invokedMethod.getName().equals("run") &&
 					envProcesses.containsKey(invokedClass.getName())
 					) {
-
-//				log.info("INVOKE : caller "+callerClass.getName()+" --> "+invokedClass.getName()+"#"+invokedMethod.getName());
 				
 				ProcessDefinitionDTO proc = envProcesses.get(invokedClass.getName());
 				
@@ -146,9 +145,6 @@ public class MaudeListener extends ListenerAdapter {
 					 */
 					log.info("recursive call detected, terminating");
 					Instruction nextInsn = invokeInsn.getNext();
-					
-//					log.info("INVOKE INSN - "+invokeInsn.getPosition()+": "+invokeInsn);
-//					log.info("INVOKE NEXT - "+nextInsn.getPosition()+": "+nextInsn);
 					
 					ti.skipInstruction(nextInsn);
 				}
@@ -179,10 +175,10 @@ public class MaudeListener extends ListenerAdapter {
 			 */
 			log.info("");
 			log.info("SWITCH : setting start="+switchInsn.getPosition()+" , end="+switchInsn.getTarget());
+			log.info("methodIfExcluded: "+methodInfoIfExcluded);
 			startIfExcluded = switchInsn.getPosition();		// where the switch starts
 			endIfExcluded = switchInsn.getTarget();			// where the switch ends
 			methodInfoIfExcluded = switchInsn.getMethodInfo();
-			log.info("jjjjjjjjjjjjjjj: "+methodInfoIfExcluded);
 		}
 		
 		
@@ -202,6 +198,7 @@ public class MaudeListener extends ListenerAdapter {
 		if (
 				insn instanceof IfInstruction && 
 				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into the class under test
+				insn.getMethodInfo().getName().equals("run") && 			// consider only if into the run method
 				!ci.getName().equals(Participant.class.getName()) && 	// ignore if instructions into Participant.class
 					(
 						insn.getPosition()<startIfExcluded || 
@@ -246,6 +243,7 @@ public class MaudeListener extends ListenerAdapter {
 				vm.getSystemState().setNextChoiceGenerator(cg);
 				ti.skipInstruction(insn);
 				
+				pushIfElse();
 			}
 			else {
 
@@ -275,22 +273,28 @@ public class MaudeListener extends ListenerAdapter {
 					 * then branch
 					 */
 					log.info("THEN branch, setting tau, choice: "+myChoice);
-					log.info("next insn: "+ifInsn.getNext().getPosition());
+//					log.info("next insn: "+ifInsn.getNext().getPosition());
 					
 					setCurrentPrefix(thenTau);		//set the current prefix
 
 					ti.skipInstruction(ifInsn.getNext());
+					
+					setPeekThen();
+					popIfElse();
 				}
 				else {
 					/*
 					 * else branch
 					 */
 					log.info("ELSE branch, setting tau, choice: "+myChoice);
-					log.info("next insn: "+ifInsn.getTarget().getPosition());
+//					log.info("next insn: "+ifInsn.getTarget().getPosition());
 
 					setCurrentPrefix(elseTau);		//set the current prefix
 					
 					ti.skipInstruction(ifInsn.getTarget());
+					
+					setPeekElse();
+					popIfElse();
 				}
 				
 				printInfo();
@@ -501,8 +505,16 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo();
 			log.info("--RUN ENV PROCESS-- (method exited) -> "+ci.getSimpleName());
 			
-			if (checkPendingSum()) {
-				log.info("there are some pending sum, not removing from stack");
+			boolean pendingSum = checkPendingSum();
+			boolean pendingIfElse = checkPendingIfThenElse();
+			
+			if (pendingSum || pendingIfElse) {
+				
+				if (pendingSum)
+					log.info("there are some pending sum, not removing from stack");
+				
+				if (pendingIfElse)
+					log.info("there are some pending if then else, not removing from stack");
 			}
 			else {
 				log.info("removing process from stack");
@@ -930,6 +942,43 @@ public class MaudeListener extends ListenerAdapter {
 		return false;
 	}
 	
+	
+	private void pushIfElse() {
+		
+		IfThenElseStackFrame frame = new IfThenElseStackFrame();
+		frame.thenStarted = false;
+		frame.elseStarted = false;
+		frame.ownerProcessFrame = co2ProcessesStack.peek().id;
+		
+		ifElseStack.push(frame);
+	}
+	
+	private void setPeekThen() {
+		ifElseStack.peek().thenStarted = true;
+	}
+	
+	private void setPeekElse() {
+		ifElseStack.peek().elseStarted = true;
+	}
+
+	private void popIfElse() {
+		if (ifElseStack.peek().thenStarted && ifElseStack.peek().elseStarted) {
+			ifElseStack.pop();
+		}
+	}
+	
+	private boolean checkPendingIfThenElse() {
+		
+		int currentProcessFrameId = co2ProcessesStack.peek().id;
+		
+		for (IfThenElseStackFrame frame : ifElseStack) {
+			if (frame.ownerProcessFrame==currentProcessFrameId)
+				return true;
+		}
+		
+		return false;
+	}
+	
 	//--------------------------------- GETTERS and SETTERS -------------------------------
 	public ProcessDTO getCo2Process() {
 		return co2ProcessesStack.firstElement().process;
@@ -959,7 +1008,12 @@ public class MaudeListener extends ListenerAdapter {
 	private static class SumStackFrame {
 		SumDTO sum;
 		Set<String> toReceive;
-		int ownerProcessFrame;	//the process that own the sum
+		int ownerProcessFrame;	//the frame that own the sum
 	}
 	
+	private static class IfThenElseStackFrame {
+		boolean thenStarted;
+		boolean elseStarted;
+		int ownerProcessFrame;	//the frame that own the sum
+	}
 }

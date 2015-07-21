@@ -14,7 +14,7 @@ import java.util.Map;
 public abstract class AbstractContractGenerator {
 
 	protected Contract contract;
-	private int count = 0;
+	private char count = 'x';
 	protected Map<Recursion,String> recursions = new HashMap<Recursion,String>();
 
 	public AbstractContractGenerator() {
@@ -26,7 +26,7 @@ public abstract class AbstractContractGenerator {
 	}
 
 	protected String getRecursionName() {
-		return "X"+count++;
+		return "x"+count++;
 	}
 
 	public String generate() {
@@ -57,4 +57,5 @@ public abstract class AbstractContractGenerator {
 	public Collection<String> getRecursionNames() {
 		return recursions.values();
 	}
+	
 }
