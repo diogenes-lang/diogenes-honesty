@@ -4,8 +4,10 @@ syntax: glob
 .project   # eclipse
 .settings  # eclipse
 .launch    # eclipse
+.gradle
 
 bin
 target
+build
 xtend-gen
 
