@@ -107,7 +107,6 @@ public class MaudeListener extends ListenerAdapter {
 	 * env
 	 */
 	private Map<String, ProcessDefinitionDTO> envProcesses = new HashMap<>();
-	private int envProcessesCount=0;
 	
 	
 	
@@ -146,7 +145,7 @@ public class MaudeListener extends ListenerAdapter {
 					log.info("recursive call detected, terminating");
 					Instruction nextInsn = invokeInsn.getNext();
 					
-					ti.skipInstruction(nextInsn);
+					ti.skipInstruction(nextInsn);	//skip the invoke
 				}
 				else {
 					log.info("NOT recursive call");
@@ -667,7 +666,7 @@ public class MaudeListener extends ListenerAdapter {
 			else {
 				
 				ProcessDefinitionDTO proc = new ProcessDefinitionDTO();
-				proc.name = getEnvProcessName();
+				proc.name = ci.getSimpleName();
 				proc.firstPrefix = new TauDTO();
 				proc.process = new SumDTO(proc.firstPrefix);
 				
@@ -809,10 +808,6 @@ public class MaudeListener extends ListenerAdapter {
 	
 	private String getContractName() {
 		return "C"+contractCount++;
-	}
-	
-	private String getEnvProcessName() {
-		return "P"+envProcessesCount++;
 	}
 	
 	private String getFirstStringArgument(ThreadInfo currentThread) {
@@ -980,6 +975,10 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	//--------------------------------- GETTERS and SETTERS -------------------------------
+	public Class<? extends Participant> getProcessUnderTestClass() {
+		return processUnderTestClass;
+	}
+	
 	public ProcessDTO getCo2Process() {
 		return co2ProcessesStack.firstElement().process;
 	}

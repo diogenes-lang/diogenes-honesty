@@ -1,0 +1,33 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+version = '1.0.0'
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/examples'
+        }
+    }
+}
+
+jar {
+	destinationDir file(".")
+	archiveName "co2-java-honesty-${version}.${extension}"
+//	from sourceSets.main.allSource
+
+	into('lib') {
+        from 'lib'
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile fileTree(dir: 'lib', include: '*.jar', exclude: "co2apiHL-fake-1.0.0.jar")
+}

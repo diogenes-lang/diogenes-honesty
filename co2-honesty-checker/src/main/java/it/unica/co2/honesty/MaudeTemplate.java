@@ -29,7 +29,7 @@ public class MaudeTemplate {
 		String maudeProcess = maudeTemplate;
 
 		String moduleName = "JAVA-PROCESS";
-		String processName = "P";
+		String processName = maudeListener.getProcessUnderTestClass().getSimpleName();
 		
 		Collection<String> contractNames = maudeListener.getContracts().keySet();
 		Collection<String> variableNames = getVariableNames(maudeListener.getContracts().values());

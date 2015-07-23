@@ -17,15 +17,38 @@
 		</plugins>
 	</build>
 	<dependencies>
+	
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-			<version>3.4</version>
+			<groupId>jpf</groupId>
+			<artifactId>jpf</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/jpf.jar</systemPath>
 		</dependency>
+	
+		<dependency>
+			<groupId>co2apiHL</groupId>
+			<artifactId>co2apiHL</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/co2apiHL.jar</systemPath>
+		</dependency>
+		
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/commons-lang3-3.4.jar</systemPath>
+		</dependency>
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/lib/junit-4.12.jar</systemPath>
 		</dependency>
+		
 	</dependencies>
 </project>
