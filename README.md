@@ -6,10 +6,13 @@
 Import as "Existing projects into Workspace". There isn't any build management at the moment.
 
 ## Configuration ##
-You must set some properties into [jpf.properties](/co2-honesty-checker/src/main/resources/jpf.properties):
+There is no mandatory property to be set. You can find these into [co2.properties](/co2-honesty-checker/src/main/resources/co2.properties). If you get trouble, try to modify
 
-* `honesty.maude.co2-maude = <absolute path of the co2-maude folder>`
-* `honesty.maude.exec = <absolute path of the executable maude file>`
+* `honesty.maude.co2-maude`
+* `honesty.maude.dir`
+* `honesty.maude.exec`
+
+See relative descriptions to set the correct value.
 
 # Examples #
 All examples are under [src/examples](co2-honesty-checker/src/examples/).
@@ -90,4 +93,3 @@ public void simpleBuyer() {
 	assertTrue(honesty);
 }
 ```
-
