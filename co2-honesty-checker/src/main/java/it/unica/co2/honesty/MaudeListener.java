@@ -43,6 +43,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,7 +80,7 @@ public class MaudeListener extends ListenerAdapter {
 	/*
 	 * all told contracts
 	 */
-	private Map<String, Contract> contracts = new HashMap<>();
+	private Map<String, Contract> contracts = new TreeMap<>();
 	private int contractCount=0;
 	
 	private List<String> sessions = new ArrayList<>();	// all sessions of the process under test
@@ -107,7 +108,7 @@ public class MaudeListener extends ListenerAdapter {
 	 * env
 	 */
 	private Map<String, ProcessDefinitionDTO> envProcesses = new HashMap<>();
-	
+	private List<ProcessDefinitionDTO> envProcessesList  = new ArrayList<>();
 	
 	
 	@Override
@@ -691,6 +692,7 @@ public class MaudeListener extends ListenerAdapter {
 				// store the process for future retrieve (when another one1 call it)
 				log.info("saving envProcess "+className);
 				envProcesses.put(className, proc);
+				envProcessesList.add(proc);
 			}
 		}
 		
@@ -992,7 +994,17 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	public Collection<ProcessDefinitionDTO> getEnvProcesses() {
-		return envProcesses.values();
+		return envProcessesList;
+	}
+	
+	public Collection<String> getEnvProcessesNames() {
+		List<String> tmp = new ArrayList<>();
+		
+		for (ProcessDefinitionDTO p : envProcessesList) {
+			tmp.add(p.name);
+		}
+		
+		return tmp;
 	}
 	
 	

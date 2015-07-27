@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +32,7 @@ public class MaudeTemplate {
 		
 		Collection<String> contractNames = maudeListener.getContracts().keySet();
 		Collection<String> variableNames = getVariableNames(maudeListener.getContracts().values());
-		Collection<String> processesIde =  maudeListener.getEnvProcesses().stream().map((x)-> {return x.name;}).collect(Collectors.toSet());
+		Collection<String> processesIde =  maudeListener.getEnvProcessesNames();
 		
 		String ops = StringUtils.join( 
 				getOps(
