@@ -27,7 +27,7 @@ public class ComplianceChecker {
 		);
 		
 		try (
-				InputStream in = ComplianceChecker.class.getResourceAsStream("/jpf.properties");
+				InputStream in = ComplianceChecker.class.getResourceAsStream("/co2.properties");
 				)
 		{
 			conf.load(in);

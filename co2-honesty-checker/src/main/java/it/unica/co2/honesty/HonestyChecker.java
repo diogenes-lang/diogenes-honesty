@@ -65,7 +65,7 @@ public class HonestyChecker {
 		);
 		
 		try (
-				InputStream in = HonestyChecker.class.getResourceAsStream("/jpf.properties");
+				InputStream in = HonestyChecker.class.getResourceAsStream("/co2.properties");
 				)
 		{
 			conf.load(in);

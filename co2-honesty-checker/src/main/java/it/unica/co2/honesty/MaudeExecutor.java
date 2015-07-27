@@ -13,29 +13,14 @@ import org.apache.commons.lang3.Validate;
 
 public class MaudeExecutor {
 
-	private static final boolean DELETE_MAUDE_TMP_FILE;
-	private static final String MAUDE_EXEC;
-	private static final String CO2_MAUDE_DIR;
-	private static final boolean VERBOSE;
-	
-	static {
-		
-		MAUDE_EXEC = MaudeProperties.getProperty("honesty.maude.exec");
-		CO2_MAUDE_DIR = MaudeProperties.getProperty("honesty.maude.co2-maude");
-		DELETE_MAUDE_TMP_FILE = MaudeProperties.getBooleanProperty("honesty.maude.delete_temp_file", true);
-		VERBOSE = MaudeProperties.getBooleanProperty("honesty.maude.verbose", false);
-		
-		Validate.notNull(MAUDE_EXEC, "property 'honesty.maude.exec' is mandatory");
-		Validate.notNull(CO2_MAUDE_DIR, "property 'honesty.maude.co2-maude' is mandatory");
-	}
 	
 	public static boolean invokeMaudeHonestyChecker(String process) {
 		
 		System.out.println("--------------------------------------------------");
 		System.out.println("model checking the maude process");
 		
-		File maudeExecutable = new File(MAUDE_EXEC);
-		File co2MaudeDir = new File(CO2_MAUDE_DIR);
+		File maudeExecutable = MaudeProperties.getMaudeExec();
+		File co2MaudeDir = MaudeProperties.getCo2MaudeDir();
 		
 		Validate.isTrue(maudeExecutable.isFile(), "file "+maudeExecutable+" is not a file or not exists");
 		Validate.isTrue(co2MaudeDir.isDirectory(), "file "+maudeExecutable+" is not a directory or not exists");
@@ -94,7 +79,7 @@ public class MaudeExecutor {
 			return false;
 		}
 		finally {
-			if (DELETE_MAUDE_TMP_FILE)
+			if (MaudeProperties.isDeleteTempFile())
 				tmpFile.delete();
 		}
 		
@@ -108,7 +93,7 @@ public class MaudeExecutor {
 	 */
 	private static boolean manageOutput(String output) {
 		
-		if (VERBOSE) {
+		if (MaudeProperties.isVerbose()) {
 			System.out.println("-------------------------------------------------- maude output");
 			System.out.println(output);
 		}
