@@ -133,6 +133,8 @@ public class Session2<T extends ContractModel> extends Session<T>{
 					return msg;
 				}
 			}
+			
+			System.out.println("<<< received unexpected "+ msg.getLabel()+"? (unhandled)");
 		}
 	}
 	

@@ -13,6 +13,7 @@ import it.unica.co2.examples.blackjack.Player;
 import it.unica.co2.examples.ebookstore.Buyer;
 import it.unica.co2.examples.ebookstore.Distributor;
 import it.unica.co2.examples.ebookstore.Seller;
+import it.unica.co2.examples.voucher.VoucherSeller;
 import it.unica.co2.honesty.HonestyChecker;
 
 import org.junit.Ignore;
@@ -100,4 +101,12 @@ public class HonestyTest {
 		assertTrue(honesty);
 	}
 	
+	@Test
+	public void voucher() {
+		
+		boolean honesty;
+		
+		honesty = HonestyChecker.isHonest(VoucherSeller.class);
+		assertTrue(honesty);
+	}
 }

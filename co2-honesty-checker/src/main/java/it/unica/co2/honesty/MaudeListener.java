@@ -197,8 +197,8 @@ public class MaudeListener extends ListenerAdapter {
 		
 		if (
 				insn instanceof IfInstruction && 
-				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into the class under test
-				insn.getMethodInfo().getName().equals("run") && 			// consider only if into the run method
+				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into classes are instance of CO2Process
+				insn.getMethodInfo().getName().equals("run") && 		// consider only if into the run method
 				!ci.getName().equals(Participant.class.getName()) && 	// ignore if instructions into Participant.class
 					(
 						insn.getPosition()<startIfExcluded || 
@@ -727,6 +727,14 @@ public class MaudeListener extends ListenerAdapter {
 	public void choiceGeneratorAdvanced (VM vm, ChoiceGenerator<?> currentCG) {
 		log.info(">>>>>>>>>> ADVANCE >>>>>>>>>>: "+currentCG.getId());
 	}
+	
+	@Override
+	public void searchStarted(Search search) {
+		log.info("");
+		log.info("vvvvvvvvvvvvvvvvv SEARCH STARTED vvvvvvvvvvvvvvvvv");
+		log.info("thread ID: "+search.getVM().getCurrentThread().getId());
+	}
+	
 	
 	@Override
 	public void searchFinished(Search search) {

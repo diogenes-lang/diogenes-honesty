@@ -114,5 +114,10 @@ public abstract class Participant extends CO2Process {
 	
 	
 	
-	protected void startNewMacro(String name) {}
+	protected long parallel(CO2Process process) {
+		logger.log("starting parallel process");
+		Thread t = new Thread(process);
+		t.start();
+		return t.getId();
+	}
 }

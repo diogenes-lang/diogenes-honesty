@@ -10,6 +10,32 @@ import co2api.TST;
 
 public class ParallelProcessExample {
 
+	public static class ParallelProcess extends Participant {
+		
+		private static final long serialVersionUID = 1L;
+		
+		private static String username = "bob@test.com";
+		private static String password = "bob";
+		
+		public ParallelProcess() {
+			super(username, password);
+		}
+
+		@Override
+		public void run() {
+			
+			Contract C = internalSum().add("a").add("b");
+			
+			Session2<TST> session = tellAndWait(C);
+			
+			Thread tA = new Thread(new ProcessA(session));
+			Thread tB = new Thread(new ProcessB(session));
+			
+			tA.start();
+			tB.start();
+		}
+
+	}
 	
 	private static class ProcessA extends CO2Process {
 		
@@ -43,33 +69,6 @@ public class ParallelProcessExample {
 			session.send("b");
 		}
 		
-	}
-	
-	public static class ParallelProcess extends Participant {
-		
-		private static final long serialVersionUID = 1L;
-		
-		private static String username = "alice@test.com";
-		private static String password = "alice";
-		
-		public ParallelProcess() {
-			super(username, password);
-		}
-
-		@Override
-		public void run() {
-			
-			Contract C = internalSum().add("a").add("b");
-			
-			Session2<TST> session = tellAndWait(C);
-			
-			Thread tA = new Thread(new ProcessA(session));
-			Thread tB = new Thread(new ProcessB(session));
-			
-			tA.start();
-			tB.start();
-		}
-
 	}
 	
 	public static void main(String[] args) {
