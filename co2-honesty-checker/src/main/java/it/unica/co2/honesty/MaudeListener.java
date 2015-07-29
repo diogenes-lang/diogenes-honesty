@@ -111,6 +111,49 @@ public class MaudeListener extends ListenerAdapter {
 	private List<ProcessDefinitionDTO> envProcessesList  = new ArrayList<>();
 	
 	
+	
+	/* using these fields is more efficient on dispatching */
+	private MethodInfo participantTell;
+	private MethodInfo participantWaitForSession;
+	private MethodInfo sessionWaitForReceive;
+	private MethodInfo sessionSend;
+	private MethodInfo sessionSendString;
+	private MethodInfo sessionSendInt;
+	
+	@Override
+	public void classLoaded(VM vm, ClassInfo ci) {
+
+		if (ci.getName().equals(Participant.class.getName())) {
+			if (participantTell == null) {
+				participantTell = ci.getMethod("tell", "(Lit/unica/co2/model/contract/Contract;)Lco2api/Public;", false); 
+			}
+			
+			if (participantWaitForSession == null) {
+				participantWaitForSession = ci.getMethod("waitForSession", "(Lco2api/Public;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;", false); 
+			}
+		}
+		
+		if (ci.getName().equals(Session2.class.getName())) {
+			if (sessionWaitForReceive==null) {
+				sessionWaitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
+			}
+			
+			if (sessionSend==null) {
+				sessionSend = ci.getMethod("send", "(Ljava/lang/String;)Ljava/lang/Boolean;", false);
+			}
+			
+			if (sessionSendString==null) {
+				sessionSendString = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;", false);
+			}
+			
+			if (sessionSendInt==null) {
+				sessionSendInt = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
+			}
+		}
+		
+	}
+	
+	
 	@Override
 	public void executeInstruction(VM vm, ThreadInfo ti, Instruction insn) {
 
@@ -164,8 +207,7 @@ public class MaudeListener extends ListenerAdapter {
 			}
 			
 		}
-		
-		if (
+		else if (
 				insn instanceof SwitchInstruction && 
 				ci.isInstanceOf(CO2Process.class.getName())
 				) {
@@ -180,22 +222,7 @@ public class MaudeListener extends ListenerAdapter {
 			endIfExcluded = switchInsn.getTarget();			// where the switch ends
 			methodInfoIfExcluded = switchInsn.getMethodInfo();
 		}
-		
-		
-//		if (insn instanceof IfInstruction&& 
-//				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into the class under test
-//				!ci.getName().equals(Participant.class.getName()) 	// ignore if instructions into Participant.class
-//		) {
-//			log.info("::::::::::::::::::::::::::::::::::::::::::::::");
-//			log.info(""+methodInfoIfExcluded);
-//			log.info(""+startIfExcluded);
-//			log.info(""+endIfExcluded);
-//			log.info("--"+insn.getPosition());
-//			log.info("--"+insn.getMethodInfo());
-//			log.info("::::::::::::::::::::::::::::::::::::::::::::::");
-//		}
-		
-		if (
+		else if (
 				insn instanceof IfInstruction && 
 				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into classes are instance of CO2Process
 				insn.getMethodInfo().getName().equals("run") && 		// consider only if into the run method
@@ -309,10 +336,7 @@ public class MaudeListener extends ListenerAdapter {
 		
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		
-		if (
-				exitedMethod.getBaseName().equals(Participant.class.getName()+".tell") &&
-				exitedMethod.getSignature().equals("(Lit/unica/co2/model/contract/Contract;)Lco2api/Public;")
-				) {
+		if (exitedMethod == participantTell) {
 			log.info("");
 			printInfo();
 			log.info("--TELL-- (method exited)");
@@ -335,11 +359,7 @@ public class MaudeListener extends ListenerAdapter {
 
 			printInfo();
 		}
-		
-		if (
-				exitedMethod.getBaseName().equals(Participant.class.getName()+".waitForSession")&&
-				exitedMethod.getSignature().equals("(Lco2api/Public;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;")
-				) {
+		else if (exitedMethod == participantWaitForSession) {
 
 			log.info("");
 			printInfo();
@@ -414,11 +434,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			printInfo();
 		}
-		
-		if (
-				exitedMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive") &&
-				exitedMethod.getSignature().equals("(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;")
-				) {
+		else if (exitedMethod == sessionWaitForReceive) {
 
 			log.info("");
 			printInfo();
@@ -492,9 +508,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			printInfo();
 		}
-		
-		
-		if (
+		else if (
 				exitedMethod.getName().equals("run") &&
 				envProcesses.containsKey(ci.getName())
 				) {
@@ -530,10 +544,7 @@ public class MaudeListener extends ListenerAdapter {
 		
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		
-		if (
-				enteredMethod.getBaseName().equals(Participant.class.getName()+".waitForSession")&&
-				enteredMethod.getSignature().equals("(Lco2api/Public;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;")
-				) {
+		if (enteredMethod == participantWaitForSession) {
 
 			log.info("");
 			printInfo();
@@ -564,11 +575,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			printInfo();
 		}
-		
-		if (
-				enteredMethod.getBaseName().equals(Session2.class.getName()+".waitForReceive")&&
-				enteredMethod.getSignature().equals("(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;")
-				) {
+		else if (enteredMethod == sessionWaitForReceive) {
 
 			log.info("");
 			printInfo();
@@ -616,10 +623,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			printInfo();
 		}
-	
-		if (
-				enteredMethod.getBaseName().equals(Session2.class.getName()+".send")
-				) {
+		else if (enteredMethod==sessionSend || enteredMethod==sessionSendInt || enteredMethod==sessionSendString) {
 
 			log.info("");
 			printInfo();
@@ -642,10 +646,7 @@ public class MaudeListener extends ListenerAdapter {
 
 			printInfo();
 		}
-		
-		
-		
-		if (
+		else if (
 				enteredMethod.getName().equals("<init>") &&
 				ci.isInstanceOf(CO2Process.class.getName()) &&
 				!ci.getName().equals(Participant.class.getName()) &&		//ignore super construction
@@ -695,7 +696,6 @@ public class MaudeListener extends ListenerAdapter {
 				envProcessesList.add(proc);
 			}
 		}
-		
 	}
 	
 	
