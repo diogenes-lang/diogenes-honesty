@@ -4,6 +4,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
+import it.unica.co2.honesty.Statistics.Event;
 import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.Participant;
@@ -13,10 +14,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class HonestyChecker {
 	
 	
-	public static <T extends Participant> boolean isHonest(Class<T> participantClass) {
+	synchronized public static <T extends Participant> boolean isHonest(Class<T> participantClass) {
+		
+		Statistics.update(Event.HONESTY_START);
 		
 		System.out.println("================================================== HONESTY CHECKER ");
 		System.out.println("checking the honesty of "+participantClass.getName());
@@ -29,9 +34,12 @@ public class HonestyChecker {
 			throw new RuntimeException("error instatiating the class "+participantClass, e);
 		}
 		
-		
+		Statistics.update(Event.JPF_START);
 		String maudeProcess = getMaudeProcess(participant);
+		Statistics.update(Event.JPF_END);
 		
+		
+		Statistics.update(Event.MAUDE_START);
 		boolean honesty;
 		
 		if (maudeProcess==null) {
@@ -40,8 +48,14 @@ public class HonestyChecker {
 		else {
 			honesty = MaudeExecutor.invokeMaudeHonestyChecker(maudeProcess);
 		}
+		Statistics.update(Event.MAUDE_END);
 		
-		System.out.println("--------------------------------------------------");
+		
+		Statistics.update(Event.HONESTY_END);
+		
+		printStatistics();
+		
+		System.out.println("-------------------------------------------------- result");
 		System.out.println("honesty: "+honesty);
 		System.out.println("==================================================");
 		return honesty;
@@ -172,4 +186,16 @@ public class HonestyChecker {
 	}
 	
 	
+	private static void printStatistics() {
+		System.out.println("-------------------------------------------------- statistics");
+		System.out.println(getStatisticString("Build of maude process: ", Statistics.getJPFTime()));
+		System.out.println(getStatisticString("Model-check of maude process: ", Statistics.getMaudeTime()));
+		System.out.println(getStatisticString("Total time spent: ", Statistics.getTotalTime()));
+	}
+	
+	private static String getStatisticString(String prefix, long time) {
+		prefix = StringUtils.rightPad(prefix, 30);
+		String timeString = StringUtils.leftPad(time+" msec", 20);
+		return prefix+timeString;
+	}
 }
