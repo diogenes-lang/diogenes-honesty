@@ -14,6 +14,9 @@ import it.unica.co2.examples.ebookstore.Buyer;
 import it.unica.co2.examples.ebookstore.DishonestSeller;
 import it.unica.co2.examples.ebookstore.Distributor;
 import it.unica.co2.examples.ebookstore.Seller;
+import it.unica.co2.examples.insuredsale.IBuyer;
+import it.unica.co2.examples.insuredsale.Insurance;
+import it.unica.co2.examples.insuredsale.InsuredSeller;
 import it.unica.co2.examples.voucher.VoucherSeller;
 import it.unica.co2.honesty.HonestyChecker;
 
@@ -112,6 +115,21 @@ public class HonestyTest {
 		boolean honesty;
 		
 		honesty = HonestyChecker.isHonest(VoucherSeller.class);
+		assertTrue(honesty);
+	}
+	
+	@Test
+	public void insuredSale() {
+		
+		boolean honesty;
+		
+		honesty = HonestyChecker.isHonest(InsuredSeller.class);
+		assertTrue(honesty);
+		
+		honesty = HonestyChecker.isHonest(Insurance.class);
+		assertTrue(honesty);
+		
+		honesty = HonestyChecker.isHonest(IBuyer.class);
 		assertTrue(honesty);
 	}
 }

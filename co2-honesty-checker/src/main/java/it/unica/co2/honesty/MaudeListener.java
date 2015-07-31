@@ -226,7 +226,7 @@ public class MaudeListener extends ListenerAdapter {
 				insn instanceof IfInstruction && 
 				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only if into classes are instance of CO2Process
 				insn.getMethodInfo().getName().equals("run") && 		// consider only if into the run method
-				!ci.getName().equals(Participant.class.getName()) && 	// ignore if instructions into Participant.class
+				!ci.getName().equals(Participant.class.getName()) && 	// ignore if instructions into CO2Process.class
 					(
 						insn.getPosition()<startIfExcluded || 
 						insn.getPosition()>endIfExcluded || 
@@ -649,7 +649,7 @@ public class MaudeListener extends ListenerAdapter {
 		else if (
 				enteredMethod.getName().equals("<init>") &&
 				ci.isInstanceOf(CO2Process.class.getName()) &&
-				!ci.getName().equals(Participant.class.getName()) &&		//ignore super construction
+				!ci.getName().equals(Participant.class.getName()) &&	//ignore super construction
 				!ci.getName().equals(CO2Process.class.getName()) &&		//ignore super construction
 				!ci.getName().equals(processUnderTestClass.getName())
 				) {

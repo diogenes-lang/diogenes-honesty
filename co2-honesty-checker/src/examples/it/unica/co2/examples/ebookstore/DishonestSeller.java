@@ -77,7 +77,7 @@ public class DishonestSeller extends Participant {
 				
 				/*
 				 * the waitForSession(Public<TST>) above is blocking.
-				 * If the session with the distributor never start, you are culpable in the session that involve
+				 * If the session with the distributor never starts, you are culpable in the session that involve
 				 * the buyer.
 				 */
 				
@@ -183,25 +183,6 @@ public class DishonestSeller extends Participant {
 
 
 	
-	private static class AbortSessionD1 extends CO2Process {
-		
-		private static final long serialVersionUID = 1L;
-		private Session2<TST> sessionD;
-		
-		protected AbortSessionD1(Session2<TST> session) {
-			super("AbortSessionD1");
-			this.sessionD = session;
-		}
-		
-		@Override
-		public void run() {
-			
-			sessionD.send("bookdistrib");
-			
-			new AbortSessionD2(sessionD).run();
-		}
-	}
-
 	private static class AbortSessionD2 extends CO2Process {
 		
 		private static final long serialVersionUID = 1L;

@@ -12,21 +12,31 @@ import co2api.TST;
 import co2api.TimeExpiredException;
 
 
+
 public abstract class Participant extends CO2Process {
 
 	private static final long serialVersionUID = 1L;
 	
-	protected transient CO2ServerConnection connection;
-	private final String username;
-	private final String password;
-	
 	protected Participant(String username, String password) {
 		super(username);
-		this.username = username;
-		this.password = password;
+		this.setUsername(username);
+		this.setPassword(password);
 	}
 	
+	private transient CO2ServerConnection connection;
+	private String username;
+	private String password;
+		
+
 	
+	private void setUsername(String username) {
+		this.username = username;
+	}
+
+	private void setPassword(String password) {
+		this.password = password;
+	}
+
 	private void setConnection() {
 		try {
 			logger.log("creating new connection: username=<"+username+"> password=<"+password+">");
@@ -45,7 +55,7 @@ public abstract class Participant extends CO2Process {
 	@SuppressWarnings("unused") private String serializedContract;
 	@SuppressWarnings("unused") private String sessionName;
 	
-	protected Session2<TST> tellAndWait(Contract c) {
+	public Session2<TST> tellAndWait(Contract c) {
 		try {
 			return tellAndWait(c, -1);
 		}
@@ -59,7 +69,7 @@ public abstract class Participant extends CO2Process {
 		return waitForSession( tell(c) , timeout);
 	}
 	
-	protected Public<TST> tell (Contract c) {
+	public Public<TST> tell (Contract c) {
 		
 		if (connection==null)
 			setConnection();
@@ -82,7 +92,7 @@ public abstract class Participant extends CO2Process {
 		}
 	}
 	
-	protected Session2<TST> waitForSession(Public<TST> pbl) {
+	public Session2<TST> waitForSession(Public<TST> pbl) {
 		try {
 			return waitForSession(pbl, -1);
 		}
@@ -92,7 +102,7 @@ public abstract class Participant extends CO2Process {
 		}
 	}
 	
-	protected Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) throws TimeExpiredException {
+	public Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) throws TimeExpiredException {
 		try {
 			logger.log("waiting for a session");
 			
@@ -114,7 +124,7 @@ public abstract class Participant extends CO2Process {
 	
 	
 	
-	protected long parallel(CO2Process process) {
+	public long parallel(CO2Process process) {
 		logger.log("starting parallel process");
 		Thread t = new Thread(process);
 		t.start();
