@@ -24,6 +24,10 @@ public class VoucherSeller extends Participant {
 	@Override
 	public void run() {
 		
+		/*
+		 * This process required parallel co2 processes, not implemented yet.
+		 * */
+		
 		Contract Cvoucher = internalSum()
 				.add("reject", externalSum().add("pay"))
 				.add("accept", externalSum().add("voucher"));

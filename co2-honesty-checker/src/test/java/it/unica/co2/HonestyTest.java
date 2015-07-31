@@ -11,6 +11,7 @@ import it.unica.co2.examples.blackjack.Dealer;
 import it.unica.co2.examples.blackjack.DeckService;
 import it.unica.co2.examples.blackjack.Player;
 import it.unica.co2.examples.ebookstore.Buyer;
+import it.unica.co2.examples.ebookstore.DishonestSeller;
 import it.unica.co2.examples.ebookstore.Distributor;
 import it.unica.co2.examples.ebookstore.Seller;
 import it.unica.co2.examples.voucher.VoucherSeller;
@@ -84,6 +85,9 @@ public class HonestyTest {
 		
 		honesty = HonestyChecker.isHonest(Seller.class);
 		assertTrue(honesty);
+		
+		honesty = HonestyChecker.isHonest(DishonestSeller.class);
+		assertTrue(!honesty);
 	}
 	
 	@Test
