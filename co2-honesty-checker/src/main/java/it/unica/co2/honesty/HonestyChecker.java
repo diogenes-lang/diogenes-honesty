@@ -73,16 +73,16 @@ public class HonestyChecker {
 		
 		String processSerialized = ObjectUtils.serializeObjectToStringQuietly(participant);
 		
-		Config.enableLogging(false);
-		Config conf = JPF.createConfig(
-				new String[]{"+site=/home/nicola/xtext_projects/jpf/site.properties"}
-		);
+		Config.enableLogging(true);
+		Config conf = JPF.createConfig(new String[]{});
 		
 		try (
-				InputStream in = HonestyChecker.class.getResourceAsStream("/co2.properties");
+				InputStream jpfProps = HonestyChecker.class.getResourceAsStream("/jpf.properties");
+				InputStream co2Props = HonestyChecker.class.getResourceAsStream("/co2.properties");
 				)
 		{
-			conf.load(in);
+			conf.load(jpfProps);
+			conf.load(co2Props);
 		}
 		catch (IOException e1) {
 			throw new RuntimeException("unable to load the jpf config file", e1);

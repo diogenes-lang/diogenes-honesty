@@ -56,7 +56,7 @@ public class MaudeCo2Generator {
 	
 	
 	public static String toMaude(AskDTO prefix, String initialSpace) {
-		return "ask \""+prefix.session+"\" (True) . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
+		return "ask \""+prefix.session+"\" True . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
 	}
 	
 	public static String toMaude(TellDTO prefix, String initialSpace) {
