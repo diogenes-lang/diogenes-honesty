@@ -19,6 +19,7 @@ import it.unica.co2.examples.insuredsale.Insurance;
 import it.unica.co2.examples.insuredsale.InsuredSeller;
 import it.unica.co2.examples.voucher.VoucherSeller;
 import it.unica.co2.honesty.HonestyChecker;
+import it.unica.co2.honesty.HonestyResult;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,107 +30,107 @@ public class HonestyTest {
 	@Test
 	public void apiExample() {
 		
-		boolean honesty = HonestyChecker.isHonest(APIExampleProcess.class);
+		HonestyResult honesty = HonestyChecker.isHonest(APIExampleProcess.class);
 		
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
 	@Test
 	public void simpleBuyer() {
 		
-		boolean honesty = HonestyChecker.isHonest(SimpleBuyer.class);
+		HonestyResult honesty = HonestyChecker.isHonest(SimpleBuyer.class);
 		
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
 	@Test
 	public void multipleIfThenElse() {
 		
-		boolean honesty = HonestyChecker.isHonest(MultipleIfThenElseProcess.class);
+		HonestyResult honesty = HonestyChecker.isHonest(MultipleIfThenElseProcess.class);
 		
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
 	@Test
 	public void composition() {
 		
-		boolean honesty = HonestyChecker.isHonest(ComposedProcess.class);
+		HonestyResult honesty = HonestyChecker.isHonest(ComposedProcess.class);
 		
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
 	@Test
 	public void composition2() {
 		
-		boolean honesty = HonestyChecker.isHonest(Composed2Process.class);
+		HonestyResult honesty = HonestyChecker.isHonest(Composed2Process.class);
 		
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
 	@Test
 	@Ignore
 	public void parallel() {
 		
-		boolean honesty = HonestyChecker.isHonest(ParallelProcess.class);
+		HonestyResult honesty = HonestyChecker.isHonest(ParallelProcess.class);
 		
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
 	@Test
 	public void ebookstore() {
 		
-		boolean honesty;
+		HonestyResult honesty;
 		
 		honesty = HonestyChecker.isHonest(Buyer.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 		
 		honesty = HonestyChecker.isHonest(Distributor.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 		
 		honesty = HonestyChecker.isHonest(Seller.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 		
 		honesty = HonestyChecker.isHonest(DishonestSeller.class);
-		assertTrue(!honesty);
+		assertTrue(honesty==HonestyResult.DISHONEST);
 	}
 	
 	@Test
 	public void blackjack() {
 		
-		boolean honesty;
+		HonestyResult honesty;
 		
 		honesty = HonestyChecker.isHonest(Dealer.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 		
 		honesty = HonestyChecker.isHonest(DeckService.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 		
 		honesty = HonestyChecker.isHonest(Player.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
 	@Test
 	@Ignore
 	public void voucher() {
 		
-		boolean honesty;
+		HonestyResult honesty;
 		
 		honesty = HonestyChecker.isHonest(VoucherSeller.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
 	@Test
 	public void insuredSale() {
 		
-		boolean honesty;
+		HonestyResult honesty;
 		
 		honesty = HonestyChecker.isHonest(InsuredSeller.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 		
 		honesty = HonestyChecker.isHonest(Insurance.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 		
 		honesty = HonestyChecker.isHonest(IBuyer.class);
-		assertTrue(honesty);
+		assertTrue(honesty==HonestyResult.HONEST);
 	}
 }

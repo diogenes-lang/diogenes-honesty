@@ -5,37 +5,56 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang3.Validate;
 
 
 public class MaudeExecutor {
 
+	private static final String RESULT_HONEST = "\nresult Bool: true";
+	private static final String RESULT_DISHONEST = "\nresult TSystem: ";
 	
-	public static boolean invokeMaudeHonestyChecker(String process) {
+	private PrintStream out;
+	
+	private MaudeConfiguration configuration;
+	
+	public MaudeExecutor(MaudeConfiguration maudeProperties) {
+		this.configuration = maudeProperties;
+		this.out = System.out;
+	}
+	
+	public void redirectOutput(OutputStream out) {
+		this.out = new PrintStream(out);
+	}
+
+	/**
+	 * Check the honesty of the given maude process.
+	 * @param process
+	 * @return
+	 */
+	public HonestyResult checkHonesty(String process) {
 		
-		System.out.println("--------------------------------------------------");
-		System.out.println("model checking the maude process");
+		out.println("--------------------------------------------------");
+		out.println("model checking the maude process");
 		
-		File maudeExecutable = MaudeProperties.getMaudeExec();
-		File co2MaudeDir = MaudeProperties.getCo2MaudeDir();
-		
-		Validate.isTrue(maudeExecutable.isFile(), "file "+maudeExecutable+" is not a file or not exists");
-		Validate.isTrue(co2MaudeDir.isDirectory(), "file "+maudeExecutable+" is not a directory or not exists");
-		
-		File tmpFile = new File(co2MaudeDir, System.currentTimeMillis()+"_java_honesty.maude");
+		File tmpFile = new File(configuration.getCo2MaudeDir(), System.currentTimeMillis()+"_java_honesty.maude");
 		
 		List<String> command = new ArrayList<String>();
-		command.add(maudeExecutable.getAbsolutePath());
+		command.add(configuration.getMaudeExec().getAbsolutePath());
 		command.add(tmpFile.getAbsolutePath());
 		
 		ProcessBuilder pb = new ProcessBuilder(command);
-		pb.directory(co2MaudeDir);
+		pb.directory(configuration.getCo2MaudeDir());
 		pb.redirectErrorStream(true);
 		
 		try {
+			
+			if (configuration.showInput()) {
+				out.println("-------------------------------------------------- maude input process");
+				out.println(process);
+			}
 			
 			/*
 			 * write the maude code to tempFile
@@ -76,10 +95,10 @@ public class MaudeExecutor {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			return false;
+			return HonestyResult.UNKNOWN;
 		}
 		finally {
-			if (MaudeProperties.isDeleteTempFile())
+			if (configuration.isDeleteTempFile())
 				tmpFile.delete();
 		}
 		
@@ -91,17 +110,17 @@ public class MaudeExecutor {
 	 * @param output
 	 * @return true if the process is honest and no warnings/errors were found, false otherwise. 
 	 */
-	private static boolean manageOutput(String output) {
+	private HonestyResult manageOutput(String output) {
 		
-		if (MaudeProperties.isVerbose()) {
-			System.out.println("-------------------------------------------------- maude output");
-			System.out.println(output);
+		if (configuration.showOutput()) {
+			out.println("-------------------------------------------------- maude output");
+			out.println(output);
 		}
 
 		if (checkForWarning(output)) {
 			// the maude checking contains warning
-			System.out.println("[IMPORTANT] Found some warnings in the maude output: rerun with option honesty.maude.verbose=true to see the output");
-			return false;
+			out.println("[IMPORTANT] Found some warnings in the maude output: rerun with option honesty.maude.verbose=true to see the output");
+			return HonestyResult.UNKNOWN;
 		}
 		
 		boolean isHonest = checkForHonesty(output);
@@ -109,21 +128,21 @@ public class MaudeExecutor {
 		
 		assert isHonest==!isDishonest;
 		
-		return isHonest;
+		if (isHonest)
+			return HonestyResult.HONEST;
+		else
+			return HonestyResult.DISHONEST;
 	}
 	
-	private static final String RESULT_HONEST = "\nresult Bool: true";
-	private static final String RESULT_DISHONEST = "\nresult TSystem: ";
-	
-	private static boolean checkForWarning(String output) {
+	private boolean checkForWarning(String output) {
 		return output.contains("\nWarning: ");
 	}
 	
-	private static boolean checkForHonesty(String output) {
+	private boolean checkForHonesty(String output) {
 		return output.contains(RESULT_HONEST);
 	}
 	
-	private static boolean checkForDishonesty(String output) {
+	private boolean checkForDishonesty(String output) {
 		return output.contains(RESULT_DISHONEST);
 	}
 }

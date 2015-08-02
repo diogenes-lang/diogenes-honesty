@@ -3,22 +3,24 @@ package it.unica.co2.honesty;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.commons.lang3.Validate;
 
+public class MaudeConfigurationFromResource implements MaudeConfiguration {
 
-public class MaudeProperties {
-
-	private static final Properties prop = new Properties();
+	private final Properties prop = new Properties();
 	
-	static {
+	public MaudeConfigurationFromResource() {
+		this("/co2.properties");
+	}
+	
+	public MaudeConfigurationFromResource(String resourcePath) {
 
 		try (
-				InputStream in = MaudeProperties.class.getResourceAsStream("/co2.properties");
+				InputStream in = MaudeConfigurationFromResource.class.getResourceAsStream(resourcePath);
 				)
 		{
 			prop.load(in);
@@ -28,41 +30,37 @@ public class MaudeProperties {
 		}
 	}
 	
-	public static String getProperty(String key) {
+		
+	private String getProperty(String key) {
 		return prop.getProperty(key);
 	}
 	
-	public static String getProperty(String key, String defaultValue) {
+	private String getProperty(String key, String defaultValue) {
 		return prop.getProperty(key, defaultValue);
 	}
 	
-	public static Boolean getBooleanProperty(String key) {
-		return prop.getProperty(key)!=null? Boolean.valueOf(prop.getProperty(key)): null;
-	}
-	
-	public static Boolean getBooleanProperty(String key, Boolean defaultValue) {
+	private Boolean getBooleanProperty(String key, Boolean defaultValue) {
 		return Boolean.valueOf(prop.getProperty(key, defaultValue.toString()));
 	}
 	
-	public static File getFileProperty(String key, String defaultPath) {
+	private File getFileProperty(String key, String defaultPath) {
 		String path = getProperty(key, defaultPath);
 		
 		File file = Paths.get(path).toFile();
 		boolean exist = file.exists();
 		
 		if (exist) {
-			//the retrieved path is absolute
+			//the path is absolute
 			return file;
 		}
 		else {
 			//not exists, search for a relative path into resources
-			
-			URL resource = MaudeProperties.class.getResource(path);
+			URL resource = MaudeConfigurationFromResource.class.getResource(path);
 			
 			try {
-				file = Paths.get(resource.toURI()).toFile();
+				file = Paths.get(resource.getFile()).toFile();
 			}
-			catch (URISyntaxException e) {
+			catch (Exception e) {
 				
 				if (path.equals(defaultPath))
 					throw new IllegalStateException("invalid path "+path, e);
@@ -76,33 +74,42 @@ public class MaudeProperties {
 	}
 	
 	
-	public static boolean isDeleteTempFile() {
+	@Override
+	public boolean isDeleteTempFile() {
 		return getBooleanProperty("honesty.maude.delete_temp_file", true);
 	}
 	
-	public static boolean isVerbose() {
+	@Override
+	public boolean showInput() {
 		return getBooleanProperty("honesty.maude.verbose", false);
 	}
 	
-	public static File getCo2MaudeDir() {
+	@Override
+	public boolean showOutput() {
+		return getBooleanProperty("honesty.maude.verbose", false);
+	}
+	
+	@Override
+	public File getCo2MaudeDir() {
 		File file = getFileProperty("honesty.maude.co2-maude", "/co2-maude");
 		Validate.isTrue(file.isDirectory(), "file "+file+" not exists or is not a directory");
 		return file;
 	}
 	
-	public static File getMaudeDir() {
+	private File getMaudeDir() {
 		File file = getFileProperty("honesty.maude.dir", "/maude");
 		Validate.isTrue(file.isDirectory(), "file "+file+" not exists or is not a directory");
 		return file;
 	}
 	
-	public static File getMaudeExec() {
+	@Override
+	public File getMaudeExec() {
 		File file = new File(getMaudeDir(), resolveMaudeExecFilename());
 		Validate.isTrue(file.isFile(), "file "+file+" not exists or is not a file");
 		return file;
 	}
 	
-	private static String resolveMaudeExecFilename() {
+	private String resolveMaudeExecFilename() {
 		
 		String execName = getProperty("honesty.maude.exec");
 		

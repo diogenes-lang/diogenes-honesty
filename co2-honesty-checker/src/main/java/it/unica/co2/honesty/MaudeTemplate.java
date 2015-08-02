@@ -58,11 +58,6 @@ public class MaudeTemplate {
 		maudeProcess = maudeProcess.replace("${opList}", ops);
 		maudeProcess = maudeProcess.replace("${eqList}", eqs);
 
-		if (MaudeProperties.getBooleanProperty("honesty.maude.verbose", false)) {
-			System.out.println("-------------------------------------------------- maude process");
-			System.out.println(maudeProcess);
-		}
-		
 		return maudeProcess;
 	}
 	

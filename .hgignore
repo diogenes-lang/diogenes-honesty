@@ -11,3 +11,5 @@ target
 build
 xtend-gen
 
+
+co2-honesty-checker/co2-java-honesty*.jar

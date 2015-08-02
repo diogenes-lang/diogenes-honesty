@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 public class HonestyChecker {
 	
 	
-	synchronized public static <T extends Participant> boolean isHonest(Class<T> participantClass) {
+	synchronized public static <T extends Participant> HonestyResult isHonest(Class<T> participantClass) {
 		
 		Statistics.update(Event.HONESTY_START);
 		
@@ -40,13 +40,14 @@ public class HonestyChecker {
 		
 		
 		Statistics.update(Event.MAUDE_START);
-		boolean honesty;
+		
+		HonestyResult honesty;
 		
 		if (maudeProcess==null) {
-			honesty = false;
+			honesty = HonestyResult.UNKNOWN;
 		}
 		else {
-			honesty = MaudeExecutor.invokeMaudeHonestyChecker(maudeProcess);
+			honesty = new MaudeExecutor(new MaudeConfigurationFromResource()).checkHonesty(maudeProcess);
 		}
 		Statistics.update(Event.MAUDE_END);
 		
@@ -73,7 +74,7 @@ public class HonestyChecker {
 		
 		String processSerialized = ObjectUtils.serializeObjectToStringQuietly(participant);
 		
-		Config.enableLogging(true);
+		Config.enableLogging(false);
 		Config conf = JPF.createConfig(new String[]{});
 		
 		try (

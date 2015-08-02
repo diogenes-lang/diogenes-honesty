@@ -4,6 +4,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
+import it.unica.co2.honesty.HonestyChecker;
 import it.unica.co2.lts.LTS;
 import it.unica.co2.lts.LTSState;
 import it.unica.co2.model.contract.Contract;
@@ -22,15 +23,15 @@ public class ComplianceChecker {
 		String bAsString = ObjectUtils.serializeObjectToStringQuietly(b);
 		
 		Config.enableLogging(false);
-		Config conf = JPF.createConfig(
-				new String[]{"+site=/home/nicola/xtext_projects/jpf/site.properties"}
-		);
+		Config conf = JPF.createConfig(new String[]{});
 		
 		try (
-				InputStream in = ComplianceChecker.class.getResourceAsStream("/co2.properties");
+				InputStream jpfProps = HonestyChecker.class.getResourceAsStream("/jpf.properties");
+				InputStream co2Props = HonestyChecker.class.getResourceAsStream("/co2.properties");
 				)
 		{
-			conf.load(in);
+			conf.load(jpfProps);
+			conf.load(co2Props);
 		}
 		catch (IOException e1) {
 			throw new RuntimeException("unable to load the jpf config file", e1);
