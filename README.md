@@ -6,13 +6,10 @@
 Import as "Existing projects into Workspace". There isn't any build management at the moment.
 
 ## Configuration ##
-There is no mandatory property to be set. You can find these into [co2.properties](/co2-honesty-checker/src/main/resources/co2.properties). If you get trouble, try to modify
+You must set two mandatory properties into [co2.properties](/co2-honesty-checker/src/main/resources/co2.properties):
 
-* `honesty.maude.co2-maude`
-* `honesty.maude.dir`
-* `honesty.maude.exec`
-
-See relative descriptions to set the correct value.
+* `honesty.maude.co2-maude` : the absolute path to the co2 maude files that check the honesty
+* `honesty.maude.exec` : the absolute path to the maude executable
 
 # Examples #
 All examples are under [src/examples](co2-honesty-checker/src/examples/).

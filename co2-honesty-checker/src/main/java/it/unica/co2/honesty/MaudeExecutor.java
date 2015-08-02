@@ -7,7 +7,9 @@ import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -15,6 +17,8 @@ public class MaudeExecutor {
 
 	private static final String RESULT_HONEST = "\nresult Bool: true";
 	private static final String RESULT_DISHONEST = "\nresult TSystem: ";
+	
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss-SSS");
 	
 	private PrintStream out;
 	
@@ -39,7 +43,9 @@ public class MaudeExecutor {
 		out.println("--------------------------------------------------");
 		out.println("model checking the maude process");
 		
-		File tmpFile = new File(configuration.getCo2MaudeDir(), System.currentTimeMillis()+"_java_honesty.maude");
+		
+		
+		File tmpFile = new File(configuration.getCo2MaudeDir(), sdf.format(new Date())+"_java_honesty.maude");
 		
 		List<String> command = new ArrayList<String>();
 		command.add(configuration.getMaudeExec().getAbsolutePath());
@@ -119,7 +125,6 @@ public class MaudeExecutor {
 
 		if (checkForWarning(output)) {
 			// the maude checking contains warning
-			out.println("[IMPORTANT] Found some warnings in the maude output: rerun with option honesty.maude.verbose=true to see the output");
 			return HonestyResult.UNKNOWN;
 		}
 		
