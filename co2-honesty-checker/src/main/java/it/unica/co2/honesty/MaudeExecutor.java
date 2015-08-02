@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 public class MaudeExecutor {
@@ -76,7 +77,13 @@ public class MaudeExecutor {
 			//the file is written
 			
 			Process pr = pb.start();
-			pr.waitFor();				//wait until the process stop
+			boolean terminated = pr.waitFor(10, TimeUnit.SECONDS);		//wait until the process terminate or the timeout has expired
+			
+			if (!terminated) {
+				out.println("the process is running more than 10 sec, kill");
+				pr.destroyForcibly();
+				return HonestyResult.UNKNOWN;
+			}
 			
 			/*
 			 * read the process output
