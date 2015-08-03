@@ -34,6 +34,8 @@ public class MaudeExecutor {
 		this.out = new PrintStream(out);
 	}
 
+	
+	
 	/**
 	 * Check the honesty of the given maude process.
 	 * @param process
@@ -44,12 +46,17 @@ public class MaudeExecutor {
 		out.println("--------------------------------------------------");
 		out.println("model checking the maude process");
 		
-		
+		if (!checkMaudeConfiguration()) {
+			//configuration error
+			return HonestyResult.UNKNOWN;
+		}
 		
 		File tmpFile = new File(configuration.getCo2MaudeDir(), sdf.format(new Date())+"_java_honesty.maude");
 		
 		List<String> command = new ArrayList<String>();
 		command.add(configuration.getMaudeExec().getAbsolutePath());
+		command.add("-no-wrap");
+		command.add("-no-advise");
 		command.add(tmpFile.getAbsolutePath());
 		
 		ProcessBuilder pb = new ProcessBuilder(command);
@@ -80,6 +87,7 @@ public class MaudeExecutor {
 			boolean terminated = pr.waitFor(10, TimeUnit.SECONDS);		//wait until the process terminate or the timeout has expired
 			
 			if (!terminated) {
+				out.println("-------------------------------------------------- error");
 				out.println("the process is running more than 10 sec, kill");
 				pr.destroyForcibly();
 				return HonestyResult.UNKNOWN;
@@ -100,14 +108,13 @@ public class MaudeExecutor {
 					output.append(line).append('\n');
 				}
 			}
-			/*
-			 * the output is truncated to 80 characters (I don't know why)
-			 */
-			return manageOutput( output.toString().replace("\n    ", " "));
+			
+			return manageOutput( output.toString());
 			
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			out.println("-------------------------------------------------- error");
+			e.printStackTrace(out);
 			return HonestyResult.UNKNOWN;
 		}
 		finally {
@@ -116,6 +123,32 @@ public class MaudeExecutor {
 		}
 		
 	}
+	
+	
+	private boolean checkMaudeConfiguration() {
+		
+		if (!configuration.getMaudeExec().isFile()) {
+			out.println("-------------------------------------------------- error");
+			out.println("invalid path '"+configuration.getMaudeExec()+"', check your configuration");
+			return false;
+		}
+		
+		if (!configuration.getCo2MaudeDir().isDirectory()) {
+			out.println("-------------------------------------------------- error");
+			out.println("invalid path '"+configuration.getMaudeExec()+"', check your configuration");
+			return false;
+		}
+		
+		File co2AbsFile = new File(configuration.getCo2MaudeDir(), "co2-abs.maude");
+		if (!co2AbsFile.exists()) {
+			out.println("-------------------------------------------------- error");
+			out.println("file '"+co2AbsFile+"' not found, check your configuration");
+			return false;
+		}
+		
+		return true;
+	}
+	
 	
 	/**
 	 * This method check the presence of warnings/errors into the output of the maude execution. If not found,
@@ -127,6 +160,7 @@ public class MaudeExecutor {
 		
 		if (configuration.showOutput()) {
 			out.println("-------------------------------------------------- maude output");
+			out.println();
 			out.println(output);
 		}
 

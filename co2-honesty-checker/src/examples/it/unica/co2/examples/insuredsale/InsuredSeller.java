@@ -123,7 +123,7 @@ public class InsuredSeller extends Participant {
 			try {
 				sessionI = p.waitForSession(pblI, 10000);
 				
-				sessionI.send("reqI", amount);
+				sessionI.send("reqi", amount);
 				
 				try {
 					Message msg = sessionI.waitForReceive(10000, "oki", "aborti");
