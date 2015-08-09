@@ -172,7 +172,10 @@ public class MaudeExecutor {
 		boolean isHonest = checkForHonesty(output);
 		boolean isDishonest = checkForDishonesty(output);
 		
-		assert isHonest==!isDishonest;
+		if (isHonest!=!isDishonest) {
+			//something went wrong
+			return HonestyResult.UNKNOWN;
+		}
 		
 		if (isHonest)
 			return HonestyResult.HONEST;

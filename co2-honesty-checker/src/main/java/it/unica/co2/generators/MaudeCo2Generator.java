@@ -83,9 +83,7 @@ public class MaudeCo2Generator {
 		StringBuilder sb = new StringBuilder();
 		
 		if (process.prefixes.size()>1) {
-			sb.append("\n");
-			sb.append(initialSpace);
-			sb.append("(");
+			sb.append("\n").append(initialSpace).append("(");
 			initialSpace=addTab(initialSpace);
 		}
 		
@@ -95,7 +93,6 @@ public class MaudeCo2Generator {
 			
 			if (i++>0) {
 				sb.append(" + ");
-			
 			}
 			
 			if (process.prefixes.size()>1) {
@@ -107,9 +104,7 @@ public class MaudeCo2Generator {
 		
 		if (process.prefixes.size()>1) {
 			initialSpace=removeTab(initialSpace);
-			sb.append("\n");
-			sb.append(initialSpace);
-			sb.append(")");
+			sb.append("\n").append(initialSpace).append(")");
 		}
 		
 		return sb.toString();
