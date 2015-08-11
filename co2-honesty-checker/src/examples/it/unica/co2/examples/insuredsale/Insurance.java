@@ -20,7 +20,7 @@ public class Insurance extends Participant {
 	@Override
 	public void run() {
 
-		Contract CI = externalSum("reqi", internalSum().add("oki").add("aborti"));
+		Contract CI = externalSum().add("reqi", internalSum().add("oki").add("aborti"));
 		
 		Session2<TST> session = tellAndWait(CI);
 		

@@ -12,8 +12,8 @@ public class SyntaxGeneratorTest {
 	@Test
 	public void test1() {
 		
-		Contract A = internalSum("a", "b");
-		Contract B = externalSum("a", "b", "c");
+		Contract A = internalSum().add("a").add("b");
+		Contract B = externalSum().add("a").add("b").add("c");
 		
 		System.out.println("------------------");
 		System.out.println("toString: "+A);

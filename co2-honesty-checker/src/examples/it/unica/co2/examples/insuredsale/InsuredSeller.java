@@ -114,7 +114,7 @@ public class InsuredSeller extends Participant {
 		@Override
 		public void run() {
 			
-			Contract CI = internalSum("reqi", externalSum().add("oki").add("aborti"));
+			Contract CI = internalSum().add("reqi", externalSum().add("oki").add("aborti"));
 
 			Public<TST> pblI = p.tell(CI);
 		

@@ -88,13 +88,13 @@ public class ComplianceTest {
 				.add("b", 
 						externalSum()
 						.add("a")
-						.add("c", internalSum("b")))
+						.add("c", internalSum().add("b")))
 		;
 				
 		Contract B = externalSum()
 				.add("a")
 				.add("b",
-						internalSum("a","c")
+						internalSum().add("a").add("c")
 				)
 		;
 		assertFalse( ComplianceChecker.compliance(A, B) );
