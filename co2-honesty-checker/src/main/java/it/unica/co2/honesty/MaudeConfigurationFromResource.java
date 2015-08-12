@@ -37,6 +37,10 @@ public class MaudeConfigurationFromResource implements MaudeConfiguration {
 		return Boolean.valueOf(prop.getProperty(key, defaultValue.toString()));
 	}
 	
+	private int getIntProperty(String key, int defaultValue) {
+		return Integer.valueOf(prop.getProperty(key, String.valueOf(defaultValue)));
+	}
+	
 	private File getFileProperty(String key) {
 		
 		String path = getProperty(key);
@@ -78,4 +82,8 @@ public class MaudeConfigurationFromResource implements MaudeConfiguration {
 		return file;
 	}
 	
+	@Override
+	public int timeout() {
+		return this.getIntProperty("honesty.maude.timeour", 10);
+	}
 }

@@ -84,7 +84,8 @@ public class MaudeExecutor {
 			//the file is written
 			
 			Process pr = pb.start();
-			boolean terminated = pr.waitFor(10, TimeUnit.SECONDS);		//wait until the process terminate or the timeout has expired
+			//wait until the process terminate or the timeout has expired
+			boolean terminated = pr.waitFor(configuration.timeout(), TimeUnit.SECONDS);		
 			
 			if (!terminated) {
 				out.println("-------------------------------------------------- error");

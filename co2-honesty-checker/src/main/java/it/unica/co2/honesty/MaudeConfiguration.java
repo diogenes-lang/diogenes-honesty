@@ -44,5 +44,13 @@ public interface MaudeConfiguration {
 	 * @return true if the will be deleted after execution, false otherwise.
 	 */
 	public boolean isDeleteTempFile();
+	
+	/**
+	 * The {@link MaudeExecutor} start a new process. If it take more than {@link MaudeConfiguration#timeout()} seconds, the
+	 * process will be killed.
+	 * 
+	 * @return the number of seconds to wait.
+	 */
+	public int timeout();
 
 }
