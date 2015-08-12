@@ -1,6 +1,6 @@
 package it.unica.co2.model;
 
-import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.contract.ContractWrapper;
 import it.unica.co2.model.contract.ExternalSum;
 import it.unica.co2.model.contract.InternalSum;
 import it.unica.co2.model.contract.Recursion;
@@ -24,17 +24,4 @@ public class ContractFactory {
 		return new ContractWrapper();
 	}
 	
-	public static class ContractWrapper {
-
-		private Contract contract;
-
-		public Contract getContract() {
-			return contract;
-		}
-
-		public void setContract(Contract contract) {
-			this.contract = contract;
-		}
-
-	}
 }

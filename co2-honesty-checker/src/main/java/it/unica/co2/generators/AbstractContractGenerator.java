@@ -1,6 +1,7 @@
 package it.unica.co2.generators;
 
 import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.contract.ContractWrapper;
 import it.unica.co2.model.contract.ExternalAction;
 import it.unica.co2.model.contract.ExternalSum;
 import it.unica.co2.model.contract.InternalAction;
@@ -40,6 +41,8 @@ public abstract class AbstractContractGenerator {
 			return convert((ExternalSum) contract);
 		else if(contract instanceof Recursion)
 			return convert((Recursion) contract);
+		else if(contract instanceof ContractWrapper)
+			return convert((ContractWrapper) contract);
 		
 		throw new AssertionError("Unexpected behaviour");
 	}
@@ -53,6 +56,10 @@ public abstract class AbstractContractGenerator {
 	protected abstract String convert(ExternalAction action);
 	
 	protected abstract String convert(Recursion recursion);
+	
+	protected String convert(ContractWrapper wrapper) {
+		return this.convert(wrapper.getContract());
+	}
 	
 	public Collection<String> getRecursionNames() {
 		return recursions.values();
