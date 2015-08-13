@@ -12,14 +12,17 @@ import co2api.TST;
 
 public class ProcessCompositionExample {
 
-	public static class ProcessA extends CO2Process {
+	private static String username = "alice@test.com";
+	private static String password = "alice";
+
+	public static class ProcessA extends Participant {
 
 		private static final long serialVersionUID = 1L;
 
 		private final Session2<TST> session;
 		
 		protected ProcessA(Session2<TST> session) {
-			super("ProcessA");
+			super(username, password);
 			this.session = session;
 		}
 
@@ -31,14 +34,14 @@ public class ProcessCompositionExample {
 		}
 	}
 	
-	public static class ProcessB extends CO2Process {
+	public static class ProcessB extends Participant {
 
 		private static final long serialVersionUID = 1L;
 
 		private final Session2<TST> session;
 		
 		protected ProcessB(Session2<TST> session) {
-			super("ProcessB");
+			super(username, password);
 			this.session = session;
 		}
 
@@ -52,9 +55,6 @@ public class ProcessCompositionExample {
 
 		private static final long serialVersionUID = 1L;
 		
-		private static String username = "alice@test.com";
-		private static String password = "alice";
-
 		public ComposedProcess() {
 			super(username, password);
 		}

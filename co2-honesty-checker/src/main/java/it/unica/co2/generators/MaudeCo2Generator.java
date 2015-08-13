@@ -76,7 +76,7 @@ public class MaudeCo2Generator {
 	}
 
 	public static String toMaude(ProcessDefinitionDTO process, String initialSpace) {
-		return process.name+"("+StringUtils.join(process.freeNames, " ; ")+")"+(process.isDefinition?" =def "+toMaude(process.process, initialSpace): "");
+		return process.name+"("+StringUtils.join(process.freeNames, " ; ")+ ")"+(process.isDefinition?" =def "+toMaude(process.process, initialSpace): "");
 	}
 	
 	public static String toMaude(SumDTO process, String initialSpace) {

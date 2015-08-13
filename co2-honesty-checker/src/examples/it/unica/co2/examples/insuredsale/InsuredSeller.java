@@ -1,15 +1,15 @@
 package it.unica.co2.examples.insuredsale;
 
 import static it.unica.co2.model.ContractFactory.*;
-import it.unica.co2.api.Session2;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.process.CO2Process;
-import it.unica.co2.model.process.Participant;
+
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.TST;
 import co2api.TimeExpiredException;
+import it.unica.co2.api.Session2;
+import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.process.Participant;
 
 
 public class InsuredSeller extends Participant {
@@ -34,7 +34,8 @@ public class InsuredSeller extends Participant {
 				.add("abort"));
 		
 		
-		Session2<TST> session = tellAndWait(CA);
+		Public<TST> pbl = tell(CA);
+		Session2<TST> session = waitForSession(pbl);
 		
 		Message msg = session.waitForReceive("order");
 		
@@ -54,14 +55,14 @@ public class InsuredSeller extends Participant {
 		
 	}
 
-	private static class HandlePayment extends CO2Process {
+	private static class HandlePayment extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		private final Session2<TST> session;
 		private final Integer amount;
 		
 		protected HandlePayment(Session2<TST> session, Integer amount) {
-			super("Pay");
+			super(username, password);
 			this.session = session;
 			this.amount = amount;
 		}
@@ -97,7 +98,7 @@ public class InsuredSeller extends Participant {
 	}
 	
 	
-	private static class Insurance extends CO2Process {
+	private static class Insurance extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		private final Session2<TST> session;
@@ -105,7 +106,7 @@ public class InsuredSeller extends Participant {
 		private final Participant p;
 		
 		protected Insurance(Session2<TST> session, Integer amount, Participant p) {
-			super("Pay");
+			super(username, password);
 			this.session = session;
 			this.amount = amount;
 			this.p = p;

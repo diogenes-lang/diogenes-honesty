@@ -674,6 +674,11 @@ public class MaudeListener extends ListenerAdapter {
 				
 				List<ElementInfo> args = getArguments(currentThread);
 				
+				if (args.size()==0) {
+					//add at least one argument to make the process valid
+					proc.freeNames.add("exp");
+				}
+				
 				for (ElementInfo ei : args) {
 					log.info(ei.toString());
 					
@@ -683,9 +688,11 @@ public class MaudeListener extends ListenerAdapter {
 						log.info("arg: Session2 ("+sessionName+")");
 					}
 					else if (ei.getClassInfo().isInstanceOf(Number.class.getName())) {
+						proc.freeNames.add("exp");
 						log.info("arg: Number");
 					}
 					else if (ei.getClassInfo().isInstanceOf(String.class.getName())) {
+						proc.freeNames.add("exp");
 						log.info("arg: String");
 					}
 				}

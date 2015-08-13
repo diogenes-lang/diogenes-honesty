@@ -65,6 +65,7 @@ public abstract class Participant extends CO2Process {
 		}
 	}
 	
+	//keep it private!
 	private Session2<TST> tellAndWait(Contract c, Integer timeout) throws TimeExpiredException {
 		return waitForSession( tell(c) , timeout);
 	}
