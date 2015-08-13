@@ -12,7 +12,7 @@ You must set two mandatory properties into [co2.properties](/co2-honesty-checker
 * `honesty.maude.exec` : the absolute path to the maude executable
 
 # Examples #
-All examples are under [src/examples](co2-honesty-checker/src/examples/).
+All examples are into [src/examples](co2-honesty-checker/src/examples/).
 
 ## SimpleBuyer process ##
 ```
