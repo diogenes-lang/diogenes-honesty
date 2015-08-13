@@ -30,6 +30,7 @@ import it.unica.co2.honesty.dto.SumDTO;
 import it.unica.co2.honesty.dto.TauDTO;
 import it.unica.co2.honesty.dto.TellDTO;
 import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.contract.Sort;
 import it.unica.co2.model.process.CO2Process;
 import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
@@ -637,6 +638,10 @@ public class MaudeListener extends ListenerAdapter {
 			DoSendDTO send = new DoSendDTO();
 			send.session = sessionName;
 			send.action = action;
+			
+			if (enteredMethod==sessionSend) send.sort = Sort.UNIT;
+			if (enteredMethod==sessionSendInt) send.sort = Sort.INT;
+			if (enteredMethod==sessionSendString) send.sort = Sort.STRING;
 			
 			SumDTO sum = new SumDTO();
 			sum.prefixes.add(send);

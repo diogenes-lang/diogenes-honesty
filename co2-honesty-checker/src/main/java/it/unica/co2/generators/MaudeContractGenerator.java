@@ -61,7 +61,7 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 		if (actionsAsString)
 			sb.append("\"");
 		
-		sb.append(" ! ").append(action.getSort().toString().toLowerCase());
+		sb.append(" ! ").append("unit");
 		
 		if (action.getNext()!=null)
 			sb.append(" . ( ")
@@ -85,7 +85,7 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 		if (actionsAsString)
 			sb.append("\"");
 		
-		sb.append(" ? ").append(action.getSort().toString().toLowerCase());
+		sb.append(" ? ").append("unit");
 		
 		if (action.getNext()!=null)
 			sb.append(" . ( ")
