@@ -12,13 +12,17 @@ import it.unica.co2.util.ObjectUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ComplianceChecker {
 
 	
 	public static boolean compliance(Contract a, Contract b) {
 		
+		System.out.println("================================================== COMPLIANCE CHECKER ");
 		String aAsString = ObjectUtils.serializeObjectToStringQuietly(a);
 		String bAsString = ObjectUtils.serializeObjectToStringQuietly(b);
 		
@@ -36,6 +40,38 @@ public class ComplianceChecker {
 		catch (IOException e1) {
 			throw new RuntimeException("unable to load the jpf config file", e1);
 		}
+		
+		/*
+		 * override jpf-core properties to point the embedded jars
+		 */
+		conf.setProperty("jpf-core.classpath", null);
+		conf.setProperty("jpf-core.native_classpath", null);
+		
+		/*
+		 * reorder the classpath entries so that co2apiHL-fake-<version>.jar appear first
+		 */
+		Stream<String> classpathEntries = Arrays.stream(System.getProperty("java.class.path").split(":"));
+		
+		String classpath = classpathEntries
+			.sorted(
+					(x,y) -> {
+						if (x.contains("co2apiHL-fake")) {
+			                return (y.contains("co2apiHL-fake")) ? 0 : -1;
+			            } 
+						else if (y.contains("co2apiHL-fake")) {
+			                return 1;
+			            } 
+						else {
+			                return 0;
+			            }
+					}
+				)
+			.collect(Collectors.joining(":"));
+		
+		// set the classpath
+		System.out.println("using classpath: "+classpath);
+		conf.append("classpath", classpath, ":");
+		conf.append("native_classpath", classpath, ":");
 		
 		
 		conf.setTarget(ComplianceChecker.class.getName());
@@ -63,7 +99,6 @@ public class ComplianceChecker {
 		jpf.addListener(complianceListener);
 		
 		try {
-			System.out.println("================================================== COMPLIANCE CHECKER ");
 			System.out.println("contract a: "+a);
 			System.out.println("contract b: "+b);
 			System.out.println("starting JPF to checking compliance...");

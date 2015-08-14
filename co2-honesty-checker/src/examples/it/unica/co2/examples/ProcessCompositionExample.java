@@ -1,14 +1,14 @@
 package it.unica.co2.examples;
 
 import static it.unica.co2.model.ContractFactory.*;
-import it.unica.co2.api.Session2;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.Recursion;
-import it.unica.co2.model.process.CO2Process;
-import it.unica.co2.model.process.Participant;
+
 import co2api.ContractException;
 import co2api.Message;
 import co2api.TST;
+import it.unica.co2.api.Session2;
+import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.contract.Recursion;
+import it.unica.co2.model.process.Participant;
 
 public class ProcessCompositionExample {
 

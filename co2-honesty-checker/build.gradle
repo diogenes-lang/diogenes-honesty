@@ -4,7 +4,7 @@ apply plugin: 'eclipse'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = '1.0.3'
+version = '1.0.3_test'
 
 sourceSets {
     main {
@@ -17,7 +17,7 @@ sourceSets {
 jar {
 	destinationDir file(".")
 	archiveName "co2-java-honesty-${version}.${extension}"
-//	from sourceSets.main.allSource
+	from sourceSets.main.allSource
 
 	into('lib') {
         from 'lib'
@@ -33,8 +33,11 @@ repositories {
 }
 
 dependencies {
+
+	compile 'org.apache.commons:commons-lang3:3.4'
+
 	//set all *.jar into /lib excluding co2apiHL-fake-1.0.0.jar
-    compile fileTree(dir: 'lib', include: '*.jar', exclude: "co2apiHL-fake-1.0.0.jar")
+    compile fileTree(dir: 'lib', include: '*.jar'/*, exclude: "co2apiHL-fake-1.0.0.jar"*/)
 }
 
 eclipse {

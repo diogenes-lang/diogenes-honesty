@@ -1,5 +1,14 @@
 package it.unica.co2.honesty;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
+
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
@@ -9,12 +18,6 @@ import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map.Entry;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class HonestyChecker {
 	
@@ -89,6 +92,38 @@ public class HonestyChecker {
 			throw new RuntimeException("unable to load the jpf config file", e1);
 		}
 		
+		/*
+		 * override jpf-core properties to point the embedded jars
+		 */
+		conf.setProperty("jpf-core.classpath", null);
+		conf.setProperty("jpf-core.native_classpath", null);
+		
+		/*
+		 * reorder the classpath entries so that co2apiHL-fake-<version>.jar appear first
+		 */
+		Stream<String> classpathEntries = Arrays.stream(System.getProperty("java.class.path").split(":"));
+		
+		String classpath = classpathEntries
+			.sorted(
+					(a,b) -> {
+						if (a.contains("co2apiHL-fake")) {
+			                return (b.contains("co2apiHL-fake")) ? 0 : -1;
+			            } 
+						else if (b.contains("co2apiHL-fake")) {
+			                return 1;
+			            } 
+						else {
+			                return 0;
+			            }
+					}
+				)
+			.collect(Collectors.joining(":"));
+		
+		// set the classpath
+		System.out.println("using classpath: "+classpath);
+		conf.append("classpath", classpath, ":");
+		conf.append("native_classpath", classpath, ":");
+
 		conf.setTarget(HonestyChecker.class.getName());
 		conf.setTargetEntry("runProcess([Ljava/lang/String;)V");
 		conf.setTargetArgs(new String[]{processSerialized});
