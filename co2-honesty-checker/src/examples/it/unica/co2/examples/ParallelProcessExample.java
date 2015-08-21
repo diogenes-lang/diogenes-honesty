@@ -24,14 +24,25 @@ public class ParallelProcessExample {
 		@Override
 		public void run() {
 			
-			Contract C = internalSum().add("a").add("b");
+			Contract C1 = externalSum().add("a").add("b").add("c");
+			Contract C = internalSum().add("a", C1).add("b",C1).add("c",C1);
 			
 			Session2<TST> session = tellAndWait(C);
 			
+			
+			Runnable rbl = () -> {
+				session.waitForReceive("a","b","c");
+			};
+			
+			
+			parallel(new ProcessA(session,rbl));
+			
+			parallel(new ProcessB(session,rbl));
+			
 			parallel(()-> {
-				session.send("a");
+				session.send("c");
+				rbl.run();
 			});
-//			parallel(new ProcessB(session));
 		}
 
 	}
@@ -40,15 +51,18 @@ public class ParallelProcessExample {
 		
 		private static final long serialVersionUID = 1L;
 		private final Session2<TST> session;
+		private final Runnable rbl;
 		
-		protected ProcessA(Session2<TST> session) {
+		protected ProcessA(Session2<TST> session, Runnable rbl) {
 			super("ProcessA");
 			this.session = session;
+			this.rbl = rbl;
 		}
 
 		@Override
 		public void run() {
 			session.send("a");
+			rbl.run();
 		}
 		
 	}
@@ -57,15 +71,18 @@ public class ParallelProcessExample {
 		
 		private static final long serialVersionUID = 1L;
 		private final Session2<TST> session;
+		private final Runnable rbl;
 		
-		protected ProcessB(Session2<TST> session) {
+		protected ProcessB(Session2<TST> session, Runnable rbl) {
 			super("ProcessB");
 			this.session = session;
+			this.rbl = rbl;
 		}
 
 		@Override
 		public void run() {
 			session.send("b");
+			rbl.run();
 		}
 		
 	}

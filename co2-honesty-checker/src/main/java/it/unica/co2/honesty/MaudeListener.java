@@ -175,8 +175,7 @@ public class MaudeListener extends ListenerAdapter {
 				ProcessDefinitionDTO proc = envProcesses.get(invokedClass.getName());
 				
 				ProcessCallDTO pCall = new ProcessCallDTO();
-				pCall.name = proc.name;
-				pCall.freeNames = proc.freeNames;
+				pCall.ref = proc;
 				
 				setCurrentProcess(tstate,pCall);
 				setCurrentPrefix(tstate,null);
