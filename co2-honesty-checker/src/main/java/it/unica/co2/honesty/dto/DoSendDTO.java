@@ -8,13 +8,4 @@ public class DoSendDTO extends PrefixDTO {
 	public String action;
 	public Sort sort;
 	
-	@Override
-	public PrefixDTO copy() {
-		DoSendDTO tmp = new DoSendDTO();
-		tmp.session = session;
-		tmp.action = action;
-		tmp.sort = sort;
-		tmp.next = next!=null? next.copy(): null;
-		return tmp;
-	}
 }

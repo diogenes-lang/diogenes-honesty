@@ -1,17 +1,20 @@
 package it.unica.co2.generators;
 
+import org.apache.commons.lang3.StringUtils;
+
 import it.unica.co2.honesty.dto.AskDTO;
 import it.unica.co2.honesty.dto.DoReceiveDTO;
 import it.unica.co2.honesty.dto.DoSendDTO;
 import it.unica.co2.honesty.dto.IfThenElseDTO;
+import it.unica.co2.honesty.dto.ParallelProcessesDTO;
 import it.unica.co2.honesty.dto.PrefixDTO;
+import it.unica.co2.honesty.dto.PrefixPlaceholderDTO;
+import it.unica.co2.honesty.dto.ProcessCallDTO;
 import it.unica.co2.honesty.dto.ProcessDTO;
 import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
 import it.unica.co2.honesty.dto.SumDTO;
 import it.unica.co2.honesty.dto.TauDTO;
 import it.unica.co2.honesty.dto.TellDTO;
-
-import org.apache.commons.lang3.StringUtils;
 
 
 public class MaudeCo2Generator {
@@ -34,6 +37,9 @@ public class MaudeCo2Generator {
 		else if (prefix instanceof TauDTO) {
 			return toMaude((TauDTO)prefix, initialSpace);
 		}
+		else if (prefix instanceof PrefixPlaceholderDTO) {
+			return toMaude((PrefixPlaceholderDTO)prefix, initialSpace);
+		}
 		
 		throw new IllegalStateException("unexpected prefix "+prefix.getClass());
 	}
@@ -43,11 +49,17 @@ public class MaudeCo2Generator {
 		if (process instanceof ProcessDefinitionDTO) {
 			return toMaude((ProcessDefinitionDTO)process, initialSpace);
 		}
+		else if (process instanceof ProcessCallDTO) {
+			return toMaude((ProcessCallDTO)process, initialSpace);
+		}
 		else if (process instanceof SumDTO) {
 			return toMaude((SumDTO)process, initialSpace);
 		}
 		else if (process instanceof IfThenElseDTO) {
 			return toMaude((IfThenElseDTO)process, initialSpace);
+		}
+		else if (process instanceof ParallelProcessesDTO) {
+			return toMaude((ParallelProcessesDTO)process, initialSpace);
 		}
 		
 		throw new IllegalStateException("unexpected process "+process.getClass());
@@ -75,8 +87,16 @@ public class MaudeCo2Generator {
 		return "t . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
 	}
 
+	public static String toMaude(PrefixPlaceholderDTO prefix, String initialSpace) {
+		return prefix.next==null? "0": toMaude(prefix.next, initialSpace);
+	}
+
 	public static String toMaude(ProcessDefinitionDTO process, String initialSpace) {
-		return process.name+"("+StringUtils.join(process.freeNames, " ; ")+ ")"+(process.isDefinition?" =def "+toMaude(process.process, initialSpace): "");
+		return process.name+"("+StringUtils.join(process.freeNames, " ; ")+ ") =def "+toMaude(process.process, initialSpace);
+	}
+	
+	public static String toMaude(ProcessCallDTO process, String initialSpace) {
+		return process.name+"("+StringUtils.join(process.freeNames, " ; ")+ ") ";
 	}
 	
 	public static String toMaude(SumDTO process, String initialSpace) {
@@ -126,6 +146,17 @@ public class MaudeCo2Generator {
 		return sb.toString();
 	}
 	
+	public static String toMaude(ParallelProcessesDTO process, String initialSpace) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("(");		
+			sb.append("(").append(toMaude(process.processA, initialSpace)).append(")");
+		sb.append("|");		
+			sb.append("(").append(toMaude(process.processB, initialSpace)).append(")");
+		sb.append(")");
+		
+		return sb.toString();
+	}
 	
 	private static String TAB = "    ";
 	

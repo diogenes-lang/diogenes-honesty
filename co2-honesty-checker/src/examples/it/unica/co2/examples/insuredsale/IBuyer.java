@@ -24,7 +24,7 @@ public class IBuyer extends Participant {
 				.add("abort"));
 		
 		
-		Integer orderAmount = 20;
+		Integer orderAmount = 60;
 		
 		Session2<TST> session = tellAndWait(CA);
 		

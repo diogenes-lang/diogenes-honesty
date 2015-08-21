@@ -5,8 +5,6 @@ import it.unica.co2.generators.MaudeCo2Generator;
 
 public abstract class ProcessDTO {
 
-	abstract public ProcessDTO copy();
-	
 	@Override 
 	public String toString() {
 		return toMaude();

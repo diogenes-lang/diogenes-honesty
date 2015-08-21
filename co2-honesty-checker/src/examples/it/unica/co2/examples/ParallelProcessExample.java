@@ -28,11 +28,10 @@ public class ParallelProcessExample {
 			
 			Session2<TST> session = tellAndWait(C);
 			
-			Thread tA = new Thread(new ProcessA(session));
-			Thread tB = new Thread(new ProcessB(session));
-			
-			tA.start();
-			tB.start();
+			parallel(()-> {
+				session.send("a");
+			});
+//			parallel(new ProcessB(session));
 		}
 
 	}

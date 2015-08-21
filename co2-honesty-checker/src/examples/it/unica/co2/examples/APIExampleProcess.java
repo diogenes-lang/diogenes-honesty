@@ -2,14 +2,16 @@ package it.unica.co2.examples;
 
 
 import static it.unica.co2.model.ContractFactory.*;
-import it.unica.co2.api.Session2;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.process.Participant;
+
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.TST;
 import co2api.TimeExpiredException;
+import it.unica.co2.api.Session2;
+import it.unica.co2.model.contract.Contract;
+import it.unica.co2.model.process.CO2Process;
+import it.unica.co2.model.process.Participant;
 
 public class APIExampleProcess extends Participant {
 
@@ -65,7 +67,8 @@ public class APIExampleProcess extends Participant {
 					break;
 				}
 				
-				session.send("end");
+				new ProcessA(session).run();
+
 				logger.log("FINE");
 			}
 			catch (TimeExpiredException e) {
@@ -78,5 +81,36 @@ public class APIExampleProcess extends Participant {
 		catch (ContractException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private static class ProcessA extends CO2Process {
+		
+		private static final long serialVersionUID = 1L;
+		private final Session2<TST> session;
+		
+		protected ProcessA(Session2<TST> session) {
+			super("ProcessA");
+			this.session = session;
+		}
+
+		@Override
+		public void run() {
+			session.send("a");
+			
+			parallel(() -> {
+				session.send("a1");
+			});
+			
+			parallel(() -> {
+				session.send("a2");
+			});
+
+			parallel(() -> {
+				session.send("a3");
+			});
+			
+			session.send("b");
+		}
+		
 	}
 }

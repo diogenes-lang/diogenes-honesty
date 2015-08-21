@@ -13,13 +13,4 @@ public class SumDTO extends ProcessDTO {
 
 	public List<PrefixDTO> prefixes = new ArrayList<>();
 	
-	@Override
-	public ProcessDTO copy() {
-		SumDTO sum = new SumDTO();
-		sum.prefixes = new ArrayList<PrefixDTO>(prefixes.size());
-		for (PrefixDTO p : prefixes)
-			sum.prefixes.add(p.copy());
-		return sum;
-	}
-
 }

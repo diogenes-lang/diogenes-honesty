@@ -68,7 +68,6 @@ public class HonestyTest {
 	}
 	
 	@Test
-	@Ignore
 	public void parallel() {
 		
 		HonestyResult honesty = HonestyChecker.isHonest(ParallelProcess.class);

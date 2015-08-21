@@ -7,8 +7,6 @@ public abstract class PrefixDTO {
 	
 	public ProcessDTO next;
 	
-	abstract public PrefixDTO copy();
-	
 	@Override 
 	public String toString() {
 		return toMaude();

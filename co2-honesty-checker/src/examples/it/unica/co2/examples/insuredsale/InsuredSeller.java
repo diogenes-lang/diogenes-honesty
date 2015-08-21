@@ -16,8 +16,8 @@ public class InsuredSeller extends Participant {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static String username = "insuredseller@nicola.com";
-	private static String password = "insuredseller";
+	private static String username = "insuredseller1@nicola.com";
+	private static String password = "insuredseller1";
 	
 	public InsuredSeller() {
 		super(username, password);
@@ -103,13 +103,13 @@ public class InsuredSeller extends Participant {
 		private static final long serialVersionUID = 1L;
 		private final Session2<TST> session;
 		private final Integer amount;
-		private final Participant p;
+//		private final Participant p;
 		
 		protected Insurance(Session2<TST> session, Integer amount, Participant p) {
 			super(username, password);
 			this.session = session;
 			this.amount = amount;
-			this.p = p;
+//			this.p = p;
 		}
 
 		@Override
@@ -117,12 +117,12 @@ public class InsuredSeller extends Participant {
 			
 			Contract CI = internalSum().add("reqi", externalSum().add("oki").add("aborti"));
 
-			Public<TST> pblI = p.tell(CI);
+			Public<TST> pblI = tell(CI);
 		
 			Session2<TST> sessionI;
 			
 			try {
-				sessionI = p.waitForSession(pblI, 10000);
+				sessionI = waitForSession(pblI, 10000);
 				
 				sessionI.send("reqi", amount);
 				
@@ -132,7 +132,7 @@ public class InsuredSeller extends Participant {
 					switch (msg.getLabel()) {
 					
 					case "oki":
-						new HandlePayment(session, amount);
+						new HandlePayment(session, amount).run();
 						break;
 						
 					case "aborti":
@@ -153,7 +153,7 @@ public class InsuredSeller extends Participant {
 				
 				session.send("abort");
 				
-				sessionI = p.waitForSession(pblI);
+				sessionI = waitForSession(pblI);
 				sessionI.send("reqi");
 				sessionI.waitForReceive("oki", "aborti");
 			}
