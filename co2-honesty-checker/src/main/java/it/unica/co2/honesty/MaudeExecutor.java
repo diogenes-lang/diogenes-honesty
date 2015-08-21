@@ -89,7 +89,7 @@ public class MaudeExecutor {
 			
 			if (!terminated) {
 				out.println("-------------------------------------------------- error");
-				out.println("the process is running more than 10 sec, kill");
+				out.println("the process is running more than "+configuration.timeout()+" sec, kill");
 				pr.destroyForcibly();
 				return HonestyResult.UNKNOWN;
 			}

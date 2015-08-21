@@ -14,8 +14,8 @@ public class VoucherSeller extends Participant {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static String username = "test@nicola.com";
-	private static String password = "test";
+	private static String username = "voucher.seller@nicola.com";
+	private static String password = "voucher.seller";
 	
 	public VoucherSeller() {
 		super(username, password);
@@ -23,10 +23,6 @@ public class VoucherSeller extends Participant {
 
 	@Override
 	public void run() {
-		
-		/*
-		 * This process required parallel co2 processes, not implemented yet.
-		 * */
 		
 		Contract Cvoucher = internalSum()
 				.add("reject", externalSum().add("pay"))
@@ -58,8 +54,14 @@ public class VoucherSeller extends Participant {
 				new Q(sessionB, sessionV).run();
 			}
 			catch (TimeExpiredException e) {
-				sessionB.send("reject");
-				sessionB.waitForReceive("pay");
+				
+				parallel(()->{
+					sessionB.send("reject");
+					sessionB.waitForReceive("pay");
+				});
+				
+				Session2<TST> sessionV = waitForSession(pblV);
+				sessionV.waitForReceive("ok","no");
 			}
 			
 			break;
@@ -100,8 +102,11 @@ public class VoucherSeller extends Participant {
 				}
 			}
 			catch (TimeExpiredException e) {
-				sessionB.send("reject");
-				sessionB.waitForReceive("pay");
+				
+				parallel(()->{
+					sessionB.send("reject");
+					sessionB.waitForReceive("pay");
+				});
 				
 				sessionV.waitForReceive("ok", "no");
 			}

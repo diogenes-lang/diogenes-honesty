@@ -24,24 +24,26 @@ public class ParallelProcessExample {
 		@Override
 		public void run() {
 			
-			Contract C1 = externalSum().add("a").add("b").add("c");
-			Contract C = internalSum().add("a", C1).add("b",C1).add("c",C1);
-			
-			Session2<TST> session = tellAndWait(C);
-			
-			
-			Runnable rbl = () -> {
-				session.waitForReceive("a","b","c");
-			};
-			
-			
-			parallel(new ProcessA(session,rbl));
-			
-			parallel(new ProcessB(session,rbl));
+			Contract C1 = internalSum().add("a", externalSum().add("a"));
+			Contract C2 = internalSum().add("b", externalSum().add("a"));
+			Contract C3 = internalSum().add("c", externalSum().add("a"));
 			
 			parallel(()-> {
+				Session2<TST> session = tellAndWait(C1);
+				session.send("a");
+				session.waitForReceive("a");
+			});
+			
+			parallel(()-> {
+				Session2<TST> session = tellAndWait(C2);
+				session.send("b");
+				session.waitForReceive("a");
+			});
+			
+			parallel(()-> {
+				Session2<TST> session = tellAndWait(C3);
 				session.send("c");
-				rbl.run();
+				session.waitForReceive("a");
 			});
 		}
 

@@ -84,6 +84,6 @@ public class MaudeConfigurationFromResource implements MaudeConfiguration {
 	
 	@Override
 	public int timeout() {
-		return this.getIntProperty("honesty.maude.timeour", 10);
+		return this.getIntProperty("honesty.maude.timeout", 10);
 	}
 }

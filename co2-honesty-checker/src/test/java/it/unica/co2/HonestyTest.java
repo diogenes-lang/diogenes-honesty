@@ -1,6 +1,9 @@
 package it.unica.co2;
 
 import static org.junit.Assert.*;
+
+import org.junit.Test;
+
 import it.unica.co2.examples.APIExampleProcess;
 import it.unica.co2.examples.MultipleIfThenElseProcess;
 import it.unica.co2.examples.ParallelProcessExample.ParallelProcess;
@@ -17,12 +20,11 @@ import it.unica.co2.examples.ebookstore.Seller;
 import it.unica.co2.examples.insuredsale.IBuyer;
 import it.unica.co2.examples.insuredsale.Insurance;
 import it.unica.co2.examples.insuredsale.InsuredSeller;
+import it.unica.co2.examples.voucher.VoucherBuyer;
 import it.unica.co2.examples.voucher.VoucherSeller;
+import it.unica.co2.examples.voucher.VoucherService;
 import it.unica.co2.honesty.HonestyChecker;
 import it.unica.co2.honesty.HonestyResult;
-
-import org.junit.Ignore;
-import org.junit.Test;
 
 
 public class HonestyTest {
@@ -109,10 +111,15 @@ public class HonestyTest {
 	}
 	
 	@Test
-	@Ignore
 	public void voucher() {
 		
 		HonestyResult honesty;
+		
+		honesty = HonestyChecker.isHonest(VoucherService.class);
+		assertTrue(honesty==HonestyResult.HONEST);
+
+		honesty = HonestyChecker.isHonest(VoucherBuyer.class);
+		assertTrue(honesty==HonestyResult.HONEST);
 		
 		honesty = HonestyChecker.isHonest(VoucherSeller.class);
 		assertTrue(honesty==HonestyResult.HONEST);
