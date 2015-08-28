@@ -6,20 +6,15 @@ public abstract class Action implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public enum Type { 
-		INTERNAL,
-		EXTERNAL
-	}
-	
 	private final String name;
 	private final Sort sort;
 	private Contract next;
-	private final Type type;
+	private final ActionType actionType;
 	
-	public Action(String name, Sort sort, Type type, Contract next) {
+	public Action(String name, Sort sort, ActionType actionType, Contract next) {
 		this.name = name;
 		this.sort = sort;
-		this.type = type;
+		this.actionType = actionType;
 		this.next = next;
 	}
 
@@ -31,8 +26,8 @@ public abstract class Action implements Serializable {
 		return sort;
 	}
 
-	public Type getType() {
-		return type;
+	public ActionType getActionType() {
+		return actionType;
 	}
 
 	
@@ -58,7 +53,7 @@ public abstract class Action implements Serializable {
 		int result = 1;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((sort == null) ? 0 : sort.hashCode());
-		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((actionType == null) ? 0 : actionType.hashCode());
 		return result;
 	}
 
@@ -78,7 +73,7 @@ public abstract class Action implements Serializable {
 			return false;
 		if (sort != other.sort)
 			return false;
-		if (type != other.type)
+		if (actionType != other.actionType)
 			return false;
 		return true;
 	}

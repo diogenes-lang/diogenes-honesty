@@ -2,6 +2,7 @@ package it.unica.co2;
 
 import static org.junit.Assert.*;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import it.unica.co2.examples.APIExampleProcess;
@@ -70,6 +71,7 @@ public class HonestyTest {
 	}
 	
 	@Test
+	@Ignore	//too long
 	public void parallel() {
 		
 		HonestyResult honesty = HonestyChecker.isHonest(ParallelProcess.class);

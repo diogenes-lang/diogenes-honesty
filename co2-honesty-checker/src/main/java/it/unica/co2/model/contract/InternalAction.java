@@ -5,7 +5,7 @@ public class InternalAction extends Action {
 	private static final long serialVersionUID = 1L;
 	
 	public InternalAction(String name, Sort sort, Contract next ) {
-		super(name, sort, Type.INTERNAL, next);
+		super(name, sort, ActionType.INTERNAL, next);
 	}
 
 	@SuppressWarnings("unchecked")
