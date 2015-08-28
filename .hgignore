@@ -1,7 +1,7 @@
 syntax: glob
 
-.classpath # eclipse
-.project   # eclipse
+#.classpath # eclipse
+#.project   # eclipse
 .settings  # eclipse
 .launch    # eclipse
 .gradle
