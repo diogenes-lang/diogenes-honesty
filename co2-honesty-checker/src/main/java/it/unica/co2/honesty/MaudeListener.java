@@ -253,32 +253,18 @@ public class MaudeListener extends ListenerAdapter {
 				log.info("--IF_THEN_ELSE--");
 				
 				IfThenElseDS ifThenElse = new IfThenElseDS();
-				
-				SumDS thenStmt = new SumDS();
-				PrefixPlaceholderDS thenTau = new PrefixPlaceholderDS();
-				thenStmt.prefixes.add(thenTau);
-				
-				SumDS elseStmt = new SumDS();
-				PrefixPlaceholderDS elseTau = new PrefixPlaceholderDS();
-				elseStmt.prefixes.add(elseTau);
-				
-				
-				ifThenElse.thenStmt = thenStmt;
-				ifThenElse.elseStmt = elseStmt;
+				ifThenElse.thenStmt = new PrefixPlaceholderDS();
+				ifThenElse.elseStmt = new PrefixPlaceholderDS();
 				
 				
 				setCurrentProcess(tstate,ifThenElse);		//set the current process
-				
-				tstate.ifThenElseCount++;		// the counter reset when the choice generator is PROCESSED
-				BooleanChoiceGenerator cg = new BooleanChoiceGenerator("ifThenElseCG_"+tstate.ifThenElseCount, false);
+				pushIfElse(tstate, ifThenElse);
 
-				tstate.taus.put("then_"+cg.getId(), thenTau);
-				tstate.taus.put("else_"+cg.getId(), elseTau);
-				
+				BooleanChoiceGenerator cg = new BooleanChoiceGenerator("ifThenElseCG_"+tstate.ifElseStack.size(), false);
+
 				vm.getSystemState().setNextChoiceGenerator(cg);
 				ti.skipInstruction(insn);
 				
-				pushIfElse(tstate);
 			}
 			else {
 
@@ -286,7 +272,7 @@ public class MaudeListener extends ListenerAdapter {
 				
 				// bottom half - reexecution at the beginning of the next
 				// transition
-				BooleanChoiceGenerator cg = vm.getSystemState().getCurrentChoiceGenerator("ifThenElseCG_"+tstate.ifThenElseCount, BooleanChoiceGenerator.class);
+				BooleanChoiceGenerator cg = vm.getSystemState().getCurrentChoiceGenerator("ifThenElseCG_"+tstate.ifElseStack.size(), BooleanChoiceGenerator.class);
 
 				assert cg != null : "no 'ifThenElseCG' BooleanChoiceGenerator found";
 				
@@ -296,8 +282,8 @@ public class MaudeListener extends ListenerAdapter {
 				Boolean myChoice = cg.getNextChoice();
 				
 				
-				PrefixPlaceholderDS thenTau = tstate.taus.get("then_"+cg.getId());
-				PrefixPlaceholderDS elseTau = tstate.taus.get("else_"+cg.getId());
+				PrefixPlaceholderDS thenTau = tstate.ifElseStack.peek().ifThenElse.thenStmt;
+				PrefixPlaceholderDS elseTau = tstate.ifElseStack.peek().ifThenElse.elseStmt;
 				
 				log.info("thenTau: "+thenTau);
 				log.info("elseTau: "+elseTau);
@@ -765,10 +751,6 @@ public class MaudeListener extends ListenerAdapter {
 	@Override
 	public void choiceGeneratorProcessed(VM vm, ChoiceGenerator<?> processedCG) {
 		log.info("............... PROCESSED ..............: "+processedCG.getId()+" - idRef="+processedCG.getIdRef());
-		ThreadState tstate = threadStates.get(vm.getCurrentThread());
-		if (processedCG.getId().equals("ifThenElseCG_"+tstate.ifThenElseCount)) {
-			tstate.ifThenElseCount--;
-		}
 	}
 	
 	@Override
@@ -1022,9 +1004,10 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	
-	private void pushIfElse(ThreadState tstate) {
+	private void pushIfElse(ThreadState tstate, IfThenElseDS ifThenElse) {
 		
 		IfThenElseStackFrame frame = new IfThenElseStackFrame();
+		frame.ifThenElse = ifThenElse;
 		frame.thenStarted = false;
 		frame.elseStarted = false;
 		frame.ownerProcessFrame = tstate.co2ProcessesStack.peek().id;
@@ -1105,6 +1088,7 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	private static class IfThenElseStackFrame {
+		IfThenElseDS ifThenElse;
 		boolean thenStarted;
 		boolean elseStarted;
 		int ownerProcessFrame;	//the frame that own the sum
@@ -1127,16 +1111,8 @@ public class MaudeListener extends ListenerAdapter {
 		 */
 		Stack<CO2StackFrame> co2ProcessesStack = new Stack<CO2StackFrame>();
 		
-		/*
-		 * store the entry-points of if-the-else processes, 
-		 * useful to set the co2CurrentPrefix before analyzing a branch
-		 * (the key is the choice-generator id)
-		 */
-		Map<String, PrefixPlaceholderDS> taus = new HashMap<>();
-		int ifThenElseCount=0;
-		
-		Stack<SumStackFrame> sumStack = new Stack<>();
-		 
+
+		Stack<SumStackFrame> sumStack = new Stack<>(); 
 		Stack<IfThenElseStackFrame> ifElseStack = new Stack<>();
 		
 		/*
