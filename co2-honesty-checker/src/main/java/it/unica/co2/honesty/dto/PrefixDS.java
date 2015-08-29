@@ -3,8 +3,10 @@ package it.unica.co2.honesty.dto;
 import it.unica.co2.generators.MaudeCo2Generator;
 
 
-public abstract class ProcessDTO {
-
+public abstract class PrefixDS {
+	
+	public ProcessDS next;
+	
 	@Override 
 	public String toString() {
 		return toMaude();

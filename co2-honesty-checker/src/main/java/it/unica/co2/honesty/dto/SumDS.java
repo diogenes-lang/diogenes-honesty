@@ -5,12 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class SumDTO extends ProcessDTO {
+public class SumDS extends ProcessDS {
 
-	public SumDTO(PrefixDTO... prefixes) {
+	public SumDS(PrefixDS... prefixes) {
 		this.prefixes.addAll(Arrays.asList(prefixes));
 	}
 
-	public List<PrefixDTO> prefixes = new ArrayList<>();
+	public List<PrefixDS> prefixes = new ArrayList<>();
 	
 }

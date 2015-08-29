@@ -1,7 +1,7 @@
 package it.unica.co2.honesty.dto;
 
 
-public class AskDTO extends PrefixDTO {
+public class AskDS extends PrefixDS {
 	
 	public String session;
 	

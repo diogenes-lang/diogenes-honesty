@@ -2,64 +2,64 @@ package it.unica.co2.generators;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.unica.co2.honesty.dto.AskDTO;
-import it.unica.co2.honesty.dto.DoReceiveDTO;
-import it.unica.co2.honesty.dto.DoSendDTO;
-import it.unica.co2.honesty.dto.IfThenElseDTO;
-import it.unica.co2.honesty.dto.ParallelProcessesDTO;
-import it.unica.co2.honesty.dto.PrefixDTO;
-import it.unica.co2.honesty.dto.PrefixPlaceholderDTO;
-import it.unica.co2.honesty.dto.ProcessCallDTO;
-import it.unica.co2.honesty.dto.ProcessDTO;
-import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
-import it.unica.co2.honesty.dto.SumDTO;
-import it.unica.co2.honesty.dto.TauDTO;
-import it.unica.co2.honesty.dto.TellDTO;
+import it.unica.co2.honesty.dto.AskDS;
+import it.unica.co2.honesty.dto.DoReceiveDS;
+import it.unica.co2.honesty.dto.DoSendDS;
+import it.unica.co2.honesty.dto.IfThenElseDS;
+import it.unica.co2.honesty.dto.ParallelProcessesDS;
+import it.unica.co2.honesty.dto.PrefixDS;
+import it.unica.co2.honesty.dto.PrefixPlaceholderDS;
+import it.unica.co2.honesty.dto.ProcessCallDS;
+import it.unica.co2.honesty.dto.ProcessDS;
+import it.unica.co2.honesty.dto.ProcessDefinitionDS;
+import it.unica.co2.honesty.dto.SumDS;
+import it.unica.co2.honesty.dto.TauDS;
+import it.unica.co2.honesty.dto.TellDS;
 
 
 public class MaudeCo2Generator {
 
 	
-	public static String toMaude(PrefixDTO prefix, String initialSpace) {
+	public static String toMaude(PrefixDS prefix, String initialSpace) {
 		
-		if (prefix instanceof AskDTO) {
-			return toMaude((AskDTO)prefix, initialSpace);
+		if (prefix instanceof AskDS) {
+			return toMaude((AskDS)prefix, initialSpace);
 		}
-		else if (prefix instanceof TellDTO) {
-			return toMaude((TellDTO)prefix, initialSpace);
+		else if (prefix instanceof TellDS) {
+			return toMaude((TellDS)prefix, initialSpace);
 		}
-		else if (prefix instanceof DoReceiveDTO) {
-			return toMaude((DoReceiveDTO)prefix, initialSpace);
+		else if (prefix instanceof DoReceiveDS) {
+			return toMaude((DoReceiveDS)prefix, initialSpace);
 			}
-		else if (prefix instanceof DoSendDTO) {
-			return toMaude((DoSendDTO)prefix, initialSpace);
+		else if (prefix instanceof DoSendDS) {
+			return toMaude((DoSendDS)prefix, initialSpace);
 		}
-		else if (prefix instanceof TauDTO) {
-			return toMaude((TauDTO)prefix, initialSpace);
+		else if (prefix instanceof TauDS) {
+			return toMaude((TauDS)prefix, initialSpace);
 		}
-		else if (prefix instanceof PrefixPlaceholderDTO) {
-			return toMaude((PrefixPlaceholderDTO)prefix, initialSpace);
+		else if (prefix instanceof PrefixPlaceholderDS) {
+			return toMaude((PrefixPlaceholderDS)prefix, initialSpace);
 		}
 		
 		throw new IllegalStateException("unexpected prefix "+prefix.getClass());
 	}
 	
-	public static String toMaude(ProcessDTO process, String initialSpace) {
+	public static String toMaude(ProcessDS process, String initialSpace) {
 		
-		if (process instanceof ProcessDefinitionDTO) {
-			return toMaude((ProcessDefinitionDTO)process, initialSpace);
+		if (process instanceof ProcessDefinitionDS) {
+			return toMaude((ProcessDefinitionDS)process, initialSpace);
 		}
-		else if (process instanceof ProcessCallDTO) {
-			return toMaude((ProcessCallDTO)process, initialSpace);
+		else if (process instanceof ProcessCallDS) {
+			return toMaude((ProcessCallDS)process, initialSpace);
 		}
-		else if (process instanceof SumDTO) {
-			return toMaude((SumDTO)process, initialSpace);
+		else if (process instanceof SumDS) {
+			return toMaude((SumDS)process, initialSpace);
 		}
-		else if (process instanceof IfThenElseDTO) {
-			return toMaude((IfThenElseDTO)process, initialSpace);
+		else if (process instanceof IfThenElseDS) {
+			return toMaude((IfThenElseDS)process, initialSpace);
 		}
-		else if (process instanceof ParallelProcessesDTO) {
-			return toMaude((ParallelProcessesDTO)process, initialSpace);
+		else if (process instanceof ParallelProcessesDS) {
+			return toMaude((ParallelProcessesDS)process, initialSpace);
 		}
 		
 		throw new IllegalStateException("unexpected process "+process.getClass());
@@ -67,39 +67,39 @@ public class MaudeCo2Generator {
 	
 	
 	
-	public static String toMaude(AskDTO prefix, String initialSpace) {
+	public static String toMaude(AskDS prefix, String initialSpace) {
 		return "ask \""+prefix.session+"\" True . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
 	}
 	
-	public static String toMaude(TellDTO prefix, String initialSpace) {
+	public static String toMaude(TellDS prefix, String initialSpace) {
 		return "tell \""+prefix.session+"\" "+" "+prefix.contractName+" . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
 	}
 
-	public static String toMaude(DoReceiveDTO prefix, String initialSpace) {
+	public static String toMaude(DoReceiveDS prefix, String initialSpace) {
 		return "do \""+prefix.session+"\" \""+prefix.action+"\" ? unit . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
 	}
 
-	public static String toMaude(DoSendDTO prefix, String initialSpace) {
+	public static String toMaude(DoSendDS prefix, String initialSpace) {
 		return "do \""+prefix.session+"\" \""+prefix.action+"\" ! unit . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
 	}
 
-	public static String toMaude(TauDTO prefix, String initialSpace) {
+	public static String toMaude(TauDS prefix, String initialSpace) {
 		return "t . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
 	}
 
-	public static String toMaude(PrefixPlaceholderDTO prefix, String initialSpace) {
+	public static String toMaude(PrefixPlaceholderDS prefix, String initialSpace) {
 		return prefix.next==null? "0": toMaude(prefix.next, initialSpace);
 	}
 
-	public static String toMaude(ProcessDefinitionDTO process, String initialSpace) {
+	public static String toMaude(ProcessDefinitionDS process, String initialSpace) {
 		return process.name+"("+StringUtils.join(process.freeNames, " ; ")+ ") =def "+toMaude(process.process, initialSpace);
 	}
 	
-	public static String toMaude(ProcessCallDTO process, String initialSpace) {
+	public static String toMaude(ProcessCallDS process, String initialSpace) {
 		return process.ref.name+"("+StringUtils.join(process.ref.freeNames, " ; ")+ ") ";
 	}
 	
-	public static String toMaude(SumDTO process, String initialSpace) {
+	public static String toMaude(SumDS process, String initialSpace) {
 		StringBuilder sb = new StringBuilder();
 		
 		if (process.prefixes.size()>1) {
@@ -109,7 +109,7 @@ public class MaudeCo2Generator {
 		
 
 		int i=0;
-		for (PrefixDTO p : process.prefixes) {
+		for (PrefixDS p : process.prefixes) {
 			
 			if (i++>0) {
 				sb.append(" + ");
@@ -130,7 +130,7 @@ public class MaudeCo2Generator {
 		return sb.toString();
 	}
 	
-	public static String toMaude(IfThenElseDTO process, String initialSpace) {
+	public static String toMaude(IfThenElseDS process, String initialSpace) {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("\n").append(initialSpace).append("(");
@@ -146,7 +146,7 @@ public class MaudeCo2Generator {
 		return sb.toString();
 	}
 	
-	public static String toMaude(ParallelProcessesDTO process, String initialSpace) {
+	public static String toMaude(ParallelProcessesDS process, String initialSpace) {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("(");		

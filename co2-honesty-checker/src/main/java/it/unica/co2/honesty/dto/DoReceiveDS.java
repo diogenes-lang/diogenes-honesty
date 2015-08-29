@@ -2,7 +2,7 @@ package it.unica.co2.honesty.dto;
 
 import it.unica.co2.model.contract.Sort;
 
-public class DoReceiveDTO extends PrefixDTO {
+public class DoReceiveDS extends PrefixDS {
 
 	public String session;
 	public String action;
@@ -26,7 +26,7 @@ public class DoReceiveDTO extends PrefixDTO {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		DoReceiveDTO other = (DoReceiveDTO) obj;
+		DoReceiveDS other = (DoReceiveDS) obj;
 		if (action == null) {
 			if (other.action != null)
 				return false;

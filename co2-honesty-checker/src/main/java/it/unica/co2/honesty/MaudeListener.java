@@ -32,19 +32,19 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.bytecode.InvokeInstruction;
 import it.unica.co2.api.Session2;
-import it.unica.co2.honesty.dto.AskDTO;
-import it.unica.co2.honesty.dto.DoReceiveDTO;
-import it.unica.co2.honesty.dto.DoSendDTO;
-import it.unica.co2.honesty.dto.IfThenElseDTO;
-import it.unica.co2.honesty.dto.ParallelProcessesDTO;
-import it.unica.co2.honesty.dto.PrefixDTO;
-import it.unica.co2.honesty.dto.PrefixPlaceholderDTO;
-import it.unica.co2.honesty.dto.ProcessCallDTO;
-import it.unica.co2.honesty.dto.ProcessDTO;
-import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
-import it.unica.co2.honesty.dto.SumDTO;
-import it.unica.co2.honesty.dto.TauDTO;
-import it.unica.co2.honesty.dto.TellDTO;
+import it.unica.co2.honesty.dto.AskDS;
+import it.unica.co2.honesty.dto.DoReceiveDS;
+import it.unica.co2.honesty.dto.DoSendDS;
+import it.unica.co2.honesty.dto.IfThenElseDS;
+import it.unica.co2.honesty.dto.ParallelProcessesDS;
+import it.unica.co2.honesty.dto.PrefixDS;
+import it.unica.co2.honesty.dto.PrefixPlaceholderDS;
+import it.unica.co2.honesty.dto.ProcessCallDS;
+import it.unica.co2.honesty.dto.ProcessDS;
+import it.unica.co2.honesty.dto.ProcessDefinitionDS;
+import it.unica.co2.honesty.dto.SumDS;
+import it.unica.co2.honesty.dto.TauDS;
+import it.unica.co2.honesty.dto.TellDS;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.contract.Sort;
 import it.unica.co2.model.process.CO2Process;
@@ -86,8 +86,8 @@ public class MaudeListener extends ListenerAdapter {
 	/*
 	 * env
 	 */
-	private Map<String, ProcessDefinitionDTO> envProcesses = new HashMap<>();
-	private List<ProcessDefinitionDTO> envProcessesList  = new ArrayList<>();
+	private Map<String, ProcessDefinitionDS> envProcesses = new HashMap<>();
+	private List<ProcessDefinitionDS> envProcessesList  = new ArrayList<>();
 	
 	
 	
@@ -96,11 +96,11 @@ public class MaudeListener extends ListenerAdapter {
 	
 	/*
 	 * entry-point of the next thread.
-	 * A thread starts one thread at time (using synchronized Participant#parallel()).
+	 * A thread starts another thread at time (using synchronized Participant#parallel()).
 	 * Until parallel() does't end, no other one can start a new thread.
 	 */
-	private SumDTO threadCurrentProcess;
-	private PrefixPlaceholderDTO threadCurrentPrefix;
+	private SumDS threadCurrentProcess;
+	private PrefixPlaceholderDS threadCurrentPrefix;
 	
 	/* using these fields is more efficient on dispatching */
 	private MethodInfo participantTell;
@@ -172,9 +172,9 @@ public class MaudeListener extends ListenerAdapter {
 					envProcesses.containsKey(invokedClass.getName())
 					) {
 				
-				ProcessDefinitionDTO proc = envProcesses.get(invokedClass.getName());
+				ProcessDefinitionDS proc = envProcesses.get(invokedClass.getName());
 				
-				ProcessCallDTO pCall = new ProcessCallDTO();
+				ProcessCallDS pCall = new ProcessCallDS();
 				pCall.ref = proc;
 				
 				setCurrentProcess(tstate,pCall);
@@ -252,14 +252,14 @@ public class MaudeListener extends ListenerAdapter {
 				printInfo(tstate);
 				log.info("--IF_THEN_ELSE--");
 				
-				IfThenElseDTO ifThenElse = new IfThenElseDTO();
+				IfThenElseDS ifThenElse = new IfThenElseDS();
 				
-				SumDTO thenStmt = new SumDTO();
-				PrefixPlaceholderDTO thenTau = new PrefixPlaceholderDTO();
+				SumDS thenStmt = new SumDS();
+				PrefixPlaceholderDS thenTau = new PrefixPlaceholderDS();
 				thenStmt.prefixes.add(thenTau);
 				
-				SumDTO elseStmt = new SumDTO();
-				PrefixPlaceholderDTO elseTau = new PrefixPlaceholderDTO();
+				SumDS elseStmt = new SumDS();
+				PrefixPlaceholderDS elseTau = new PrefixPlaceholderDS();
 				elseStmt.prefixes.add(elseTau);
 				
 				
@@ -296,8 +296,8 @@ public class MaudeListener extends ListenerAdapter {
 				Boolean myChoice = cg.getNextChoice();
 				
 				
-				PrefixPlaceholderDTO thenTau = tstate.taus.get("then_"+cg.getId());
-				PrefixPlaceholderDTO elseTau = tstate.taus.get("else_"+cg.getId());
+				PrefixPlaceholderDS thenTau = tstate.taus.get("then_"+cg.getId());
+				PrefixPlaceholderDS elseTau = tstate.taus.get("else_"+cg.getId());
 				
 				log.info("thenTau: "+thenTau);
 				log.info("elseTau: "+elseTau);
@@ -350,8 +350,8 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo(tstate);
 			log.info("--TELL-- (method exited)");
 			
-			TellDTO tell = new TellDTO();
-			SumDTO sum = new SumDTO(tell);
+			TellDS tell = new TellDS();
+			SumDS sum = new SumDS(tell);
 			
 			ElementInfo ei = currentThread.getThisElementInfo();
 			
@@ -376,7 +376,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
-			SumDTO sum = tstate.sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			SumDS sum = tstate.sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
 			
 			log.info("sumStack.peek(): "+sum.toString());
 			
@@ -389,12 +389,12 @@ public class MaudeListener extends ListenerAdapter {
 				assert sum.prefixes.size()==2;		// t . (...) + ask "" (True) . (...)
 				
 				//get the tau prefix
-				TauDTO tau = null;
+				TauDS tau = null;
 				
-				if (sum.prefixes.get(0) instanceof TauDTO)
-					tau=(TauDTO) sum.prefixes.get(0);
+				if (sum.prefixes.get(0) instanceof TauDS)
+					tau=(TauDS) sum.prefixes.get(0);
 				else
-					tau=(TauDTO) sum.prefixes.get(1);
+					tau=(TauDS) sum.prefixes.get(1);
 				
 				popSum(tstate,tau);
 				setCurrentPrefix(tstate,tau);
@@ -417,18 +417,18 @@ public class MaudeListener extends ListenerAdapter {
 				
 				assert sum.prefixes.size()==1 || sum.prefixes.size()==2;		// the t prefix can not be present when waitForSession is invoked without timeout
 				
-				AskDTO ask = null;
+				AskDS ask = null;
 
 				if (sum.prefixes.size()==1) {
-					ask = (AskDTO) sum.prefixes.get(0);
+					ask = (AskDS) sum.prefixes.get(0);
 				}
-				else if (sum.prefixes.get(0) instanceof AskDTO) {
+				else if (sum.prefixes.get(0) instanceof AskDS) {
 					//sum.prefixes.size()==2
-					ask = (AskDTO) sum.prefixes.get(0);
+					ask = (AskDS) sum.prefixes.get(0);
 				}
 				else {
 					//sum.prefixes.size()==2
-					ask = (AskDTO) sum.prefixes.get(1);
+					ask = (AskDS) sum.prefixes.get(1);
 				}
 				
 				if (ask==null)
@@ -452,7 +452,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
-			SumDTO sum = tstate.sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			SumDS sum = tstate.sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
 			log.info("sumStack.peek(): "+sum.toString());
 			
 			if (ex!=null) {
@@ -463,9 +463,9 @@ public class MaudeListener extends ListenerAdapter {
 				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
 				
 				assert sum.prefixes.size()>0;
-				assert sum.prefixes.get(sum.prefixes.size()-1) instanceof TauDTO;
+				assert sum.prefixes.get(sum.prefixes.size()-1) instanceof TauDS;
 				
-				TauDTO p = (TauDTO) sum.prefixes.get(sum.prefixes.size()-1);
+				TauDS p = (TauDS) sum.prefixes.get(sum.prefixes.size()-1);
 				
 				popSum(tstate,p);
 				setCurrentPrefix(tstate,p);
@@ -489,17 +489,17 @@ public class MaudeListener extends ListenerAdapter {
 				
 				log.info("label: "+label);
 				
-				DoReceiveDTO received = null;
+				DoReceiveDS received = null;
 				
 				for (int i=0; i<sum.prefixes.size(); i++) {
 					
-					PrefixDTO p = sum.prefixes.get(i);
+					PrefixDS p = sum.prefixes.get(i);
 					
 					if (
-							(p instanceof DoReceiveDTO) && 
-							((DoReceiveDTO) p).action.equals(label)
+							(p instanceof DoReceiveDS) && 
+							((DoReceiveDS) p).action.equals(label)
 							) {
-						received = ((DoReceiveDTO) sum.prefixes.get(i));
+						received = ((DoReceiveDS) sum.prefixes.get(i));
 						break;
 					}
 					
@@ -567,15 +567,15 @@ public class MaudeListener extends ListenerAdapter {
 			
 			log.info("timeout: "+timeout);
 
-			SumDTO sum = new SumDTO();
-			sum.prefixes.add(new AskDTO());
+			SumDS sum = new SumDS();
+			sum.prefixes.add(new AskDS());
 			
 			if (timeout==-1) {
 				/* nothing to do */
 			}
 			else {
 				/* add tau prefix, used if TimeExpiredException */
-				sum.prefixes.add(new TauDTO());
+				sum.prefixes.add(new TauDS());
 			}
 			
 			setCurrentProcess(tstate,sum);		//set the current process
@@ -603,11 +603,11 @@ public class MaudeListener extends ListenerAdapter {
 			List<String> actions = getStringArrayArgument(currentThread);
 			
 			
-			SumDTO sum = new SumDTO();
+			SumDS sum = new SumDS();
 			
 			for (String l : actions) {
 				
-				DoReceiveDTO p = new DoReceiveDTO(); 
+				DoReceiveDS p = new DoReceiveDS(); 
 				p.session = sessionName;
 				p.action = l;
 				
@@ -623,7 +623,7 @@ public class MaudeListener extends ListenerAdapter {
 			}
 			else {
 				/* add tau prefix, used if TimeExpiredException */
-				sum.prefixes.add(new TauDTO());
+				sum.prefixes.add(new TauDS());
 			}
 			
 			setCurrentProcess(tstate,sum);		//set the current process
@@ -647,7 +647,7 @@ public class MaudeListener extends ListenerAdapter {
 			String sessionName = session2.getStringField("sessionName");
 			String action = getFirstStringArgument(currentThread);
 			
-			DoSendDTO send = new DoSendDTO();
+			DoSendDS send = new DoSendDS();
 			send.session = sessionName;
 			send.action = action;
 			
@@ -655,7 +655,7 @@ public class MaudeListener extends ListenerAdapter {
 			if (enteredMethod==sessionSendInt) send.sort = Sort.INT;
 			if (enteredMethod==sessionSendString) send.sort = Sort.STRING;
 			
-			SumDTO sum = new SumDTO();
+			SumDS sum = new SumDS();
 			sum.prefixes.add(send);
 			
 			setCurrentProcess(tstate,sum);		//set the current process
@@ -684,10 +684,10 @@ public class MaudeListener extends ListenerAdapter {
 			}
 			else {
 				
-				ProcessDefinitionDTO proc = new ProcessDefinitionDTO();
+				ProcessDefinitionDS proc = new ProcessDefinitionDS();
 				proc.name = ci.getSimpleName();
-				proc.firstPrefix = new PrefixPlaceholderDTO();
-				proc.process = new SumDTO(proc.firstPrefix);
+				proc.firstPrefix = new PrefixPlaceholderDS();
+				proc.process = new SumDS(proc.firstPrefix);
 				
 				List<ElementInfo> args = getArguments(currentThread);
 				
@@ -724,14 +724,14 @@ public class MaudeListener extends ListenerAdapter {
 			log.info("");
 			log.info("--PARALLEL-- (method entered) -> ID:"+tstate.threadInfo.getId());
 			
-			ParallelProcessesDTO parallel = new ParallelProcessesDTO();
+			ParallelProcessesDS parallel = new ParallelProcessesDS();
 			
-			SumDTO sumA = new SumDTO();
-			PrefixPlaceholderDTO tauA = new PrefixPlaceholderDTO();
+			SumDS sumA = new SumDS();
+			PrefixPlaceholderDS tauA = new PrefixPlaceholderDS();
 			sumA.prefixes.add(tauA);
 			
-			SumDTO sumB = new SumDTO();
-			PrefixPlaceholderDTO tauB = new PrefixPlaceholderDTO();
+			SumDS sumB = new SumDS();
+			PrefixPlaceholderDS tauB = new PrefixPlaceholderDS();
 			sumB.prefixes.add(tauB);
 			
 			parallel.processA = sumA;
@@ -804,7 +804,7 @@ public class MaudeListener extends ListenerAdapter {
 		}
 		
 		log.info("env processes:");
-		for (Entry<String, ProcessDefinitionDTO> entry : envProcesses.entrySet()) {
+		for (Entry<String, ProcessDefinitionDS> entry : envProcesses.entrySet()) {
 			log.info("\t"+entry.getValue().toString());
 		}
 		
@@ -831,12 +831,12 @@ public class MaudeListener extends ListenerAdapter {
 	
 	//--------------------------------- UTILS -------------------------------
 	
-	private boolean checkForRecursion(ThreadState tstate, ProcessDefinitionDTO process) {
+	private boolean checkForRecursion(ThreadState tstate, ProcessDefinitionDS process) {
 		
 		for (CO2StackFrame frame : tstate.co2ProcessesStack) {
 			if (
-					frame.process instanceof ProcessDefinitionDTO &&
-					process.name.equals( ((ProcessDefinitionDTO) frame.process).name )
+					frame.process instanceof ProcessDefinitionDS &&
+					process.name.equals( ((ProcessDefinitionDS) frame.process).name )
 					) {
 				return true;
 			}
@@ -845,7 +845,7 @@ public class MaudeListener extends ListenerAdapter {
 		return false;
 	}
 	
-	private void setCurrentProcess(ThreadState tstate, ProcessDTO p) {
+	private void setCurrentProcess(ThreadState tstate, ProcessDS p) {
 
 		if (tstate.co2ProcessesStack.isEmpty()) {	// you are the first process
 			
@@ -861,7 +861,7 @@ public class MaudeListener extends ListenerAdapter {
 		}
 	}
 	
-	private void setCurrentPrefix(ThreadState tstate, PrefixDTO p) {
+	private void setCurrentPrefix(ThreadState tstate, PrefixDS p) {
 		
 		assert tstate.co2ProcessesStack.size()>0;
 		
@@ -954,26 +954,26 @@ public class MaudeListener extends ListenerAdapter {
 		return args;
 	}
 	
-	private void pushSum(ThreadState tstate, SumDTO sum) {
+	private void pushSum(ThreadState tstate, SumDS sum) {
 		
 		Set<String> toReceive = new HashSet<>();
 		
-		for (PrefixDTO p : sum.prefixes) {
+		for (PrefixDS p : sum.prefixes) {
 			
-			if (p instanceof TauDTO) {
+			if (p instanceof TauDS) {
 				if(!toReceive.add("t"))
 					throw new IllegalStateException("the set already contain a tau");
 			}
-			else if (p instanceof TellDTO) {
+			else if (p instanceof TellDS) {
 				if(!toReceive.add("tell"))
 					throw new IllegalStateException("the set already contain a tell");
 			}
-			else if (p instanceof AskDTO) {
+			else if (p instanceof AskDS) {
 				if(!toReceive.add("ask"))
 					throw new IllegalStateException("the set already contain an ask");
 			}
-			else if (p instanceof DoReceiveDTO) {
-				toReceive.add(((DoReceiveDTO) p).action);
+			else if (p instanceof DoReceiveDS) {
+				toReceive.add(((DoReceiveDS) p).action);
 			}
 		}
 		
@@ -985,15 +985,15 @@ public class MaudeListener extends ListenerAdapter {
 		tstate.sumStack.push(frame);
 	}
 	
-	private void popSum(ThreadState tstate, TauDTO prefix) {
+	private void popSum(ThreadState tstate, TauDS prefix) {
 		popSum(tstate,"t");
 	}
 	
-	private void popSum(ThreadState tstate, AskDTO prefix) {
+	private void popSum(ThreadState tstate, AskDS prefix) {
 		popSum(tstate,"ask");
 	}
 	
-	private void popSum(ThreadState tstate, DoReceiveDTO prefix) {
+	private void popSum(ThreadState tstate, DoReceiveDS prefix) {
 		popSum(tstate,prefix.action);
 	}
 
@@ -1063,7 +1063,7 @@ public class MaudeListener extends ListenerAdapter {
 		return processUnderTestClass;
 	}
 	
-	public ProcessDTO getCo2Process() {
+	public ProcessDS getCo2Process() {
 		return threadStates.get(mainThread).co2ProcessesStack.firstElement().process;
 	}
 	
@@ -1075,14 +1075,14 @@ public class MaudeListener extends ListenerAdapter {
 		return sessions;
 	}
 	
-	public Collection<ProcessDefinitionDTO> getEnvProcesses() {
+	public Collection<ProcessDefinitionDS> getEnvProcesses() {
 		return envProcessesList;
 	}
 	
 	public Collection<String> getEnvProcessesNames() {
 		List<String> tmp = new ArrayList<>();
 		
-		for (ProcessDefinitionDTO p : envProcessesList) {
+		for (ProcessDefinitionDS p : envProcessesList) {
 			tmp.add(p.name);
 		}
 		
@@ -1093,13 +1093,13 @@ public class MaudeListener extends ListenerAdapter {
 	//--------------------------------- UTILS CLASSES -------------------------------
 
 	private static class CO2StackFrame {
-		ProcessDTO process;		// the current process that you are building up
-		PrefixDTO prefix;		// the current prefix (owned by the above process) where you append incoming events
+		ProcessDS process;		// the current process that you are building up
+		PrefixDS prefix;		// the current prefix (owned by the above process) where you append incoming events
 		int id;
 	}
 	
 	private static class SumStackFrame {
-		SumDTO sum;
+		SumDS sum;
 		Set<String> toReceive;
 		int ownerProcessFrame;	//the frame that own the sum
 	}
@@ -1132,11 +1132,11 @@ public class MaudeListener extends ListenerAdapter {
 		 * useful to set the co2CurrentPrefix before analyzing a branch
 		 * (the key is the choice-generator id)
 		 */
-		Map<String, PrefixPlaceholderDTO> taus = new HashMap<>();
+		Map<String, PrefixPlaceholderDS> taus = new HashMap<>();
 		int ifThenElseCount=0;
 		
 		Stack<SumStackFrame> sumStack = new Stack<>();
-		
+		 
 		Stack<IfThenElseStackFrame> ifElseStack = new Stack<>();
 		
 		/*

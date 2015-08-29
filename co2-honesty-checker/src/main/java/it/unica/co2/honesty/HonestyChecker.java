@@ -14,7 +14,7 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
 import it.unica.co2.honesty.Statistics.Event;
-import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
+import it.unica.co2.honesty.dto.ProcessDefinitionDS;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
@@ -183,7 +183,7 @@ public class HonestyChecker {
 				}
 				
 				System.out.println("CO2 maude defined process:");
-				for (ProcessDefinitionDTO p : maudeListener.getEnvProcesses()) {
+				for (ProcessDefinitionDS p : maudeListener.getEnvProcesses()) {
 					System.out.println("    "+p.toMaude("    "));
 				}
 				

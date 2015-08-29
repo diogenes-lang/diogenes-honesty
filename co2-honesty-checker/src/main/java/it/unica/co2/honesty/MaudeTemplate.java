@@ -1,8 +1,8 @@
 package it.unica.co2.honesty;
 
 import it.unica.co2.generators.MaudeContractGenerator;
-import it.unica.co2.honesty.dto.ProcessDTO;
-import it.unica.co2.honesty.dto.ProcessDefinitionDTO;
+import it.unica.co2.honesty.dto.ProcessDS;
+import it.unica.co2.honesty.dto.ProcessDefinitionDS;
 import it.unica.co2.model.contract.Contract;
 
 import java.util.ArrayList;
@@ -177,7 +177,7 @@ public class MaudeTemplate {
 		return eqs;
 	}
 	
-	private static List<String> getEqProcess(String processName, List<String> sessions, ProcessDTO process) {
+	private static List<String> getEqProcess(String processName, List<String> sessions, ProcessDS process) {
 		List<String> eqs = new ArrayList<String>();
 		String body = getProcessBody(sessions, process);
 		
@@ -191,7 +191,7 @@ public class MaudeTemplate {
 		return eqs;
 	}
 	
-	private static String getProcessBody(List<String> sessions, ProcessDTO process) {
+	private static String getProcessBody(List<String> sessions, ProcessDS process) {
 		StringBuilder sb = new StringBuilder();
 		
 		int i=0;
@@ -207,7 +207,7 @@ public class MaudeTemplate {
 		return sb.toString();
 	}
 
-	private static List<String> getEqEnv(Collection<ProcessDefinitionDTO> processes) {
+	private static List<String> getEqEnv(Collection<ProcessDefinitionDS> processes) {
 		List<String> eqs = new ArrayList<String>();
 		
 		if (processes.size()==0)
@@ -225,13 +225,13 @@ public class MaudeTemplate {
 		return eqs;
 	}
 	
-	private static String getEnv(Collection<ProcessDefinitionDTO> processes) {
+	private static String getEnv(Collection<ProcessDefinitionDS> processes) {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("(\n");
 		
 		int i=0;
-		for (ProcessDefinitionDTO p : processes) {
+		for (ProcessDefinitionDS p : processes) {
 			if (i++>0)
 				sb.append("        &\n");
 			sb.append("        ").append(p.toMaude("        ")).append("\n");

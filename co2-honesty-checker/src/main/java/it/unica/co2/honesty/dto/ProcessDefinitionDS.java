@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ProcessDefinitionDTO extends ProcessDTO {
+public class ProcessDefinitionDS extends ProcessDS {
 
 	public String name;
 	public List<String> freeNames = new ArrayList<String>();
 	
-	public ProcessDTO process;
-	public PrefixPlaceholderDTO firstPrefix;
+	public ProcessDS process;
+	public PrefixPlaceholderDS firstPrefix;
 	
 	public boolean alreadyBuilt = false;
 	
