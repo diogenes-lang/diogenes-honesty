@@ -205,7 +205,6 @@ public class MaudeListener extends ListenerAdapter {
 					CO2StackFrame frame = new CO2StackFrame();
 					frame.prefix = proc.firstPrefix;
 					frame.process = proc;
-					frame.id = tstate.co2ProcessesStack.peek().id+1;
 					
 					log.info("adding processCall onto the stack");
 					tstate.co2ProcessesStack.push(frame);
@@ -260,7 +259,7 @@ public class MaudeListener extends ListenerAdapter {
 				setCurrentProcess(tstate,ifThenElse);		//set the current process
 				pushIfElse(tstate, ifThenElse);
 
-				BooleanChoiceGenerator cg = new BooleanChoiceGenerator("ifThenElseCG_"+tstate.ifElseStack.size(), false);
+				BooleanChoiceGenerator cg = new BooleanChoiceGenerator("ifThenElseCG_"+tstate.co2ProcessesStack.peek().ifElseStack.size(), false);
 
 				vm.getSystemState().setNextChoiceGenerator(cg);
 				ti.skipInstruction(insn);
@@ -272,7 +271,7 @@ public class MaudeListener extends ListenerAdapter {
 				
 				// bottom half - reexecution at the beginning of the next
 				// transition
-				BooleanChoiceGenerator cg = vm.getSystemState().getCurrentChoiceGenerator("ifThenElseCG_"+tstate.ifElseStack.size(), BooleanChoiceGenerator.class);
+				BooleanChoiceGenerator cg = vm.getSystemState().getCurrentChoiceGenerator("ifThenElseCG_"+tstate.co2ProcessesStack.peek().ifElseStack.size(), BooleanChoiceGenerator.class);
 
 				assert cg != null : "no 'ifThenElseCG' BooleanChoiceGenerator found";
 				
@@ -282,8 +281,8 @@ public class MaudeListener extends ListenerAdapter {
 				Boolean myChoice = cg.getNextChoice();
 				
 				
-				PrefixPlaceholderDS thenTau = tstate.ifElseStack.peek().ifThenElse.thenStmt;
-				PrefixPlaceholderDS elseTau = tstate.ifElseStack.peek().ifThenElse.elseStmt;
+				PrefixPlaceholderDS thenTau = tstate.co2ProcessesStack.peek().ifElseStack.peek().ifThenElse.thenStmt;
+				PrefixPlaceholderDS elseTau = tstate.co2ProcessesStack.peek().ifElseStack.peek().ifThenElse.elseStmt;
 				
 				log.info("thenTau: "+thenTau);
 				log.info("elseTau: "+elseTau);
@@ -362,7 +361,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
-			SumDS sum = tstate.sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			SumDS sum = tstate.co2ProcessesStack.peek().sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
 			
 			log.info("sumStack.peek(): "+sum.toString());
 			
@@ -438,7 +437,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
-			SumDS sum = tstate.sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			SumDS sum = tstate.co2ProcessesStack.peek().sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
 			log.info("sumStack.peek(): "+sum.toString());
 			
 			if (ex!=null) {
@@ -514,8 +513,8 @@ public class MaudeListener extends ListenerAdapter {
 			printInfo(tstate);
 			log.info("--RUN ENV PROCESS-- (method exited) -> "+ci.getSimpleName());
 			
-			boolean pendingSum = checkPendingSum(tstate);
-			boolean pendingIfElse = checkPendingIfThenElse(tstate);
+			boolean pendingSum = !tstate.co2ProcessesStack.peek().sumStack.isEmpty();
+			boolean pendingIfElse = !tstate.co2ProcessesStack.peek().ifElseStack.isEmpty();
 			
 			if (pendingSum || pendingIfElse) {
 				
@@ -833,7 +832,6 @@ public class MaudeListener extends ListenerAdapter {
 			
 			CO2StackFrame frame = new CO2StackFrame();
 			frame.process = p;
-			frame.id=0;
 			tstate.co2ProcessesStack.push(frame);
 		}
 		else {
@@ -962,9 +960,8 @@ public class MaudeListener extends ListenerAdapter {
 		SumStackFrame frame = new SumStackFrame();
 		frame.sum = sum;
 		frame.toReceive = toReceive;
-		frame.ownerProcessFrame = tstate.co2ProcessesStack.peek().id;
 		
-		tstate.sumStack.push(frame);
+		tstate.co2ProcessesStack.peek().sumStack.push(frame);
 	}
 	
 	private void popSum(ThreadState tstate, TauDS prefix) {
@@ -981,28 +978,15 @@ public class MaudeListener extends ListenerAdapter {
 
 	private void popSum(ThreadState tstate, String prefix) {
 		
-		Set<String> prefixToReceive = tstate.sumStack.peek().toReceive;
+		Set<String> prefixToReceive = tstate.co2ProcessesStack.peek().sumStack.peek().toReceive;
 	
 		assert prefixToReceive.contains(prefix);
 		
 		prefixToReceive.remove(prefix);
 		
 		if (prefixToReceive.isEmpty())
-			tstate.sumStack.pop();
+			tstate.co2ProcessesStack.peek().sumStack.pop();
 	}
-	
-	private boolean checkPendingSum(ThreadState tstate) {
-		
-		int currentProcessFrameId = tstate.co2ProcessesStack.peek().id;
-		
-		for (SumStackFrame frame : tstate.sumStack) {
-			if (frame.ownerProcessFrame==currentProcessFrameId)
-				return true;
-		}
-		
-		return false;
-	}
-	
 	
 	private void pushIfElse(ThreadState tstate, IfThenElseDS ifThenElse) {
 		
@@ -1010,35 +994,22 @@ public class MaudeListener extends ListenerAdapter {
 		frame.ifThenElse = ifThenElse;
 		frame.thenStarted = false;
 		frame.elseStarted = false;
-		frame.ownerProcessFrame = tstate.co2ProcessesStack.peek().id;
 		
-		tstate.ifElseStack.push(frame);
+		tstate.co2ProcessesStack.peek().ifElseStack.push(frame);
 	}
 	
 	private void setPeekThen(ThreadState tstate) {
-		tstate.ifElseStack.peek().thenStarted = true;
+		tstate.co2ProcessesStack.peek().ifElseStack.peek().thenStarted = true;
 	}
 	
 	private void setPeekElse(ThreadState tstate) {
-		tstate.ifElseStack.peek().elseStarted = true;
+		tstate.co2ProcessesStack.peek().ifElseStack.peek().elseStarted = true;
 	}
 
 	private void popIfElse(ThreadState tstate) {
-		if (tstate.ifElseStack.peek().thenStarted && tstate.ifElseStack.peek().elseStarted) {
-			tstate.ifElseStack.pop();
+		if (tstate.co2ProcessesStack.peek().ifElseStack.peek().thenStarted && tstate.co2ProcessesStack.peek().ifElseStack.peek().elseStarted) {
+			tstate.co2ProcessesStack.peek().ifElseStack.pop();
 		}
-	}
-	
-	private boolean checkPendingIfThenElse(ThreadState tstate) {
-		
-		int currentProcessFrameId = tstate.co2ProcessesStack.peek().id;
-		
-		for (IfThenElseStackFrame frame : tstate.ifElseStack) {
-			if (frame.ownerProcessFrame==currentProcessFrameId)
-				return true;
-		}
-		
-		return false;
 	}
 	
 	//--------------------------------- GETTERS and SETTERS -------------------------------
@@ -1078,20 +1049,19 @@ public class MaudeListener extends ListenerAdapter {
 	private static class CO2StackFrame {
 		ProcessDS process;		// the current process that you are building up
 		PrefixDS prefix;		// the current prefix (owned by the above process) where you append incoming events
-		int id;
+		Stack<SumStackFrame> sumStack = new Stack<>(); 
+		Stack<IfThenElseStackFrame> ifElseStack = new Stack<>();
 	}
 	
 	private static class SumStackFrame {
 		SumDS sum;
 		Set<String> toReceive;
-		int ownerProcessFrame;	//the frame that own the sum
 	}
 	
 	private static class IfThenElseStackFrame {
 		IfThenElseDS ifThenElse;
 		boolean thenStarted;
 		boolean elseStarted;
-		int ownerProcessFrame;	//the frame that own the sum
 	}
 	
 	
@@ -1110,10 +1080,6 @@ public class MaudeListener extends ListenerAdapter {
 		 * 
 		 */
 		Stack<CO2StackFrame> co2ProcessesStack = new Stack<CO2StackFrame>();
-		
-
-		Stack<SumStackFrame> sumStack = new Stack<>(); 
-		Stack<IfThenElseStackFrame> ifElseStack = new Stack<>();
 		
 		/*
 		 * if the ifInstruction is into this interval, skip it (means that is related to switch-statement)
