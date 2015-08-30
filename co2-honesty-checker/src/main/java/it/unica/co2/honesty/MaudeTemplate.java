@@ -1,10 +1,5 @@
 package it.unica.co2.honesty;
 
-import it.unica.co2.generators.MaudeContractGenerator;
-import it.unica.co2.honesty.dto.ProcessDS;
-import it.unica.co2.honesty.dto.ProcessDefinitionDS;
-import it.unica.co2.model.contract.Contract;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,6 +10,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+
+import it.unica.co2.generators.MaudeContractGenerator;
+import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
+import it.unica.co2.model.contract.Contract;
 
 
 public class MaudeTemplate {

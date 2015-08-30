@@ -2,19 +2,19 @@ package it.unica.co2.generators;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.unica.co2.honesty.dto.AskDS;
-import it.unica.co2.honesty.dto.DoReceiveDS;
-import it.unica.co2.honesty.dto.DoSendDS;
-import it.unica.co2.honesty.dto.IfThenElseDS;
-import it.unica.co2.honesty.dto.ParallelProcessesDS;
-import it.unica.co2.honesty.dto.PrefixDS;
-import it.unica.co2.honesty.dto.PrefixPlaceholderDS;
-import it.unica.co2.honesty.dto.ProcessCallDS;
-import it.unica.co2.honesty.dto.ProcessDS;
-import it.unica.co2.honesty.dto.ProcessDefinitionDS;
-import it.unica.co2.honesty.dto.SumDS;
-import it.unica.co2.honesty.dto.TauDS;
-import it.unica.co2.honesty.dto.TellDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.AskDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.DoReceiveDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.IfThenElseDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.ParallelProcessesDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.PrefixDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
 
 
 public class MaudeCo2Generator {
