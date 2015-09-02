@@ -1053,12 +1053,14 @@ public class MaudeListener extends ListenerAdapter {
 		Stack<IfThenElseStackFrame> ifElseStack = new Stack<>();
 	}
 	
-	private static class SumStackFrame {
+	private static class ChoiceStackFrame {}
+	
+	private static class SumStackFrame extends ChoiceStackFrame{
 		SumDS sum;
 		Set<String> toReceive;
 	}
 	
-	private static class IfThenElseStackFrame {
+	private static class IfThenElseStackFrame extends ChoiceStackFrame{
 		IfThenElseDS ifThenElse;
 		boolean thenStarted;
 		boolean elseStarted;
