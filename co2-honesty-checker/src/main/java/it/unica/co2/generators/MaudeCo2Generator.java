@@ -72,7 +72,7 @@ public class MaudeCo2Generator {
 	}
 	
 	public static String toMaude(TellDS prefix, String initialSpace) {
-		return "tell \""+prefix.session+"\" "+" "+prefix.contractName+" . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
+		return "( (\""+prefix.session+"\") ( tell \""+prefix.session+"\" "+" "+prefix.contractName+" . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace)+"))");
 	}
 
 	public static String toMaude(DoReceiveDS prefix, String initialSpace) {

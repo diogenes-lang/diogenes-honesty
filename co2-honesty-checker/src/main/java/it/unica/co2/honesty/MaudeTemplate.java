@@ -45,7 +45,7 @@ public class MaudeTemplate {
 		);
 		
 		Collection<String> eqsList = getEqsContract(maudeListener.getContracts());
-		eqsList.addAll(getEqProcess(processName, maudeListener.getSessions(), maudeListener.getCo2Process()));
+		eqsList.addAll(getEqProcess(processName, maudeListener.getCo2Process()));
 		eqsList.addAll(getEqEnv(maudeListener.getEnvProcesses()));
 		
 		String eqs = StringUtils.join( 
@@ -177,9 +177,9 @@ public class MaudeTemplate {
 		return eqs;
 	}
 	
-	private static List<String> getEqProcess(String processName, List<String> sessions, ProcessDS process) {
+	private static List<String> getEqProcess(String processName, ProcessDS process) {
 		List<String> eqs = new ArrayList<String>();
-		String body = getProcessBody(sessions, process);
+		String body = getProcessBody(process);
 		
 		eqs.add("\n    *** list of processes");
 		eqs.add(
@@ -191,17 +191,9 @@ public class MaudeTemplate {
 		return eqs;
 	}
 	
-	private static String getProcessBody(List<String> sessions, ProcessDS process) {
+	private static String getProcessBody(ProcessDS process) {
 		StringBuilder sb = new StringBuilder();
 		
-		int i=0;
-		sb.append("(");
-		for (String session : sessions) {
-			if (i++>0)
-				sb.append(",");
-			sb.append("\"").append(session).append("\"");
-		}
-		sb.append(") ");
 		sb.append(process.toMaude("    "));
 		
 		return sb.toString();
