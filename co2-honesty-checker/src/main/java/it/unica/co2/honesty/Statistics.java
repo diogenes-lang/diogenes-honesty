@@ -11,19 +11,19 @@ public class Statistics {
 		MAUDE_END
 	}
 	
-	private static long honestyStartTime;
-	private static long honestyEndTime;
-	private static long jpfStartTime;
-	private static long jpfEndTime;
-	private static long maudeStartTime;
-	private static long maudeEndTime;
+	private long honestyStartTime;
+	private long honestyEndTime;
+	private long jpfStartTime;
+	private long jpfEndTime;
+	private long maudeStartTime;
+	private long maudeEndTime;
 	
-	public static void update(Event event) {
+	public void update(Event event) {
 		trace(event);
 	}
 	
 	
-	private static void trace(Event event) {
+	private void trace(Event event) {
 		
 		switch (event) {
 		
@@ -53,15 +53,15 @@ public class Statistics {
 		}
 	}
 
-	public static long getTotalTime() {
+	public long getTotalTime() {
 		return honestyEndTime-honestyStartTime;
 	}
 	
-	public static long getJPFTime() {
+	public long getJPFTime() {
 		return jpfEndTime-jpfStartTime;
 	}
 	
-	public static long getMaudeTime() {
+	public long getMaudeTime() {
 		return maudeEndTime-maudeStartTime;
 	}
 }
