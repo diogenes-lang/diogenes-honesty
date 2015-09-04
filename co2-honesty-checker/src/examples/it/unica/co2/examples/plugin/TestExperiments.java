@@ -19,14 +19,14 @@ public class TestExperiments {
 		@SuppressWarnings("unchecked")
 		Class<? extends Participant>[] examples = new Class[]{
 			it.unica.co2.examples.plugin.Blackjack.P.class,
-			it.unica.co2.examples.plugin.Store.P.class,
+			it.unica.co2.examples.plugin.OnlineStore.P.class,
 			it.unica.co2.examples.plugin.VoucherHonest.P.class,
 			it.unica.co2.examples.plugin.VoucherDishonest.P.class
 		};
 		
 		//check
 		assert HonestyChecker.isHonest(it.unica.co2.examples.plugin.Blackjack.P.class)==HonestyResult.HONEST;
-		assert HonestyChecker.isHonest(it.unica.co2.examples.plugin.Store.P.class)==HonestyResult.HONEST;
+		assert HonestyChecker.isHonest(it.unica.co2.examples.plugin.OnlineStore.P.class)==HonestyResult.HONEST;
 		assert HonestyChecker.isHonest(it.unica.co2.examples.plugin.VoucherHonest.P.class)==HonestyResult.HONEST;
 		assert HonestyChecker.isHonest(it.unica.co2.examples.plugin.VoucherDishonest.P.class)==HonestyResult.DISHONEST;
 		
