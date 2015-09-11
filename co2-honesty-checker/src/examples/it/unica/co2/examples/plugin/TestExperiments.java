@@ -53,11 +53,22 @@ public class TestExperiments {
 			long sumJPF=0;
 			long sumMaude=0;
 			long sumTotal=0;
-			for (Statistics processStats : stats.get(c)) {
+			List<Long> jpfTimes = new ArrayList<>();
+			List<Long> maudeTimes = new ArrayList<>();
+			List<Long> totalTimes = new ArrayList<>();
+			for (Statistics processStats : stats.get(c)) {				
 				sumJPF+=processStats.getJPFTime();
 				sumMaude+=processStats.getMaudeTime();
 				sumTotal+=processStats.getTotalTime();
+				
+				jpfTimes.add(processStats.getJPFTime());
+				maudeTimes.add(processStats.getMaudeTime());
+				totalTimes.add(processStats.getTotalTime());
 			}
+			System.out.println("all JPF:\t"+jpfTimes);
+			System.out.println("all Maude:\t"+maudeTimes);
+			System.out.println("all Total:\t"+totalTimes);
+			
 			System.out.println("JPF:\t"+sumJPF/stats.get(c).size());
 			System.out.println("Maude:\t"+sumMaude/stats.get(c).size());
 			System.out.println("Total:\t"+sumTotal/stats.get(c).size());
