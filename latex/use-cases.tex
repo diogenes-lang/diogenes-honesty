@@ -1,0 +1,397 @@
+\chapter{Use cases}\label{chap:use-cases}
+
+In order to valuate effectiveness of our tools we studied and implemented several use cases. In this chapter we present three of them:
+
+\begin{description}
+	\item[Online store:] a store advertise a recursive contract and can interact with buyers one after another (single session). This example, deliberately simple to explain all the verification phases, shows how a \coco specification is translated to Maude and Java, and how the honesty is checked by the Java application.
+	
+	\item[Voucher distribution system:] this example involve multiple sessions and demonstrate the benefit of our work. First, we provide an honest specification of the process, showing that both Maude and Java programs respond in the same way. Then, we change our specification to be not honest and our verification technique correctly detects the Java program is dishonest.
+	
+	\item[Blackjack:] the last example shows how a specification can be difficult to write and maintain. The advertised contracts are both recursive and the specification is split into different parts due to its complexity. There are also multiple sessions, parallel processes, if-then-else selection and recursive behaviour.
+\end{description}
+
+These examples where extracted from \cite{verifiable} and used as test bench for our implementation\footnote{Please noste that all example below would be rejected by the \coco middleware (\Cref{sec:co2-middleware}) because it does not accept actions whose name does not match \incode{[a-z]+}. This drawback would obligate us to avoid \textit{camelCase}, leading to less readable examples. The solution is to replace all actions with its lowercase.}.
+
+\section{Online store}\label{ex:online-store}
+An online store {\pmv A} has the following contract: %
+buyers can iteratively add items to the shopping cart (\atom{addToCart});
+when at least one item has been added,
+the client can proceed to \atom{checkout}.
+Then, the client can either \atom{cancel} the order, 
+or \atom{pay}.
+In the latter case,
+the store can accept the payment (\atom{ok}),
+or decline it (\atom{no}, in which case it lets the user try again),
+or it can \atom{abort} the transaction.
+%
+Such a contract may be expressed as follows:
+
+\inputCoco{code/co2/online-store/store-contract.co2}
+
+A possible specification of the store is:
+
+\inputCoco{code/co2/online-store/store-process.co2}
+
+The process \inlineCoco{P} first advertises the contract
+\inlineCoco{C}, and then waits that the user has performed the
+first \atom{addToCart} %
+(note that it also requires that the session \inlineCoco{x} is fused with the other participant). %
+Then, the store enters a recursive process \inlineCoco{Padd},
+wherein it accepts two user choices: \atom{addToCart}, which is
+followed by a recursive call to \inlineCoco{Padd}, and
+\atom{checkout}, which passes the control to process
+\inlineCoco{Ppay}.  In the meanwhile, the overall amount to pay
+is accumulated in variable \inlineCoco{total} (we are assuming that the value \inlineCoco{n}
+passed by \atom{addToCart} is the price of an item; in more
+concrete implementations, such value could be obtained \eg from
+product database). %
+Within \inlineCoco{Ppay}, after the payment is received, the
+store internally chooses (with a rather arbitrary policy) whether to
+accept it or not: %
+in the first case, it terminates; %
+in the second case, it proceeds with \inlineCoco{Ppay}, thus
+allowing the user to retry the payment.
+
+\subsection{Maude code}
+The process explained in the previous section is automatically translated to two \textit{target} languages, Maude and Java.
+
+The auto-generated Maude code is:
+\inputMaude{code/co2/online-store/store-process.maude}
+
+The execution of the above code shows the process \inlineCoco{P} is honest:
+\begin{lstlisting}
+reduce in STORE : honest(P, ['STORE], 50) .
+rewrites: 6852 in 36ms cpu (35ms real) (186871 rewrites/second)
+result Bool: true
+Bye.
+\end{lstlisting}
+
+\subsection{Java code}
+In order to translate to Java code, we need to modify our process: the prefix \inlineCoco{tell x C} must be replaced with \inlineCoco{tell x C . ask x}. The \textit{ask} prefix allows us to put the \incodeMethod{waitForSession()}
+in the right place.
+
+The auto-generated Java code is contained into one single class, containing a static class for each declared process and a static field for each contract. Username and password, required to interact with the middleware, are also included as static fields.
+
+Contracts are translated as follows:
+\inputJava{code/co2/online-store/store-process-contracts.java}
+
+Each contract is declared as \incodeType{ContractWrapper} and set during the class instantiation. Within the plugin, the user can refers to a contract declared later, so we use the wrapper as a workaround, since Java not allow to do this. Recursive contracts, declared within a contract definition, are instantiated as \incodeType{Recursion}. Both contracts type can be set as the next contract of an action.
+
+The process \inlineCoco{P} is translated to:
+\inputJava{code/co2/online-store/store-process-P.java}
+
+\inlineCoco{Padd} is translated to:
+\inputJava{code/co2/online-store/store-process-Padd.java}
+
+\inlineCoco{Ppay} is translated to:
+\inputJava{code/co2/online-store/store-process-Ppay.java}
+
+\inlineCoco{Pack} is translated to:
+\inputJava{code/co2/online-store/store-process-Pack.java}
+
+
+\subsubsection{Honesty}
+\incodeType{HonestyChecker.}\incodeMethod{isHonest()} is the static method available to check the honesty. It takes a \incodeType{Class}\generic[Participant]{?} as an argument and print the results to the stream output.
+
+As described in \Cref{sec:construction-phase}, the honesty is checked rebuilding the \coco process and the serializing it as Maude program. The extracted process is:
+\inputMaude{code/co2/online-store/store-process-jpf.maude}
+
+As you can see, it is very similar to the Maude process originated by the \coco syntax. The only differences are:
+\begin{itemize}
+	\item we lose the contract composition
+	\item we lose the actions types both in contracts and $\fact{}{}$-prefixes (the middleware does not permit them)
+\end{itemize}
+
+The method \incodeType{HonestyChecker.}\incodeMethod{isHonest()} produces
+\begin{lstlisting}
+-------------------------------------------------- result
+honesty: HONEST
+==================================================
+\end{lstlisting}
+
+\section{Voucher distribution system}
+A store {\pmv A} offers buyers two payment options: \cp\ or \cv.
+%
+If a buyer {\pmv B} chooses \cp, {\pmv A} requires {\pmv B} to \p;
+otherwise, {\pmv A} checks the validity of the voucher with {\pmv V}, an
+online voucher distribution system.
+%
+If {\pmv V} validates the voucher (\atom{ok}), {\pmv B} can use it (\vou),
+otherwise (\atom{no}) {\pmv B} must \p.
+
+We specify the contracts \inlineCoco{CB} (between {\pmv A} and {\pmv B}) 
+and \inlineCoco{CV} (between {\pmv A} and {\pmv V}) 
+as follows:
+\inputCoco{code/co2/voucher/voucher-contracts.co2}
+
+\subsection{Specification}\label{sec:uses:dishonest-voucher}
+A possible specification is specified in~\cite{BTZ12coordination} as follows:
+\inputCoco{code/co2/voucher/voucher-process.co2}
+
+Variables \inlineCoco{x} and \inlineCoco{y} in \inlineCoco{P} correspond to two separate
+sessions, where {\pmv A} interacts with {\pmv B} and {\pmv V}, respectively.
+The advertisement of \inlineCoco{CV} causally depends on the
+stipulation of the contract \inlineCoco{CB}, 
+because {\pmv A} must fire \inlineCoco{CV} before the rightmost \inlineCoco{tell}.
+%
+In process \inlineCoco{Q} the store waits for an answer from {\pmv V}:
+if {\pmv V} validates the voucher (first branch), 
+then {\pmv A} accepts it from {\pmv B};
+if {\pmv V} rejects the voucher (second branch), 
+then {\pmv A} requires {\pmv B} to pay.
+The third branch \inlineCoco{t . R} allows {\pmv A} to reject the voucher.
+Here \inlineCoco{t} models a timeout, 
+to deal with the fact that \inlineCoco{CV} might either 
+not be stipulated, or {\pmv V} might take too long to answer.
+
+This process is not honest \cite{verifiable} and the resulting translation to Maude produces the following output:
+\begin{lstlisting}
+reduce in VOUCHER : honest(P, ['VOUCHER], 50) .
+rewrites: 59554 in 100ms cpu (99ms real) (595540 rewrites/second)
+result TSystem: < ($ 0,$ 1)(
+    A[do $ 0 "reject" ! unit . do $ 0 "pay" ? string . (0).Sum]
+    | $ 0[
+        "accept" ! unit . "voucher" ? string . 0
+        (+)"reject" ! unit . "pay" ? string . 0] 
+    | $ 1[ready "no" ? unit . 0]) >
+Bye.
+\end{lstlisting}
+
+The lines of the output above show a state where {\pmv A} is not ready:
+there, {\pmv A} must do \atom{no} in session \mbox{\code{\$1}}
+(which corresponds to variable $y$ in the \coco specification),
+while {\pmv A} is only ready to do a \rj\ at session \code{\$0} 
+(which corresponds to $x$).
+This problem occurs when branch \inlineCoco{t . R} is chosen
+(actually, the code within \code{A[...]} is that of \inlineCoco{R}),
+so it follows that \inlineCoco{P} is dishonest.
+%
+To recover honesty, it suffices to replace \inlineCoco{R} with the following process \inlineCoco{R1}, %
+where $\pmv{A}$ is ready to handle $\pmv{V}$'s answer when $y$ is fused:
+
+\begin{lstlisting}[language=coco]
+process R1 (x:session, y:session){
+    (do x reject! . do x pay? code:string)
+    | (do y ok? + do y no?)
+}
+\end{lstlisting}
+
+Now the process \inlineCoco{P} is honest.
+
+\subsection{Honest specification}\label{ex:voucher-honest}
+Due to some limitations explained in \Cref{sec:untranslatable-code}, our process is not translatable to Java, so we must introduce an \inlineCoco{ask} for each session.
+The modified code is
+
+As you can see, there is not the necessity to the process \inlineCoco{R1} because we handle the timeout separately.
+
+The resulting process (partially refactored) is:
+\inputCoco{code/co2/voucher/voucher-process-translatable.co2}
+
+The process is honest as stated by the Maude model checker
+\begin{lstlisting}
+reduce in VOUCHER : honest(P, ['VOUCHER], 50) .
+rewrites: 619654 in 446ms cpu (445ms real) (1387284 
+  rewrites/second)
+result Bool: true
+Bye.
+\end{lstlisting}
+
+and from the Java analysis
+\begin{lstlisting}
+-------------------------------------------------- result
+honesty: HONEST
+==================================================
+\end{lstlisting}
+
+\subsection{Dishonest}\label{ex:voucher-dishonest}
+In order to check the validity of out Java analysis, we modify last \inlineCoco{R1} process as follows:
+
+\begin{lstlisting}[language=coco]
+process R1 (x:session, y:session){
+    abortX(x) //| abortY(y)
+}
+\end{lstlisting}
+The process is dishonest for the same reason explained in \Cref{sec:uses:dishonest-voucher}.
+The Maude model checker produces the same output as shown above and in analogous way
+our Java analysis print
+
+\begin{lstlisting}
+-------------------------------------------------- result
+honesty: DISHONEST
+==================================================
+\end{lstlisting}
+
+Please note that, as described in \Cref{sec:verification-phase}, the check of the honesty of a Java program is made building a \coco process, serialized as Maude program and finally model-checked as described \Cref{sec:maude:checker}. For this reason, we not print the system configuration where the process is dishonest because is available as plain string (the output of the model-checker) and would not be useful to an user not experienced with the Maude model-checker.
+
+\section{Blackjack}\label{ex:blackjack}
+We model an online blackjack server, using simplified casino rules.
+The game involves two players: {\pmv P} (for player) and {\pmv A} (for \emph{dealer}).
+The goal of {\pmv P} is to beat the dealer, 
+by accumulating a hand of cards whose value is greater than that of the dealer;
+furthermore, the value of the hand must not exceed $21$.
+The game has two turns: first the player turn, and then the dealer turn.
+In the player turn, {\pmv A} deals cards to the player;
+after a card is received, the player can decide whether to get another one
+(\atom{hit}) or to terminate his turn (\atom{stand}).
+In the dealer turn, {\pmv A} deals cards for himself, with the goal
+of obtaining a hand with value greater than the player's hand.
+The player (possibly, {\pmv A}) which exceeds $21$ loses the game.
+
+The contract \inlineCoco{Cp} advertised by the dealer to players is the following:
+
+\inputCoco{code/co2/blackjack/player-contract.co2}
+
+Players can choose between taking a card (\atom{hit}) or 
+passing the turn (\atom{stand}).
+In the first case, the dealer either gives a \atom{card} to the player
+(and returns to the beginning of the contract),
+or it notifies that the player \atom{lose}s
+(or it may \atom{abort} the game).
+In the second case (\atom{stand}), the dealer 
+notifies to the player if he has won or lost 
+(or if the game has been aborted).
+
+To implement the game, the dealer resorts to an external service
+which provides the features of a deck of cards.
+The contract between the dealer and the deck of cards is 
+formalised by \inlineCoco{Cd} as follows:
+\inputCoco{code/co2/blackjack/dealer-contract.co2}
+
+The dealer can recursively 
+ask for a new card (\atom{next}) and receive it (\atom{card})
+as an integer value,
+or it may \atom{abort} the interaction with the deck of cards service.
+
+We specify the dealer as the following process \inlineCoco{P}:
+\inputCoco{code/co2/blackjack/process-P.co2}
+
+The first \inlineCoco{tell xd} advertises the contract for the
+deck of cards.
+The dealer waits (via the \inlineCoco{ask xd} prefix) that such contract
+is fused, 
+and then it advertises the contract for the player 
+(with the second \inlineCoco{tell xp}). Next, it waits for a session with
+the dealer (via the \inlineCoco{ask xd}) and passing the control to \inlineCoco{Pplay}.
+The prefix \inlineCoco{t} models a timeout, where the dealer stops the interaction with the deck service and handle a session with a possible player (via \inlineCoco{PabortP}).
+
+At this point the control is passed to the process
+\inlineCoco{Pplay}, which is specified as follows:
+
+\inputCoco{code/co2/blackjack/process-Pplay.co2}
+
+Process \inlineCoco{Pplay} waits for a player decision.
+If the player chooses \atom{hit} 
+then the dealer asks the deck for the next card,
+and the control passes to \inlineCoco{Pdeck}.
+Instead, if the player chooses \atom{stand},
+the control passes to \inlineCoco{Qstand}.
+The third branch models a timeout, 
+where the dealer stops waiting for the player decision, 
+and it just aborts all the sessions.
+The parameter \inlineCoco{np} is used to accumulate the value of the player hand
+(\ie, the summation of the value of the cards he has received).
+
+\inputCoco{code/co2/blackjack/process-Pdeck.co2}
+
+Process \inlineCoco{Pdeck} waits for the value $n$ of the card
+provided by the deck, and then passes the control to \inlineCoco{Pcard}.
+Also in this case, a timeout branch ensures that sessions are aborted
+in case the deck does not reply timely.
+
+\inputCoco{code/co2/blackjack/process-Pcard.co2}
+
+Process \inlineCoco{Pcard} checks whether the player hand exceeds $21$:
+if so, it tells the player that he has lost; 
+otherwise, the player is allowed to take another turn.
+
+\inputCoco{code/co2/blackjack/process-Qstand.co2}
+
+Process \inlineCoco{Qstand} is invoked upon the player
+has decided to stand.
+The dealer checks that the value \inlineCoco{nd} of its hand 
+(initially set to $0$) is less then $21$.
+If so, the dealer asks the deck for the next card,
+and the control passes to \inlineCoco{Qdeck};
+otherwise, it tells the player that he has won.
+
+\inputCoco{code/co2/blackjack/process-Qdeck.co2}
+
+Process \inlineCoco{Qdeck} waits for the card, and then proceeds
+to \inlineCoco{Qcard}
+(as above, also in this case we use a timeout branch to avoid deadlock).
+
+\inputCoco{code/co2/blackjack/process-Qcard.co2}
+
+Process \inlineCoco{Qcard} compares the hand \inlineCoco{np} of the player 
+with that \inlineCoco{nd} of the dealer. 
+If the dealer hand has not reached \inlineCoco{np}, the dealer takes another card;
+otherwise, the player has lost.
+
+\inputCoco{code/co2/blackjack/process-PabortP.co2}
+\inputCoco{code/co2/blackjack/process-PabortD.co2}
+
+Finally, processes \inlineCoco{PabortP} and \inlineCoco{PabortD} 
+ensure that the sessions with the player and with the deck of cards,
+respectively, are aborted correctly.
+
+Both generated processes (Maude and Java) results to honest.
+
+\section{Benchmarks}
+To empirically valuate the effectiveness of our verification technique,
+we have applied the Maude honesty checker on all the case studies 
+presented above.
+
+The experiments have measured, for each case study, 
+the average construction of \coco process from Java code,
+the average time of model checking (Maude) and the average completion time. %
+The testing environment is a PC with an Intel Core i7-4790K CPU @ 4.00GHz 
+and 32G of RAM, running Ubuntu 14.04. %
+The results are reported in~\Cref{tab:benchmarks}.
+
+
+\begin{table}[t]
+	\center
+	\footnotesize
+	\begin{tabular}{|c|c|ccc|}
+		\hline
+		&  & \textbf{Build} & \textbf{Model check} & \textbf{Total}  \\
+		\textbf{Example}& \textbf{Ref.}	&	\textbf{avg. time}	&	\textbf{avg. time}	&	\textbf{avg. time} \\
+		&	&	(ms)		&	(ms)		&	(ms) \\
+		\hline
+		\hline
+		Online store					& \Cref{ex:online-store} 		& 108 	& 80 	& 188 \\
+		\hline
+		Voucher dist. sys (honest) 		& \Cref{ex:voucher-honest} 		& 135 	& 183 	& 318 \\
+		\hline
+		Voucher dist. sys (dishonest) 	& \Cref{ex:voucher-dishonest} 	& 100 	& 192 	& 293 \\
+		\hline
+		Blackjack 						& \Cref{ex:blackjack} 			& 249 	& 247	& 497 \\
+		\hline
+	\end{tabular}
+	\caption{Benchmarks for the Java honesty checker.}
+	\label{tab:benchmarks}
+\end{table}
+
+%--------------------------------
+%------------ Stats ------------
+%--------------------------------
+%Process: it.unica.co2.examples.plugin.Blackjack$P
+%JPF:    249
+%Maude:    247
+%Total:    497
+%--------------------------------
+%Process: it.unica.co2.examples.plugin.OnlineStore$P
+%JPF:    108
+%Maude:    80
+%Total:    188
+%--------------------------------
+%Process: it.unica.co2.examples.plugin.VoucherHonest$P
+%JPF:    135
+%Maude:    183
+%Total:    318
+%--------------------------------
+%Process: it.unica.co2.examples.plugin.VoucherDishonest$P
+%JPF:    100
+%Maude:    192
+%Total:    293
+%--------------------------------

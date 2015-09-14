@@ -1,0 +1,32 @@
+\newcommand{\CS}{C\nolinebreak\hspace{-.05em}\raisebox{.35ex}{\footnotesize \#}}
+
+\chapter{Conclusions and future works}\label{chap:conclusions}
+
+%The goal of this Master's thesis was to reduce the gap between the abstract \coco language and its concrete implementation using a high-level language.
+
+The goal of this Master's thesis was to reduce the gap between two distinct worlds. The first one, more theoretical, defines session-types, \coco specifications and all the theories that support the \textit{contract-oriented} paradigm. On the other side, it exists the more practical world where service-oriented computing allows to construct distributed applications by discovering, integrating and using
+basic services. 
+
+Services are implemented using high-level languages (like Java, \CS, etc.) and frameworks; furthermore, they may be provided by different organisations, possibly in competition (when not in conflict) among each other. Services can also appear and disappear from the network, and they can dynamically discover and invoke other services in order to exploit their functionality. 
+The first step into this scenario was made with the development of a \textit{contract-oriented middleware}, allowing developers to write distributed applications that interact advertising \textit{contracts} and through \textit{monitored sessions}. However, there was not way to verify if these applications were \emph{honest} or not.
+
+The first part of our work was the study, the design and the development of an Eclipse plugin that allows to write \textit{\coco processes} that automatically were translated to two target languages, Maude and Java, both \textit{honesty}-verifiable. This aims to support an application developer, who wants to be honest, to avoid errors that will make him culpable at runtime.
+It required a better mapping between \coco and the middleware APIs, driving us to an extended version of these last.
+
+Secondly, we studied and explored how to model-check Java programs. We implemented a verification technique that takes a Java application, re-constructs a \coco process, and statically analyses it to verify the honesty.
+
+Finally, the use cases presented in this thesis (involving multiple sessions, parallel processes, etc.) evaluate the effectiveness of our tools.
+
+\section{Future works}
+The plugin project should be improved and maintained. We are also considering to support multiple IDEs and browsers too, based on other coming soon Xtext features\footnote{\url{https://eclipse.org/Xtext/news.html} (visited on 2015-08)}.
+
+%Moreover, the \coco language can evolve to get a better mapping to Java and other languages.
+
+It would be also useful to consider different \coco target languages: in fact, any language that is supported by suitable high-level API can be chosen as target of a \coco specification. 
+This could lead to a more general verification technique, considering an intermediate language with which verify the honesty (taking example from \cite{juhaszviper}).
+
+Finally, the honesty verification technique can be further improved. So far, we do not support action types, due to some limitations of the middleware, and 
+we cannot easily show which is the part of code that caused the culpability (in case of dishonest application). 
+This is caused by the fact that, in order to check the honesty, our tool depends on an external one. The output is difficult to be understood by the user and cannot be easily parsed. 
+This dependency also limits our tool in portability, requiring the user to take care of these dependencies.
+

@@ -1,0 +1,287 @@
+
+\chapter{The Java honesty checker}\label{chap:java-honesty}
+
+This chapter covers the problem of verifying the honesty of Java applications.
+To achieve this goal, \textit{Java PathFinder} (JPF, discussed in \Cref{sec:jpf}) is used to analyze the Java bytecode and to build up the agent $\sys{\pmv{A}}{\procP}$, represented as a Java object.
+After this building phase, the honesty of the process must be checked in some way: in order to reuse other related work on \coco, the Maude model-checker described in \Cref{sec:maude:checker} is used to verify the honesty.
+
+Note: in this chapter the term \textit{process} is used as the abbreviation of \coco process.
+
+\section{Construction phase}\label{sec:construction-phase}
+The building phase is incrementally explained in this section, so we start from a single thread application with neither composition nor recursion, ending to a composed (maybe recursive) program that can launch multiple parallel threads.
+
+As described in \Cref{sec:jpf}, JPF allows to define a \emph{listener} that can handle multiple events meanwhile the $\text{JVM}_{JPF}$ explores all possible states of our program. 
+
+We handle the execution of some specific methods, object creations and bytecode instructions.
+
+\subsubsection{Handled methods}
+The handled methods signatures are:
+\begin{description}
+	
+	\item[\incodeType{Participant}.\incodeMethod{tell(\incodeType{Contract})} : \incodeType{Public}] \hfill \\
+	It tells the given contract and immediately returns. You can get a session using the returned \incodeType{Public} object. It corresponds to the \coco prefix $\tell {} {\freeze x \contrP}$.
+	
+	\item[\incodeType{Participant}.\incodeMethod{tellAndWait(\incodeType{Contract})} : \incodeType{Session2}] \hfill \\
+	It tells the given contract and waits until the session starts. It is a shortcut for \incodeMethod{waitForSession(\incodeMethod{tell(\incodeType{Contract})})}. It corresponds to $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true}$.
+	
+	\item[\incodeType{Participant}.\incodeMethod{waitForSession(\incodeType{Public})} : \incodeType{Session2}] \hfill \\
+	It waits until a session starts. It corresponds to $\ask{x}{true}$.
+
+	\item[\incodeType{Participant}.\incodeMethod{waitForSession(\incodeType{Integer},\incodeType{Public})} : \incodeType{Session2}] \hfill \\
+	It waits until a session starts, throwing a \incodeType{TimeExpiredException} if the timeout expires. It corresponds to $\ask{x}{true} \cocoPlus \tau$.
+	
+	\item[\incodeType{Session2}.\incodeMethod{send(\incodeType{String})} : \incodeKeyword{void}] \hfill \\
+	It sends the specified action without a value. It corresponds to $\fact x {\atomOut{a}}$.
+
+	\item[\incodeType{Session2}.\incodeMethod{send(\incodeType{String}, \incodeType{String})} : \incodeKeyword{void}] \hfill \\
+	It sends the specified action with a string value. It corresponds to $\fact x {\atomOut{a}} e$ with $e$ of sort $\sort{int}$.
+	
+	\item[\incodeType{Session2}.\incodeMethod{send(\incodeType{String}, \incodeType{Integer})} : \incodeKeyword{void}] \hfill \\
+	It sends the specified action with a integer value. It corresponds to $\fact x {\atomOut{a}} e$ with $e$ of sort $\sort{string}$.
+	
+	\item[\incodeType{Session2}.\incodeMethod{waitForReceive(\incodeType{String\dots})} : \incodeType{Message}] \hfill \\
+	It waits until any of the given actions is received. It corresponds to a sum of receives, \eg $\fact x {\atomIn{a}} \cocoPlus	\fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}}$. Note that all actions must be of the same type.
+	
+	\item[\incodeType{Session2}.\incodeMethod{waitForReceive(\incodeType{Integer}, \incodeType{String\dots})} : \incodeType{Message}]\hfill \\
+	As above, throwing a \incodeType{TimeExpiredException} if the given timeout expires. It corresponds to a sum of receive with the timeout branch, \eg $\fact x {\atomIn{a}} \cocoPlus	\fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}} \cocoPlus \tau$. Note that all actions must be of the same type.
+	
+	\item[\incodeType{Participant}.\incodeMethod{parallel(\incodeType{Runnable})} : \incodeKeyword{long}] \hfill \\
+	It starts a new thread that will execute the given runnable object. The corresponding \coco process is better explained in \Cref{sec:java-parallel}.
+	
+	\item[\incodeType{Participant}.\incodeMethod{<init>} \textnormal{and} \incodeType{CO2Process}.\incodeMethod{<init>}]  \hfill \\
+	They respectively construct a \incodeType{Participant} and a \incodeType{CO2Process}. These constructors are handled to allow process composition.
+	
+	\item[\incodeType{Participant}.\incodeMethod{run()} \textnormal{and} \incodeType{CO2Process}.\incodeMethod{run()}]  \hfill \\
+	We catch the entrance (exit) to (from) a method in order to handle the process start (termination).
+\end{description}
+
+\subsubsection{If statement}
+We also handle the bytecode instructions involving in the \textit{if-then-else} statement. By default, JPF would evaluate the \textit{if condition} and execute only the corresponding branch. We customize this behaviour, exploring both branches to build up the \coco process $\ifte{\expE}{\procP}{\procP}$.
+
+
+\subsection{Single process}
+This section covers the simplest building, \ie a single process with neither compositions nor spawning of parallel processes. The idea is that each method listed above creates a new \incodeType{ProcessDS} (\eg \incodeType{SumDS}, \incodeType{IfThenElseDS}, etc.) in which can be appended one or more \incodeType{PrefixDS} (\eg \incodeType{TauDS}, \incodeType{TellDS}, etc.). The full implementation of \incode{*DS} classes, used to model \coco precesses, is shown in \Cref{appchap:java-honesty} (\textit{DS} states for \textit{Data Structure}).
+
+Consider a Java program that executes these lines of code:
+
+\begin{mdframed}
+\begin{minted}[fontsize=\footnotesize,linenos]{java}
+Contract c = ...;
+Public p = tell(c);
+Session session = waitForSession(p);
+
+session.send("a");
+session.waitForReceive("b", "c");
+
+session.send("d");
+\end{minted}
+\end{mdframed}
+
+First of all, we need to trace: the \textit{current process}, that is the \coco main process we are building up; the \textit{current prefix}, that is the \coco prefix in which we append the next process. When a method invocation is handled,
+\begin{inlinelist}
+	\item we create a new process that represents it,
+	\item we append it to the current prefix (if it is the first invocation, we simply set the current process) and
+	\item we set/override the current prefix.
+\end{inlinelist}
+
+Considering the example above, the construction takes place in this way:
+\begin{description}
+	\item[Line \lineno{2}:] \hfill \\
+	new process: $\tell {} {\freeze x \contrP}$ \hfill(single-element sum)\\
+	current process: $\tell {} {\freeze x \contrP}$ \hfill(single-element sum)\\
+	current prefix: $\tell {} {\freeze x \contrP}$
+	
+	\item[Line \lineno{3}:] \hfill \\
+	new process: $\ask{x}{true}$ \hfill(single-element sum)\\
+	current process: $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true}$\\
+	current prefix: $\ask{x}{true}$
+	
+	\item[Line \lineno{5}:] \hfill \\
+	new process: $\fact x {\atomOut{a}}$ \hfill(single-element sum)\\
+	current process: $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \fact x {\atomOut{a}}$\\
+	current prefix: $\fact x {\atomOut{a}}$
+	
+	\item[Line \lineno{6}:] \hfill \\
+	new process: $\fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}}$\\
+	current process: $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \fact x {\atomOut{a}} \cocoSeq \fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}}$\\
+	current prefix: $unknown$
+\end{description}
+
+The current prefix at line \lineno{6} is unknown when invoking the \incodeMethod{waitForReceive} method, because it depends on the input received from the participant involved in the session. At this point JPF comes into play: the method returns if the action \incodeKeyword{b} or \incodeKeyword{c} is received, so we instruct JPF to explore all possible choices and it automatically take care of state advancing and backtracking when reaches the end of a branch.
+Continuing the construction, we have now two states:
+
+\begin{description}
+	
+	\item[State 1:] the action \incodeKeyword{b} is received. The current prefix is set to $\fact x {\atomIn{b}}$.
+	\begin{description}
+		\item[Line \lineno{6}:] \hfill \\
+		new process: $\fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}}$\\
+		current process: $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \fact x {\atomOut{a}} \cocoSeq \fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}}$\\
+		current prefix: $\fact x {\atomIn{b}}$
+		
+		\item[Line \lineno{8}:] \hfill \\
+		new process: $\fact x {\atomOut{d}}$ \hfill(single-element sum)\\
+		current process: $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \fact x {\atomOut{a}} \cocoSeq ( \fact x {\atomIn{b}} \cocoSeq \fact x {\atomOut{d}} \cocoPlus \fact x {\atomIn{c}} )$\\
+		current prefix: $\fact x {\atomOut{d}}$\\
+		\textbf{Note:} the construction ends (no further code) and JPF backtracks.
+	\end{description}	
+	
+	\item[State 2:] the action \incodeKeyword{c} is received. The current prefix is set to $\fact x {\atomIn{c}}$.	
+	\begin{description}
+		\item[Line \lineno{6}:] \hfill \\
+		new process: $\fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}}$\\
+		current process: $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \fact x {\atomOut{a}} \cocoSeq ( \fact x {\atomIn{b}} \cocoSeq \fact x {\atomOut{d}} \cocoPlus \fact x {\atomIn{c}} )$\\
+		current prefix: $\fact x {\atomIn{c}}$\\
+		\textbf{Note:} the current process is the result of the exploration of the first state.
+		
+		\item[Line \lineno{8}:] \hfill \\
+		current process: $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \fact x {\atomOut{a}} \cocoSeq ( \fact x {\atomIn{b}} \cocoSeq \fact x {\atomOut{d}} \cocoPlus \fact x {\atomIn{c}} \cocoSeq \fact x {\atomOut{d}} )$\\
+		current prefix: $\fact x {\atomOut{d}}$\\
+		\textbf{Note:} the construction ends (no further code) and there are not other states to be explored.
+	\end{description}
+\end{description}
+
+The construction is terminated and the complete \coco process is
+\[
+\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \fact x {\atomOut{a}} \cocoSeq ( \fact x {\atomIn{b}} \cocoSeq \fact x {\atomOut{d}} \cocoPlus \fact x {\atomIn{c}} \cocoSeq \fact x {\atomOut{d}} )
+\]
+
+The constructs that create new states are:
+\begin{itemize}
+	\item \textit{if-then-else}: generates two states, one for each branch;
+	
+	\item \incodeMethod{waitForReceive(..)}: generates one state for each action (and an additional state if you specify a timeout);
+	
+	\item \incodeMethod{waitForSession(\incodeBlack{timeout})}: generates two states, one in case the session is fused and one if the timeout expires. Note: the \incodeMethod{waitForSession()} without a timeout does not generate new states.
+\end{itemize}
+
+\subsubsection{Conclusion}
+When JPF backtracks from a state to another one, we must set the correct current prefix, otherwise the new process will be wrongly appended somewhere else. To achieve this goal we must save the \textit{new process} before starting the exploration of a new state, \eg $\fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}}$ in the example above. Storing it in a variable is not enough because another construct could generate other states that will override it. The solution is to adopt a \emph{stack} and read from the top when we need to retrieve the correct value to set the \textit{current prefix}.
+
+Summing up, the following data structures are required to build a single process:
+\begin{inlinelist}
+	\item the \textit{current process},
+	\item the \textit{current prefix} and
+	\item a stack to store the \textit{new process} when multiple states were generated (henceforth referred as \textit{choices stack})
+\end{inlinelist}
+
+\subsection{Process composition}\label{sec:java-process-composition}
+Process composition allows not only to write more readable processes but also to define a \textit{recursive behaviour}, like
+\[ 
+\contr{c} \mmdef \rec{\contrX}{\atomOut{a}\contrSeq \contrX \sumInt \atomOut{b}}
+\]
+\[
+\procP \; = \; (x) \; \tell {} {\contr{c}} \cocoSeq \procX(x) \hspace{30pt}\procX(x) \mmdef \ifte{\expE}{\fact x {\atomOut{a}} \cocoSeq \procX(x) }{ \fact x {\atomOut{b} }}
+\]
+
+In Java, it is equivalent to define a new class that extends \incodeType{CO2Process} (or \incodeType{Participant} if you need to get a new session), create a new instance and invoke its \incodeMethod{run()} method. We catch the creation of the new instance and save the left side of the definition (\eg $\procX(x)$) carrying about the formal parameters declaration. When this instance starts (entering the method \incodeMethod{run()}) the building of the current process suspends and the new one begin. On finished, the invoking process must be restored so its built phase can continue. Note although that it is not possible to append other prefixes to a process invocation (since the \coco does not permit it), but it could be the end part of a branch, as shown in \Cref{lst:if-build-example}
+
+\begin{listing}
+	\inputJavaLineos{code/jpf/if-build-composition.java}
+	\caption{Example of process composition into a \textit{if} statement}
+	\label{lst:if-build-example}
+\end{listing}
+
+
+Under these conditions, it is necessary to use a \emph{stack} to save the data structures listed at the end of the previous section, henceforth referred as \textit{\coco{}Stack} and \textit{\coco{}StackFrame} respectively. When a process starts, a new frame is allocated onto the stack and used to build up the corresponding \coco process; once it terminates, the frame is removed. In order to obtain the full graph of invocations, the callee process takes a reference to the called one, and at the end of the day it is possible to reach each process by starting from the main one.
+
+\subsubsection{Recursion}
+Now it is possible to define recursive processes. The problem is that $\text{JVM}_{JPF}$ would concretely execute each process call, so it could throw a \textit{stack-overflow exception} when trying to build our \coco process. At first glance, you could think that if the recursion is \textit{under control} (\ie providing a stop condition) then there will be no problems. However, we must explore all branches of if-statements, so this approach does not work.
+
+The idea is to detect the recursion and break method call: on \incodeMethod{run()} method invocation, before pushing the \textit{\coco{}StackFrame} onto the stack, we check that it does not contain a frame for the same process. In this way, the recursion is detected and the exploration can stop safely.
+Note that this strategy can lead to unexpected behaviour at runtime if you do not provide a stop condition.
+
+\begin{listing}
+	\inputJavaLineos{code/jpf/rec-build-composition.java}
+	\caption{Example of recursive process calls}
+	\label{lst:rec-build-example}
+\end{listing}
+
+\Cref{lst:rec-build-example} shows a Java recursive application. The corresponding \coco process will be
+
+\[
+	\begin{array}{rcl}
+		\procP & \; = \;& (x)\; \tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \procPi(x)
+	\\
+	\procPi(x) & \; \mmdef \;& \fact x {\atomOut{a}} \cocoSeq \procPii(x)
+	\\
+	\procPii(x) & \; \mmdef \;& \fact x {\atomIn{b}} \cocoSeq \procPi(x)
+	\end{array}
+\]	
+
+\subsection{Parallel processes}\label{sec:java-parallel}
+The \coco parallel process maps directly to a Java \incodeType{Thread}, which is executed asynchronously with the callee. We use the method \incodeMethod{parallel(\incodeType{Runnable})} in order to handle its invocation and the start of the new thread. The method is \emph{synchonized}, so there are not overlaps due for example to multiple threads that try to start a parallel process. In this way, when handling the call with JPF, we are sure to make the correct association between the caller and the callee thread.
+
+The execution is now more complicated due to the scheduling of the spawn threads. Fortunately JPF allows to retrieve the thread identifier when handling the method calls, so we extend our data structure using a map of $\langle thread\, ID, \coco{}Stack\rangle$. When a new thread starts, it is linked to the caller and each of them construct its \coco process independently from the other one.  
+
+\subsubsection{Example}
+The example below shows how the \coco process is built by a Java application that spawn new threads.
+
+\begin{mdframed}
+\begin{minted}[fontsize=\footnotesize,linenos]{java}
+//some code A
+
+parallel(()->{
+    //some code B
+});
+
+parallel(()->{
+    //some code C
+});
+
+//some code D
+\end{minted}
+\end{mdframed}
+
+The description is trivial: some code $A$ is executed, then a new thread executes $B$ asynchronously, another one executes $C$, finally the main thread continues with $D$.
+
+The construction is made as follow:
+
+\begin{description}
+	\item[Line \lineno{1}:] \hfill \\
+	current process: $\procFmt{A}$\\
+	current prefix: the last prefix added to $\procFmt{A}$
+	
+	\item[Line \lineno{3}:] \hfill \\
+	new process: $(\,\tau_{m1} \,|\, \tau_1\,)$\\
+	current process (main thread): $\procFmt{A} \cocoSeq (\,\tau_{m1}\, | \,\tau_1\,)$\\
+	current prefix (main thread): $\tau_{m1}$ \\
+	current process (thread-1): $\tau_1$ \hspace{30pt}(single-element sum)\\
+	current prefix (thread-1): $\tau_1$ \\
+	\textbf{Note:} the construction of the process of thread-1 starts immediately.
+	
+	\item[Line \lineno{7}:] \hfill \\
+	new process: $(\,\tau_{m2}\, | \,\tau_2\,)$\\
+	current process (main thread): $\procFmt{A} \cocoSeq (\,\tau_{m1} \cocoSeq (\,\tau_{m2} \,|\, \tau_2\,) \,| \,\tau_1\,)$\\
+	current prefix (main thread): $\tau_{m2}$ \\
+	current process (thread-2): $\tau_2$ \hspace{30pt}(single-element sum)\\
+	current prefix (thread-2): $\tau_2$ \\
+	\textbf{Note:} the construction of the process of thread-2 starts immediately.
+	
+	\item[Line \lineno{9}:] \hfill \\
+	new process: $\procFmt{D}$\\
+	current process (main thread): $\procFmt{A} \cocoSeq (\,\tau_{m1} \cocoSeq (\,\tau_{m2} \cocoSeq \procFmt{D}  \,|\, \tau_2\,) \,| \,\tau_1\,)$\\
+	
+	\item[Line \lineno{4}:] \hfill \\
+	new process: $\procFmt{B}$\\
+	current process (thread-1): $\tau_1 \cocoSeq \procFmt{B}$\\
+	
+	\item[Line \lineno{8}:] \hfill \\
+	new process: $\procFmt{C}$\\
+	current process (thread-2): $\tau_2 \cocoSeq \procFmt{C}$\\
+	
+\end{description}
+
+When the construction is finished, the first \textit{\coco{}Frame} of the main process contains the \coco process
+\[
+		\procP \; = \; \procFmt{A} \cocoSeq (\,\tau \cocoSeq (\,\tau \cocoSeq \procFmt{D}  \,|\, \tau \cocoSeq \procFmt{C}\,) \,| \,\tau \cocoSeq \procFmt{B}\,) \equiv \procFmt{A} \cocoSeq (\, \procFmt{B} \,|\, \procFmt{C}\, | \,\procFmt{D}\,)
+\]
+
+\subsubsection{Construction flaws}
+Unfortunately, we do not care about the actions types. This originates from the impossibility to specify the contract actions types to the middleware and it is not related to other limitations.
+
+\section{Verification phase}\label{sec:verification-phase}
+The previous section describes how a \coco process is reconstructed from a Java program. This process is modelled into classes (\Cref{appchap:java-honesty}) and can be checked for honesty. In order to reuse other related works on \coco, we decide to serialize it as a Maude program and model-check it as described in \Cref{sec:maude:checker}. If the reconstruction is correct, we ensure that the Java program is honest and probably will not fail at runtime.
+
+\section{Honesty verification}
+Putting together the phases explained above, from a given \incodeType{Participant} we can build the corresponding \coco process exploring all significant states and verify its honesty. \incodeType{HonestyChecker.}\incodeMethod{isHonest()} is the provided method that allows to do so, whose input is \incodeType{Class}\generic[Participant]{?} and returns an enumeration of \incodeType{HONEST}, \incodeType{DISHONEST} or \incodeType{UNKNOWN} (the latter in order to cover unexpected errors occurs).

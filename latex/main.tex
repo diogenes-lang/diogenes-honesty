@@ -1,0 +1,35 @@
+% !TEX spellcheck = it-IT en-US
+% !TEX encoding = UTF-8 Unicode
+% !TEX root = main.tex
+
+\documentclass[11pt,a4paper,twoside,openright,titlepage]{book}
+
+% \include{thesis-info}	%author and title of the thesis - load before "init"
+\include{init}			%packages declaration
+\include{macro}			%commands and environment definition
+
+% add bibliography databases
+\addbibresource{main.bib}
+
+\newcommand{\mytitle}{Design and verification of contract-oriented systems}
+
+\begin{document}
+
+% \pagenumbering{Roman}
+\include{abstract.tex}
+
+\include{intro}
+
+% \include{background-co2}
+% \include{background-eclipse}
+% \include{background-model-java}
+
+\include{co2-to-java}
+\include{java-honesty}
+\include{use-cases}
+\include{conclusions}
+
+
+\printbibliography[heading=bibintoc]
+
+\end{document}

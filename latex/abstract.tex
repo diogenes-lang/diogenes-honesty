@@ -1,0 +1,41 @@
+
+\begin{abstract}
+
+  Developing distributed applications typically requires
+  to integrate new code with legacy third-party services,
+  \eg, e-commerce facilities, maps, \etc %
+  These services cannot always be assumed to smoothly collaborate with each other;
+  rather, they live in a ``wild'' environment
+  where they must compete for resources,
+  and possibly diverge from the expected behaviour
+  if they find it convenient to do so. %
+  To overcome these issues,
+  some recent works have proposed to discipline the interaction
+  of mutually distrusting services through \emph{behavioural contracts}. %
+  The idea is a dynamic composition, 
+  where only those services with \emph{compliant} contracts 
+  can establish sessions through which they interact. %
+  Compliance between contracts guarantees that,
+  if services behave honestly, they will enjoy safe interactions. %
+  %
+  The interaction between two participant is \emph{monitored} by a \emph{contract-oriented middleware} which can sanction a culprit that does not respect the contract it advertised, decreasing its \emph{reputation}: the lower is the reputation,
+  the lower is the probability of being able to establish new sessions with it. This mechanism allows new form of attacks and a crucial problem is how to avoid these when deploying a service.
+
+  A crucial property of contract-oriented systems if \emph{honesty}.
+  A service is honest if it always respects the contract it advertises,
+  in all possible execution contexts. %
+  Being honest is important, because otherwise a service 
+  can be blamed and sanctioned by the middleware. %
+  Currently, honesty can be checked only at the specification level, 
+  but there is not any guarantee that the corresponding implementation 
+  preserves the property.
+  
+  We develop an Eclipse plugin that allows to write a formal specification of a contract-oriented application, which is automatically compiled 
+  to a Java implementation that exploits the above-mentioned middleware.
+  %
+  We propose a new technique to verify honesty directly on the Java implementation.
+  %
+  Overall, our work allows to reduce the time spent on developing 
+  contract-oriented services, and to make them more secure.
+  % , as well as the risk of incurring in sanctions.
+\end{abstract}
