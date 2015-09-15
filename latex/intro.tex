@@ -1,6 +1,4 @@
-
-\chapter*{Introduction}
-\addcontentsline{toc}{chapter}{Introduction}
+\section{Introduction}
 
 %- cappello introduttivo sulle applicazioni distribuite, e su quali sono i
 %rischi correlati (in pratica, i primi due paragrafi in co2-middleware)
@@ -56,9 +54,10 @@ a contract violation, and then suitably punish it.
 % consequently its chances to establish new sessions.
 
 \begin{figure}[t]
-	\centering
-	\includegraphics[width=0.8\textwidth]{img/primitive-schema.png}
-	\caption{A schema of the primitive behaviours (from~\cite{CO2}).} \label{fig:primitives}
+  \centering
+  \includegraphics[width=0.8\textwidth]{primitive-schema.png}
+  \caption{A schema of the primitive behaviours (from~\cite{CO2}).} 
+  \label{fig:primitives}
 \end{figure}
 
 \Cref{fig:primitives} illustrates the main features of the middleware
@@ -270,8 +269,9 @@ Our methodology is validated against three use cases:
 Our tool allows to change the specifications \emph{on-the-fly} and immediately verify if the changes are good or not. 
 Also, considering the total time spent to check the honesty is in the order of few hundred of milliseconds, there is no additional overhead on development.
 
-\subsection*{Structure of the thesis}
-The thesis is structured as follows: part I takes an overview of all the necessary concepts required to understand the contribution provided with this Master's thesis. Part II describe the Eclipse plugin and the verification strategy adopted for Java programs.
+\subsection*{Structure of the paper}
+
+The paper is organised as follows: part I takes an overview of all the necessary concepts required to understand the contribution provided with this Master's thesis. Part II describe the Eclipse plugin and the verification strategy adopted for Java programs.
 
 \Cref{chap:co2} shows the \textit{contract-oriented paradigm}, focusing on session-types and \coco calculus, its notions of \textit{compliance} and \textit{honesty} and presenting the contract-oriented middleware used in this work.
 \Cref{chap:eclipse-pde} summarizes some aspects of the Eclipse platform and presents the two main tools we used to implement our plugin, \ie \textit{Xtext}\cite{xtext-site} and \textit{Xsemantics}\cite{xsemantics-site}. 

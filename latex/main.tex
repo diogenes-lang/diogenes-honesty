@@ -2,10 +2,14 @@
 % !TEX encoding = UTF-8 Unicode
 % !TEX root = main.tex
 
-\documentclass[11pt,a4paper,twoside,openright,titlepage]{book}
+\documentclass[]{llncs}
+
+\usepackage{etoolbox}
+\newtoggle{lncs}
+\toggletrue{lncs}
 
 % \include{thesis-info}	%author and title of the thesis - load before "init"
-\include{init}			%packages declaration
+\include{styles}		%packages declaration
 \include{macro}			%commands and environment definition
 
 % add bibliography databases
@@ -15,19 +19,32 @@
 
 \begin{document}
 
-% \pagenumbering{Roman}
-\include{abstract.tex}
+\mainmatter 
 
-\include{intro}
+\titlerunning{\mytitle}
+\title{\mytitle}
+
+% Authors
+\author{Nicola Atzei \and Massimo Bartoletti \and Tiziana Cimoli\and Maurizio Murgia}
+%
+\authorrunning{Atzei N., Bartoletti M., Cimoli T., Murgia M.}
+
+\institute{Universit\`a degli Studi di Cagliari, Italy}
+% \mailsa
+
+\maketitle
+
+\input{abstract.tex}
+\input{intro.tex}
 
 % \include{background-co2}
 % \include{background-eclipse}
 % \include{background-model-java}
 
-\include{co2-to-java}
-\include{java-honesty}
-\include{use-cases}
-\include{conclusions}
+%\include{co2-to-java}
+%\include{java-honesty}
+%\include{use-cases}
+%\include{conclusions}
 
 
 \printbibliography[heading=bibintoc]

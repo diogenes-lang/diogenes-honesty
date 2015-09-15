@@ -22,26 +22,30 @@
 \newcommand{\ie}{i.e.\@\xspace}
 \newcommand{\wrt}{w.r.t.\@\xspace}
 
-\newenvironment{proof}{\noindent{\it Proof.}}{}
 \newenvironment{proofof}[2]{{#2}\begin{proof}}{\end{proof}}
 
-\newcounter{fact}
-
-%% NOTE: some theorem styles are already defined in llncs.cls
-\declaretheorem[numberwithin=section]{theorem}
-\declaretheorem[numberlike=theorem]{definition}
-\declaretheorem[numberlike=theorem]{notation}
-\declaretheorem[numberlike=theorem]{lemma}
-\declaretheorem[numberlike=theorem]{example}
-\declaretheorem[numberlike=theorem]{corollary}
-\declaretheorem[numberlike=theorem]{remark}
-\declaretheorem[numberlike=theorem]{proposition}
-
-\declaretheorem[name=Definition,numberlike=theorem]{appdefinition} 
-\declaretheorem[name=Theorem,numberlike=theorem]{apptheorem} 
-\declaretheorem[name=Lemma,numberlike=theorem]{applemma} 
-
-\newcommand{\qedhere}{}
+\iftoggle{lncs}{%
+}
+{%
+  % \newenvironment{proof}{\noindent{\it Proof.}}{}
+  \newcounter{fact}
+  
+  %% NOTE: some theorem styles are already defined in llncs.cls
+  \declaretheorem[numberwithin=section]{theorem}
+  \declaretheorem[numberlike=theorem]{definition}
+  \declaretheorem[numberlike=theorem]{notation}
+  \declaretheorem[numberlike=theorem]{lemma}
+  \declaretheorem[numberlike=theorem]{example}
+  \declaretheorem[numberlike=theorem]{corollary}
+  \declaretheorem[numberlike=theorem]{remark}
+  \declaretheorem[numberlike=theorem]{proposition}
+  
+  \declaretheorem[name=Definition,numberlike=theorem]{appdefinition} 
+  \declaretheorem[name=Theorem,numberlike=theorem]{apptheorem} 
+  \declaretheorem[name=Lemma,numberlike=theorem]{applemma} 
+  
+  \newcommand{\qedhere}{}
+}
 
 
 \def\finex{{\unskip\nobreak\hfil
@@ -480,25 +484,25 @@ at}}{\end{minipage}\end{center} \hket\end{definition}\medskip\end{minipage}}
 
 
 
-%
-% ABSTRACT
-%
-\newenvironment{abstract}%
-{
-	\cleardoublepage%
-	%\thispagestyle{empty}%
-	\thispagestyle{plain}%
-	\null 
-	\vfill
-	\begin{center}%S
-	\bfseries \abstractname 
-	\end{center}
-}%
-{
-	\vfill
-	\null
+\iftoggle{lncs}{%
 }
-
+{%
+  \newenvironment{abstract}%
+  {
+    \cleardoublepage%
+    % \thispagestyle{empty}%
+    \thispagestyle{plain}%
+    \null 
+    \vfill
+    \begin{center}%S
+      \bfseries \abstractname 
+    \end{center}
+  }%
+  {
+    \vfill
+    \null
+  }
+}
 
 \newcommand{\lineno}[1]{{\tt\codefont {\textcolor{ForestGreen}{#1}}}}
 \newcommand{\incode}[1]{\texttt{#1}}
