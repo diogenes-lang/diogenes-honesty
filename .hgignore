@@ -13,3 +13,12 @@ xtend-gen
 
 
 co2-honesty-checker/co2-java-honesty*.jar
+
+*.aux
+*.log
+*.orig
+*.out
+*.pdf
+*.pdf.mk
+*.pdfsync
+*.pyg
