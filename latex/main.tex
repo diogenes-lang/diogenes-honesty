@@ -2,7 +2,7 @@
 % !TEX encoding = UTF-8 Unicode
 % !TEX root = main.tex
 
-\documentclass[]{llncs}
+\documentclass[runningheads,a4paper]{llncs}
 
 \usepackage{etoolbox}
 \newtoggle{lncs}
@@ -13,7 +13,7 @@
 \include{macro}			%commands and environment definition
 
 % add bibliography databases
-\addbibresource{main.bib}
+% \addbibresource{main.bib}
 
 \newcommand{\mytitle}{Design and verification of contract-oriented systems}
 
@@ -47,6 +47,9 @@
 %\include{conclusions}
 
 
-\printbibliography[heading=bibintoc]
+% \printbibliography[heading=bibintoc]
+
+\bibliographystyle{abbrv}
+\bibliography{main}
 
 \end{document}
