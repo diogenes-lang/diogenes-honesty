@@ -9,64 +9,78 @@ import co2api.Public;
 import co2api.TST;
 import co2api.TimeExpiredException;
 import it.unica.co2.api.Session2;
-import it.unica.co2.honesty.HonestyChecker;
 import it.unica.co2.model.contract.Contract;
 import it.unica.co2.model.process.CO2Process;
 import it.unica.co2.model.process.Participant;
 
-public class APIExampleProcess extends Participant {
+public class APIExampleProcess2 extends Participant {
 
 	private static final long serialVersionUID = 1L;
 	
 	private static String username = "alice@test.com";
 	private static String password = "alice";
 
-	public APIExampleProcess() {
+	public APIExampleProcess2() {
 		super(username, password);
 	}
 
 	public static void main(String[] args) throws ContractException {
-		HonestyChecker.isHonest(APIExampleProcess.class);
+		new APIExampleProcess2().run();
 	}
 	
 	@Override
 	public void run() {
-		
+		try {
 			
-			Contract C = 
-					externalSum()
-					.add("a")
-					.add("b")
-			;
-			
-			Contract D = 
+			Contract A = 
 					internalSum()
-//					.add("a", internalSum().add("a"))
-					.add("hello")
+					.add("a")
+					.add("b", externalSum().add("a").add("b").add("c"))
 			;
 			
-			Session2<TST> sessionC = tellAndWait(C);
+			logger.log("tell");
 			
-			
-			Public<TST> pblD = tell(D);
+			Public<TST> pbl = tell(A);
 			
 			try {
-				Session2<TST> sessionD = waitForSession(pblD, 10_000);
-				sessionD.send("hello");
 				
-				sessionC.waitForReceive("a", "b");
+				Session2<TST> session = waitForSession(pbl, 10000);
+				
+				logger.log("sending b!");
+				session.send("b");
+				
+				logger.log("receiving message");
+				Message msg = session.waitForReceive("a","b","c");
+				
+				logger.log("received message: "+msg.getLabel()+" "+msg.getStringValue());
+				
+				switch (msg.getLabel()) {
+				
+				case "a": 
+					logger.log("received a?");
+					session.send("a.ok");
+					break;
+					
+				case "b":
+					logger.log("received b?");
+					session.send("b.ok");
+					break;
+				}
+				
+				new ProcessA(session).run();
+
+				logger.log("FINE");
 			}
-			catch (TimeExpiredException e1) {
-				
-				parallel(()->{
-					Session2<TST> sessionD1 = waitForSession(pblD);
-					sessionD1.send("hello");
-				});
-				
-				parallel(()->{
-					sessionC.waitForReceive("a", "b");
-				});
+			catch (TimeExpiredException e) {
+				Session2<TST> session = waitForSession(pbl);
+				session.send("a");
 			}
+			
+		
+		}
+		catch (ContractException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private static class ProcessA extends CO2Process {
@@ -99,5 +113,4 @@ public class APIExampleProcess extends Participant {
 		}
 		
 	}
-
 }
