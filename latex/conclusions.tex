@@ -1,13 +1,11 @@
-\newcommand{\CS}{C\nolinebreak\hspace{-.05em}\raisebox{.35ex}{\footnotesize \#}}
-
-\chapter{Conclusions and future works}\label{chap:conclusions}
+\section{Conclusions and future works}\label{sec:conclusions}
 
 %The goal of this Master's thesis was to reduce the gap between the abstract \coco language and its concrete implementation using a high-level language.
 
 The goal of this Master's thesis was to reduce the gap between two distinct worlds. The first one, more theoretical, defines session-types, \coco specifications and all the theories that support the \textit{contract-oriented} paradigm. On the other side, it exists the more practical world where service-oriented computing allows to construct distributed applications by discovering, integrating and using
 basic services. 
 
-Services are implemented using high-level languages (like Java, \CS, etc.) and frameworks; furthermore, they may be provided by different organisations, possibly in competition (when not in conflict) among each other. Services can also appear and disappear from the network, and they can dynamically discover and invoke other services in order to exploit their functionality. 
+Services are implemented using high-level languages (like Java, CS, etc.) and frameworks; furthermore, they may be provided by different organisations, possibly in competition (when not in conflict) among each other. Services can also appear and disappear from the network, and they can dynamically discover and invoke other services in order to exploit their functionality. 
 The first step into this scenario was made with the development of a \textit{contract-oriented middleware}, allowing developers to write distributed applications that interact advertising \textit{contracts} and through \textit{monitored sessions}. However, there was not way to verify if these applications were \emph{honest} or not.
 
 The first part of our work was the study, the design and the development of an Eclipse plugin that allows to write \textit{\coco processes} that automatically were translated to two target languages, Maude and Java, both \textit{honesty}-verifiable. This aims to support an application developer, who wants to be honest, to avoid errors that will make him culpable at runtime.

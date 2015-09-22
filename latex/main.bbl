@@ -16,4 +16,9 @@ M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
 \newblock Verifiable abstractions for contract-oriented systems.
 \newblock 2015.
 
+\bibitem{juhaszviper}
+U.~Juhasz, I.~T. Kassios, P.~M{\"u}ller, M.~Novacek, M.~Schwerhoff, and A.~J.
+  Summers.
+\newblock Viper: A verification infrastructure for permission-based reasoning.
+
 \end{thebibliography}
