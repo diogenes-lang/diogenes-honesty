@@ -1,5 +1,5 @@
 
-\chapter{The Java honesty checker}\label{chap:java-honesty}
+\section{The Java honesty checker}\label{sec:java-honesty}
 
 This chapter covers the problem of verifying the honesty of Java applications.
 To achieve this goal, \textit{Java PathFinder} (JPF, discussed in \Cref{sec:jpf}) is used to analyze the Java bytecode and to build up the agent $\sys{\pmv{A}}{\procP}$, represented as a Java object.
@@ -176,11 +176,11 @@ Process composition allows not only to write more readable processes but also to
 
 In Java, it is equivalent to define a new class that extends \incodeType{CO2Process} (or \incodeType{Participant} if you need to get a new session), create a new instance and invoke its \incodeMethod{run()} method. We catch the creation of the new instance and save the left side of the definition (\eg $\procX(x)$) carrying about the formal parameters declaration. When this instance starts (entering the method \incodeMethod{run()}) the building of the current process suspends and the new one begin. On finished, the invoking process must be restored so its built phase can continue. Note although that it is not possible to append other prefixes to a process invocation (since the \coco does not permit it), but it could be the end part of a branch, as shown in \Cref{lst:if-build-example}
 
-\begin{listing}
-	\inputJavaLineos{code/jpf/if-build-composition.java}
-	\caption{Example of process composition into a \textit{if} statement}
-	\label{lst:if-build-example}
-\end{listing}
+%%%%%\begin{listing}
+%	\inputJavaLineos{code/jpf/if-build-composition.java}
+%	\caption{Example of process composition into a \textit{if} statement}
+%	\label{lst:if-build-example}
+%\end{listing}
 
 
 Under these conditions, it is necessary to use a \emph{stack} to save the data structures listed at the end of the previous section, henceforth referred as \textit{\coco{}Stack} and \textit{\coco{}StackFrame} respectively. When a process starts, a new frame is allocated onto the stack and used to build up the corresponding \coco process; once it terminates, the frame is removed. In order to obtain the full graph of invocations, the callee process takes a reference to the called one, and at the end of the day it is possible to reach each process by starting from the main one.
@@ -191,11 +191,11 @@ Now it is possible to define recursive processes. The problem is that $\text{JVM
 The idea is to detect the recursion and break method call: on \incodeMethod{run()} method invocation, before pushing the \textit{\coco{}StackFrame} onto the stack, we check that it does not contain a frame for the same process. In this way, the recursion is detected and the exploration can stop safely.
 Note that this strategy can lead to unexpected behaviour at runtime if you do not provide a stop condition.
 
-\begin{listing}
-	\inputJavaLineos{code/jpf/rec-build-composition.java}
-	\caption{Example of recursive process calls}
-	\label{lst:rec-build-example}
-\end{listing}
+%\begin{listing}
+%	\inputJavaLineos{code/jpf/rec-build-composition.java}
+%	\caption{Example of recursive process calls}
+%	\label{lst:rec-build-example}
+%\end{listing}
 
 \Cref{lst:rec-build-example} shows a Java recursive application. The corresponding \coco process will be
 

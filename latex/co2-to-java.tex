@@ -1,4 +1,10 @@
-\chapter{From \coco to Java}\label{chap:co2-to-java}
+\section{From \coco to Java}\label{sec:co2-to-java}
+
+\begin{itemize}
+\item transformation from \coco process into java 
+\item \coco plugin
+\end{itemize}
+
 
 In \coco a service is represented as an agent $\sys{\pmv{A}}{\procP}$ that can offer (or require) some behaviour by advertising it in the form of a session type $\contrP$ (\Cref{def:co2:syntax} and \Cref{def:contracts:syntax}).
 
@@ -9,7 +15,7 @@ In order to do so, we need first to extend the \textit{contract-oriented middlew
 %Note that we can translate only a subset of all processes permitted by \coco, as shown on \Cref{sec:untranslatable-code}.
 
 
-\section{Extended \coco Java API}\label{sec:extended-api}
+\subsection*{Extended \coco Java API}\label{sec:extended-api}
 In this section we illustrate the \textit{extended} API, which is necessary to auto-generate the code from \coco syntax (\Cref{sec:co2-plugin}) and make it analyzable by Java PathFinder (JPF, described in \Cref{chap:java-honesty}).
 
 
@@ -32,21 +38,21 @@ We removed this limit by modelling contracts as Java classes that, on interfacin
 The \incodeType{Sum} is extended by \incodeType{ExternalSum}\generic{ExternalAction} and \incodeType{InternalSum}\generic{InternalAction}, that respectively represent the \textit{external} and \textit{internal choices} described in \Cref{def:contracts:syntax}.
 The simplest way to construct a sum is shown in \Cref{lst:contract-sum}: the overloaded method \incodeType{Sum}\generic{T}.\incodeMethod{add(...)} allows to add an action \incodeType{T}, specifies its \incodeType{Sort}, and sets the next contract. %Remember that session-types (\Cref{def:contracts:syntax}) not allow to define a \textit{sequence} directly, although you can obtain it with a chain of ``single-action'' sums.
 %
-\begin{listing}
-	\inputJavaLineos{code/ex-contract-sum.txt}
-	\caption{Example of contract sums.}
-	\label{lst:contract-sum}
-\end{listing}
+%\begin{listing}
+%	\inputJavaLineos{code/ex-contract-sum.txt}
+%	\caption{Example of contract sums.}
+%	\label{lst:contract-sum}
+%\end{listing}
 
 The  \incodeType{Recursion} and \incodeType{ContractWrapper} are substantially identical but with different semantics: a \incodeType{Recursion} is used to define \textit{recursive behaviour}, while the \incodeType{ContractWrapper} was introduced as a workaround to the Java restriction that (properly) one cannot refer to a variable not yet initialized. The latter has become necessary on automated code-generation (explained in \Cref{sec:co2-plugin}). 
 
 An example of a recursive contract is shown in \Cref{lst:contract-rec}, where \incode{R} and \incode{C} represent the same contract (if \incode{R} is expanded, we obtain \incode{C}): at line \lineno{6} we set \incode{R} as the \textit{next} contract of \incodeKeyword{a} (\incode{R} is still undefined); at line \lineno{7} we set \incode{C} as the body of \incode{R}. The contract are represented by session-types, $\contr{R} = \rec{X}{ \atomOut{a} \contrSeq X \sumInt \atomOut{b} }$ while $\contr{C} = \atomOut{a} \contrSeq \rec{X}{(\atomOut{a} \contrSeq X \sumInt \atomOut{b})} \sumInt \atomOut{b}$.
 %
-\begin{listing}
-	\inputJavaLineos{code/ex-contract-rec.txt}
-	\caption{Example of recursive contract.}
-	\label{lst:contract-rec}
-\end{listing}
+%\begin{listing}
+%	\inputJavaLineos{code/ex-contract-rec.txt}%
+%	\caption{Example of recursive contract.}
+%	\label{lst:contract-rec}
+%\end{listing}
 
 
 
@@ -77,11 +83,13 @@ The abstract class \incodeType{Participant} models a \coco agent $\sys{\pmv{A}}{
 %	\caption{Class diagram of precesses}
 %	\label{fig:class-diag-processes}
 %\end{figure}
-\begin{listing}[hp]
-	\inputJavaLineos{code/ex-process-participant.txt}
-	\caption{Example of a participant.}
-	\label{lst:process-participant}
-\end{listing}
+
+
+%\begin{listing}[hp]
+%	\inputJavaLineos{code/ex-process-participant.txt}
+%	\caption{Example of a participant.}
+%	\label{lst:process-participant}
+%\end{listing}
 
 The \incodeType{Participant} class extends the  \incodeType{CO2Process}, which implements the interfaces \incodeType{Serializable} (required by JPF) and \incodeType{Runnable}. The \incodeMethod{run()} method defines the ``behaviour'' of the process.
 \Cref{lst:process-participant} shows a simple complete participant implementation.
@@ -96,11 +104,11 @@ The \incodeType{Participant} class extends the  \incodeType{CO2Process}, which i
 \end{description}
 %
 
-\begin{listing}
-	\inputJavaLineos{code/ex-process-parallel.txt}
-	\caption{Example of a parallel process.}
-	\label{lst:process-parallel}
-\end{listing}
+%\begin{listing}
+%	\inputJavaLineos{code/ex-process-parallel.txt}
+%	\caption{Example of a parallel process.}
+%	\label{lst:process-parallel}
+%\end{listing}
 
 
 In Java 8, you can invoke it taking advantage \textit{lambda expressions}. \Cref{lst:process-parallel} show you a process that take use of the parallel construct.
@@ -159,7 +167,7 @@ The \coco Eclipse plugin is implemented with Xtext, a framework for development 
 
 We define the \coco grammar using the Xtext DSL. Since the generated parser is LL(*), it is simple to write a grammar that fulfils the \coco specifications (although we must careful to not abuse of \textit{backtracking} due to performance reasons). The basic idea is that each rule corresponds to a Java class (instantiated when building the AST) and each declaration inside a rule is mapped to a class field. The implemented Xtext grammars are shown on \Cref{appchap:xtext-grammars}, categorized by type.
 
-\inputCocoFloat[h]{code/co2/sample.co2}{Example of \coco system}{lst:co2-sample}
+%\inputCocoFloat[h]{code/co2/sample.co2}{Example of \coco system}{lst:co2-sample}
 
 \Cref{lst:co2-sample} is an example of a \coco process you can write with the plugin:
 %
@@ -197,9 +205,9 @@ Also \incode{C1} and \incode{C4} are semantically equivalent, but the visibility
 %
 This behaviour is a little bit cumbersome and error prone: to avoid problems, you must use the \inlineCoco{rec} construct to define \textit{recursive behaviour} and use references between contracts only for \textit{composition} (manually avoiding loops). The scoping rules try to mitigate this problem, but these ones can be bypassed as shown in \Cref{lst:co2-contract-infinite}. This problem will be resolved in the future.
 
-\inputCocoFloat{code/co2/contracts-scope.co2}{Example of contract scoping}{lst:co2-contract-scope}
+%\inputCocoFloat{code/co2/contracts-scope.co2}{Example of contract scoping}{lst:co2-contract-scope}
 
-\inputCocoFloat{code/co2/contracts-infinite.co2}{Example of infinite contract loop}{lst:co2-contract-infinite}
+%\inputCocoFloat{code/co2/contracts-infinite.co2}{Example of infinite contract loop}{lst:co2-contract-infinite}
 
 \subsubsection{Processes}
 Processes can contain references to contracts and to other processes, allowing composition and recursive behaviour. Both contracts and processes references are resolved among all the declarations inside the same file.
@@ -237,11 +245,11 @@ Into our grammar, \textit{freenames} can be declared and used in different place
 
 Referred freenames can be used inside an expressions, except for the \inlineCoco{session} type. Furthermore, we check the match between the actual and formal parameters types on process invocation.
 
-\begin{listing}
-	\inputJavaLineos{code/xtext/sample.xsemantics}
-	\caption{Part of the type-system rules}
-	\label{lst:xsemantics-sample}
-\end{listing}
+%\begin{listing}
+%	\inputJavaLineos{code/xtext/sample.xsemantics}
+%	\caption{Part of the type-system rules}
+%	\label{lst:xsemantics-sample}
+%\end{listing}
 
 Into practice, we implement a set of \textit{rules} whose result (a Java type) depends on a set of \textit{premises}. Rules without premises are \textit{axioms}. Considering this aspect, is possible to write potentially any validation rule using the Xsemantics engine. \Cref{lst:xsemantics-sample} shows some simple rules and we refer to \Cref{appsec:xsemantics} for the full implementation.
 

@@ -1,40 +1,15 @@
 
-\chapter{Contract oriented computing}\label{chap:co2}
+\section{Background}\label{sec:background}
 
-\section{Introduction}
-Contract oriented computing~\cite{BZ10lics} is a design paradigm for distributed systems wherein the interaction between services is disciplined at run-time through \emph{contracts}.
-A contract specifies an abstraction of the intended behaviour of a service, both from the point of view of what it offers to the other services, and of what it requires in exchange.
-Services \emph{advertise} contracts when they want to offer (or sell) some features to clients over the network, or when they want to delegate the implementation of some features to some other services.
-%
-New \emph{sessions} are established between services whose advertised contracts are \emph{compliant}; such contracts are then used to monitor their interaction in the sessions. When a service diverges from its contract, it can be sanctioned by the runtime monitor (\eg, by decreasing the service reputation, as in \cite{Mukhija2007qos}).
-
-For instance, consider an online store that wants to allow clients to order items, and wants to delegate to a bank the activity of checking payments. Both these behaviours (ordering items, checking payments) can be formalised as contracts.
-If other services advertise contracts which are compliant with those of the store (\eg, a client advertises its interest in ordering one of the available items), then the store can establish new sessions with such services.
-
-When services behave in the ``right way'' for all their advertised contracts, they are called \emph{honest}. Instead, when services are \emph{not} honest, they do \emph{not} always respect the contracts they advertise, at least in some execution context.
-This may happen either unintentionally (because of errors in the service specification or in its implementation), or even because of malicious behaviour.
-Since discrepancies between the advertised and the actual behaviour can be sanctioned, a new kind of attacks becomes possible: if a service does not behave as promised, an attacker can induce it to a situation where the service is sanctioned, while the attacker is not.
-A crucial problem is then how to ensure that a service will \emph{never} result responsible of a contract violation, before deploying it in an unknown (and possibly adversarial) environment.
-
-\paragraph{Contract-oriented computing in \coco}
-
-The distributed, contract-oriented systems outlined in the previous paragraphs can be formally modelled and studied in \coco, a core process calculus for contract-oriented computing \cite{BZ10lics,BTZ12sacs}.
-
-\coco is not tied to a specific language or semantics for contracts. This flexibility allows to adopt one of the many different contract formalisms available in literature: these include behavioural types~\cite{Bravetti07sc,Honda98esop,Honda08popl,Castagna09toplas}, Petri nets~\cite{Aalst10cj,BCP13fsen,BCP15scp}, multi-player games~\cite{BCZ13post,BCPZ15jlamp}, logics~\cite{BZ10lics,BTZ12sacs}, \emph{etc.} %
-Among behavioural types, \emph{session types}~\cite{Honda93concur,Honda98esop} have been devoted a lot of attention in the last few years, both at the foundational level~\cite{Honda08popl,Bocchi10concur,Castagna11lmcs,Lange12concur,Denielou13icalp,Caires10concur,Wadler14jfp,Gay10jfp,Carbone14concur,Bernardi14concur,BartolettiSZ14Concur} and at the application level~\cite{Corin08secure,Yoshida13scribble,Neykova14coordination,Franco13beat}.
-In their simplest incarnation, session types are terms of a process algebra featuring a \emph{selection} construct (\ie, an internal choice among a set of branches), a \emph{branching} construct (\ie, an external choice offered to the environment), and recursion.
-
-In this thesis, we adopt \coco with binary session types as our contract model of choice.
-Therefore, once formalised in \coco, a service will be represented as an agent $\sys{\pmv{A}}{\procP}$ that can offer (or require) some behaviour by advertising it in the form of a session type $\contrP$.
-In order to establish a session, another compliant session type needs to be advertised by another agent: intuitively, compliance is based on the standard notions of duality and subtyping \cite{Gay1999Subtyping,Gay2005Subtyping,Barbanera10ppdp}, and ensures that, when run in parallel, the two session types enjoy progress. 
-Thus, when an agent $\sys{\pmv{B}}{\procQ}$ advertises a session type $\contrQ$ which is compliant with $\contrP$, a new session $s$ between $\sys{\pmv{A}}{\procP}$ and $\sys{\pmv{B}}{\procQ}$ is created.
-Then, $\sys{\pmv{A}}{\procP}$ and $\sys{\pmv{B}}{\procQ}$ can start interacting through $s$, by performing the actions prescribed by $\contrP$ and $\contrQ$,
-respectively --- or even by choosing not to do so.
-
-The problem of verifying honesty, even with this simplistic contract model, and in the most basic version of \coco, is not trivial: the honesty of an agent turns out to be undecidable (the proof in~\cite{BTZ12coordination} exploits the fact that the value-free fragment of \coco is Turing-powerful).
-%
-Some preliminary research on the static verification of honesty uses a \emph{type system}: in \cite{BSTZ13forte}, it is shown that type safety guarantees honesty, but no type inference algorithm is provided; moreover, %
-only a simple version of \coco (\eg, without value passing) is addressed. Effective techniques to safely \emph{approximate} honesty of contract-oriented services are therefore in order.
+\begin{itemize}
+\item session types -- semantics???
+\item agreement -- only hints
+\item co2 -- semantics?
+\item honesty -- only hints?
+\item readyness ???
+\item middleware and its java classes
+\item maude model checking
+\end {itemize}
 
 \section{Session types as contracts} \label{sec:contract-session-types}
 
@@ -1243,7 +1218,7 @@ can be verified by model checking its state space.
 
 \subsection{Maude model checker}\label{sec:maude:checker}
 
-A checker for honesty is implemented in Maude \cite{Maude01} and described in details in \cite{verifiable}. This tool is widely used into the implementation provided with this master thesis, both in the Eclipse plug-in and in the Java model checker, described respectively in \Cref{chap:co2-to-java} and \Cref{chap:java-honesty}. The checker can be downloaded at \citeurl{co2-maude-download-link} (visited on 2015-08).
+A checker for honesty is implemented in Maude \cite{Maude01} and described in details in \cite{verifiable}. This tool is widely used into the implementation provided with this master thesis, both in the Eclipse plug-in and in the Java model checker, described respectively in \Cref{chap:co2-to-java} and \Cref{chap:java-honesty}. The checker can be downloaded at ?? %\citeurl{co2-maude-download-link}% (visited on 2015-08).
 
 \subsubsection{Voucher distribution system}\label{ex:voucher}
 We present an example modelled in maude so the reader can realize the difficulty on write processes in this way. In \Cref{chap:use-cases} we present some examples that highlight how this task is simplified using the \coco Eclipse plug-in.
@@ -1445,11 +1420,11 @@ In order to interact with the middleware, a developer can choose between the RES
 
 \subsection{Java API}\label{sec:co2-middleware-api}
 
-\begin{listing}[t]
-	\inputJavaLineos{code/HelloWorld.txt}
-	\caption{Hello world.}
-	\label{lst:hello-world}
-\end{listing}
+%\begin{listing}[t]
+%	\inputJavaLineos{code/HelloWorld.txt}
+%	\caption{Hello world.}
+%	\label{lst:hello-world}
+%\end{listing}
 
 This section shows the Java API usage \textit{by example}. 
 
@@ -1477,7 +1452,7 @@ and the session terminates successfully. %
 Otherwise, the \incodeMethod{waitForReceive} is unblocked,
 and a \incodeType{ContractException} is caught at line~\lineno{12}.
 
-You can download the Java API, the related documentation and some examples at \citeurl{CO2middleware} (visited on 2015-08).
+You can download the Java API, the related documentation and some examples at ????%\citeurl{CO2middleware} (visited on 2015-08).
 
 \subsubsection{Contract advertisement}
 The API allows us to advertise a contract only as plain Java \incodeType{String} in two formats: XML and \textit{timed session-types} \cite{Bartoletti15forte}. The former is too verbose and does not strictly comply our session-types definition (see \Cref{def:contracts:syntax}); the latter is a superset of our specification, so we prefer to use it on communicating with the middleware.
