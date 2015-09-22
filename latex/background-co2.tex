@@ -11,3 +11,55 @@
 \item maude model checking
 \end {itemize}
 
+We use binary session types~\cite{Honda98esop} to define contracts.
+Session types are terms of a process algebra featuring
+internal/external choice, and recursion. 
+%
+
+
+
+
+We assume a set of \emph{participants} (ranged over by ${\pmv A}, {\pmv B}, \ldots$), a set of \emph{branch labels} (ranged over by $\atom{a}, \atom{b}, \ldots$), and a set of \emph{sorts} ranged over by $\sortT, \sortTi, \ldots$ (e.g.\ \sort{int}, \sort{bool}, \sort{unit}).
+Each sort $\sort{T}$ is populated by a set of values, ranged over by $\valV, \valVi, \ldots$; as usual, we write $\valV: \sortT$ to indicate that $\valV$ has sort~$\sortT$.
+
+\begin{definition}[Contracts] \label{def:contracts:syntax}
+Contracts are \emph{binary session types}, i.e.\ terms defined by the grammar:
+\begin{align*}
+%\text{Unilateral contracts} &&
+    \contrP,\contrQ \;\; & ::= \;\;
+    % \textstyle
+    \SumInt[i \in \mathcal{I}]{\atomOut[i]{a} \sortT[i]}{\contrP[i]} \ \bnfmid \ 
+    \SumExt[i \in \mathcal{I}]{\atomIn[i]{a} \sortT[i]}{\contrP[i]} \ \bnfmid \
+    % \ready{\atomIn{a}\val{v}}.c \ \bnfmid \
+    \rec{\contrX}{\contrP}
+    \bnfmid \ \contrX
+\end{align*}
+where % we assume that
+\begin{inlinelist} 
+\item the index set $\mathcal{I}$ is finite,
+\item \label{item:def:contracts:syntax:pairwise-distinct}
+the labels $\atom[i]{a}$ in the prefixes of each summation are pairwise distinct, and 
+\item recursion variables $\contrX$ are prefix-guarded.
+\end{inlinelist}
+\end{definition}
+
+An internal sum $\SumInt[i]{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$ allows a participant to choose one of the labels $\atom[i]{a}$, to pass a value of sort $\sortT[i]$, and then to behave according to the branch $\contrP[i]$.
+Dually, an external sum $\SumExt[i]{\atomIn[i]{a}\sortT[i]}{\contrP[i]}$ allows to wait for the other participant to choose one of the labels $\atom[i]{a}$, and then to receive a value of sort $\sortT[i]$ and behave according to the branch $\contrP[i]$.
+%
+Empty internal/external sums are identified, and they are denoted with $\cnil$, which represents a \emph{success state} wherein the interaction has terminated correctly.
+
+We use the (commutative and associative) binary operators to isolate a branch in a sum: \eg,\ $\contrP = (\sumI{\atomOut{a}\sortT}{\contrPi}) \sumInt \contrPii$ means that $\contrP$ has the form $\SumInt[i \in \mathcal{I}]{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$ and there exists some $i \in \mathcal{I}$ such that $\sumI{\atomOut{a}\sortT}{\contrPi} = \sumI{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$.
+Hereafter, we will omit the $\sort{unit}$ sort and the trailing occurrences of $\cnil$, and we will only consider contracts without free occurrences of recursion variables~$\contrX$.
+
+\tizinote{semantics}
+Semantics: hint
+
+\tizinote{compliance}
+Compliance between contracts ensures their progress, until a
+successful state is reached.  
+
+\tizinote{culpability non la metterei}
+In each non-final state of a contract
+there is exactly one participant who is \emph{culpable}, \ie, expected
+to make the next move. Furthermore, a participant can always recover
+from culpability in a bounded number of steps.
