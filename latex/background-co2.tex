@@ -58,8 +58,129 @@ Semantics: hint
 Compliance between contracts ensures their progress, until a
 successful state is reached.  
 
-\tizinote{culpability non la metterei}
-In each non-final state of a contract
-there is exactly one participant who is \emph{culpable}, \ie, expected
-to make the next move. Furthermore, a participant can always recover
-from culpability in a bounded number of steps.
+
+
+\tizinote{culpability non la metterei} 
+In each non-final state of a
+contract there is exactly one participant who is \emph{culpable}, \ie,
+expected to make the next move. Furthermore, a participant can always
+recover from culpability in a bounded number of steps.
+
+\tizinote{\coco}
+
+
+\tizinote{honesty e/o readyness e model checking maude}
+
+We now address the problem of automatically verifying honesty.
+However, this is a desirable goal, 
+because it alerts system designers before they
+deploy services which could violate contracts at run-time 
+(so possibly incurring in sanctions).
+%
+Since honesty is undecidable in general~\cite{BTZ12coordination}
+(also when restricting to \coco without value-passing), 
+our goal is a verification technique which safely over-approximates it:
+\ie, only honest processes must be classified as such.
+
+A first issue is that~\Cref{def:honesty}
+requires readiness to be preserved in \emph{all} possible contexts,
+and there is an \emph{infinite} number of such contexts.
+Another issue is that, even considering a fixed context 
+and the usual syntactic restrictions required to make
+processes finite-state
+(\eg\ no delimitation/parallel under process definitions),
+value-passing makes the semantics of \coco infinite-state.
+
+To overcome these problems, recently \cite{verifiable} proposed a new approach to check if a \coco process is honest. The idea is to provide an abstract semantics of \coco, obtained in two steps.
+
+\begin{enumerate}
+	
+	\item First, they devise a \emph{value abstraction} $\vabs{}$ 
+	of systems, which replaces each expression $\expE$
+	with a special value $\vabsDummy$.
+	They show that value abstraction is \emph{sound}
+	with respect to honesty: \ie, if $\vabs{\procP}$ is honest,
+	then also the concrete process $\procP$ is honest.
+	Furthermore, value abstraction is \emph{complete} whenever $\procP$
+	contains no conditional expressions, \ie\ if $\procP$ is honest
+	and it is $\cond$-free, then $\vabs{\procP}$ is honest, too.
+	
+	\item Second, they provide a \emph{context abstraction} $\cabs[A]{}$ 
+	of contracts and systems.
+	The abstraction $\cabs[A]{}$ is parameterised by the 
+	participant {\pmv A} the honesty of which is under consideration:
+	basically, $\cabs[A]{\sysS}$ discards the part of the system $\sysS$
+	not governed by {\pmv A}, by over-approximating its moves.
+	%
+	They states that this abstraction is sound, too,
+	and it is also complete for $\ask{}{}$-free processes.
+\end{enumerate}
+
+Summing up, by composing the two abstractions they obtain
+a sound over-approximation of honesty:
+namely, if $\cabs[A]{\vabs{\procP}}$ is honest,
+then the concrete process $\procP$ is honest.
+Conversely, if $\procP$ is honest, $\cond$-free and $\ask{}{}$-free,
+then $\cabs[A]{\vabs{\procP}}$ is honest, too.
+When $\procP$ is a finite state process
+(\ie, without delimitation/parallel under process definitions),
+then the honesty of $\cabs[A]{\vabs{\procP}}$ 
+can be verified by model checking its state space.
+
+A checker for honesty is implemented in Maude \cite{Maude01} and
+described in details in \cite{verifiable}.  This tool is widely used
+into the implementation, both in the Eclipse plug-in and in the Java
+model checker, described respectively in \Cref{chap:co2-to-java} and
+\Cref{chap:java-honesty}.  The checker can be downloaded at
+?? %\citeurl{co2-maude-download-link}% (visited on 2015-08).
+
+
+\tizinote{middleware and java classes}
+
+\section{Contract oriented middleware}\label{sec:co2-middleware}
+The following section briefly describe a \textit{contract-oriented middleware} \cite{CO2middleware} that aims to monitor the interaction between mutually distrusting services and simplify the development of distributed applications.
+A service can \textit{advertise} its contract without worrying about the search of a \textit{compliant} peer to interact with. The middleware carry about the creation of a session and monitors the involved services to detect contract violations.
+
+In order to interact with the middleware, a developer can choose between the RESTFUL API, whose drawback is warring of the order of API calls, and language specific API, that partially guide it to the correct usage. At the time of writing, there is a Java API we used in our implementation (see \Cref{chap:co2-to-java} and \Cref{chap:java-honesty}).
+
+\subsection{Java API}\label{sec:co2-middleware-api}
+
+%\begin{listing}[t]
+%	\inputJavaLineos{code/HelloWorld.txt}
+%	\caption{Hello world.}
+%	\label{lst:hello-world}
+%\end{listing}
+
+This section shows the Java API usage \textit{by example}. 
+
+\Cref{lst:hello-world} shows a simple ``hello world'' example. %
+At lines~\lineno{1-2} the process establishes 
+a connection with the middleware. %
+% In our first example we focus on the basic client APIs that allow to: build a new contract,
+% wait for a compliant one, handle a session.
+The contract (constructed at line~\lineno{4}) advertise that the process wants to send a $\atom{greet}$ing message, and waits to receive the name of the greeted planet.
+
+At line~\lineno{6}, we construct a \incodeType{Private} object, in a state where it has not been advertised to the middleware, yet. %
+As soon as it is advertised  by invoking the \incodeMethod{tell} 
+method  at line~\lineno{7}, its state is changed into \incodeType{Public}.
+At line~\lineno{9}, it waits for a session to be established; 
+so that a \incodeType{Session} object is created, 
+through which the process can interact with the participant at the other endpoint. 
+At line~\lineno{10}, it says \incode{hello}, 
+by sending a message with label $\atom{greet}$. % 
+%
+At line~\lineno{13}, it waits to receive a \incodeType{Message}. %
+If the other participant respects its contract,
+\incodeMethod{getStringValue} at line~\lineno{14} 
+gets the string associated to the $\atom{planet}$ action,
+and the session terminates successfully. %
+Otherwise, the \incodeMethod{waitForReceive} is unblocked,
+and a \incodeType{ContractException} is caught at line~\lineno{12}.
+
+You can download the Java API, the related documentation and some examples at ????%\citeurl{CO2middleware} (visited on 2015-08).
+
+\subsubsection{Contract advertisement}
+The API allows us to advertise a contract only as plain Java \incodeType{String} in two formats: XML and \textit{timed session-types} \cite{Bartoletti15forte}. The former is too verbose and does not strictly comply our session-types definition (see \Cref{def:contracts:syntax}); the latter is a superset of our specification, so we prefer to use it on communicating with the middleware.
+
+In \Cref{chap:co2-to-java} we show an extended version of these API, providing a Java representation for contracts.
+
