@@ -6,3 +6,10 @@
 \item \coco plugin
 \item honesty checker
 \end{itemize}
+
+
+\subsection{From \coco to jva }
+The \coco Eclipse plugin is implemented with Xtext, a framework for development of programming languages and \textit{Domain Specific Languages} (DSL) (\Cref{sec:xtext}), which moreover is part of the Eclipse ecosystem and maintained as an official project. The correct way of define our plugin would be \textit{Xtext plugin}: in fact we create an Xtext project, which provides all the scaffolding classes needed to add special functionality like code validation, syntax highlighting, etc.
+
+
+We define the \coco grammar using the Xtext DSL. Since the generated parser is LL(*), it is simple to write a grammar that fulfils the \coco specifications (although we must careful to not abuse of \textit{backtracking} due to performance reasons). The basic idea is that each rule corresponds to a Java class (instantiated when building the AST) and each declaration inside a rule is mapped to a class field. The implemented Xtext grammars are shown on \Cref{appchap:xtext-grammars}, categorized by type.
