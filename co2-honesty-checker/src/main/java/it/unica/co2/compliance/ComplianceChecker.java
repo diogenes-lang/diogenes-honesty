@@ -5,9 +5,9 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
 import it.unica.co2.api.contract.Contract;
+import it.unica.co2.compliance.lts.LTS;
+import it.unica.co2.compliance.lts.LTSState;
 import it.unica.co2.honesty.HonestyChecker;
-import it.unica.co2.lts.LTS;
-import it.unica.co2.lts.LTSState;
 import it.unica.co2.util.ObjectUtils;
 
 import java.io.IOException;
@@ -77,6 +77,8 @@ public class ComplianceChecker {
 		conf.setTarget(ComplianceChecker.class.getName());
 		conf.setTargetEntry("jpfEntry([Ljava/lang/String;)V");
 		conf.setTargetArgs(new String[]{aAsString, bAsString});
+		
+		conf.setProperty("cg.enumerate_random", "true");
 		
 		if (!conf.getBoolean("compliance.print_SUT_output", false))
 			conf.setProperty("vm.tree_output", "false");

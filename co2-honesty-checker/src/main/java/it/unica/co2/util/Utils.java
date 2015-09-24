@@ -1,6 +1,7 @@
 package it.unica.co2.util;
 
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -8,15 +9,9 @@ import it.unica.co2.api.contract.Action;
 
 public class Utils {
 
-	public static Set<String> toSet(Action[] actions) {
+	public static <T extends Action> Set<T> toSet(T[] actions) {
 		
-		Set<String> result = new HashSet<>();
-		
-		for (Action a : actions) {
-			result.add(a.getName());
-		}
-		
-		return result;
+		return new HashSet<T>(Arrays.asList(actions));
 	}
 	
 	@SuppressWarnings("unchecked")

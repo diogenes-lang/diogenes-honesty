@@ -1,5 +1,9 @@
 package it.unica.co2.compliance;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ExternalAction;
 import it.unica.co2.api.contract.ExternalSum;
@@ -8,10 +12,6 @@ import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Ready;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.util.Utils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Semantics of value-abstract contracts.
@@ -45,33 +45,21 @@ public class ContractSemantics {
 	 * @see ContractTransition
 	 * @see ContractConfiguration
 	 */
-	public static ContractTransition intExt(Participant p, String actionName, InternalSum intSum, ExternalSum extSum) {
-		
-//		InternalAction[] intActions = Arrays.stream(intSum.getActions()).filter( x -> x.getName().equals(actionName)).toArray(InternalAction[]::new);
-//		ExternalAction[] extActions = Arrays.stream(extSum.getActions()).filter( x -> x.getName().equals(actionName)).toArray(ExternalAction[]::new);
-		
-		InternalAction[] intActions = Utils.filter(intSum.getActions(), actionName);
-		ExternalAction[] extActions = Utils.filter(extSum.getActions(), actionName);
-		
-		assert intActions.length==1;
-		assert extActions.length==1;
-		
-		InternalAction a = intActions[0];
-		ExternalAction b = extActions[0];
+	public static ContractTransition intExt(Participant p, InternalAction intAction, ExternalAction extAction) {
 		
 		ContractConfiguration cc = null;
 		
 		if (p==Participant.A) {
-			cc = new ContractConfiguration(a.getNext(), new Ready(b));
+			cc = new ContractConfiguration(intAction.getNext(), new Ready(extAction));
 		}
 		else if (p==Participant.B) {
-			cc = new ContractConfiguration(new Ready(b), a.getNext());
+			cc = new ContractConfiguration(new Ready(extAction), intAction.getNext());
 		}
 		else {
 			throw new AssertionError("unexpected branch");
 		}
 		
-		ContractTransition t = new ContractTransition(p, actionName, cc);
+		ContractTransition t = new ContractTransition(p, intAction.getName(), cc);
 		cc.setPrecedingTransition(t);
 		
 		return t;
@@ -159,22 +147,21 @@ public class ContractSemantics {
 			InternalAction[] intActions = intSum.getActions();
 			ExternalAction[] extActions = extSum.getActions();
 			
-			if (intActions.length!=0) {
-				
 			
-//				Set<String> intActionsSet = Arrays.stream(intActions).map( action -> action.getName() ).collect(Collectors.toSet());
-//				Set<String> extActionsSet = Arrays.stream(extActions).map( action -> action.getName() ).collect(Collectors.toSet());
+			
+			Set<InternalAction> intActionsSet = Utils.toSet(intActions);
+			Set<ExternalAction> extActionsSet = Utils.toSet(extActions);
 
-				Set<String> intActionsSet = Utils.toSet(intActions);
-				Set<String> extActionsSet = Utils.toSet(extActions);
-	
-				for (String intAction : intActionsSet) {
+			for (InternalAction intAction : intActionsSet) {
+				
+				for (ExternalAction extAction : extActionsSet) {
 					
-					if (extActionsSet.contains(intAction)) {
-						result.add( intExt(p, intAction, intSum, extSum) );	// apply int-ext
-					}
+					if (
+							intAction.getName().equals(extAction.getName()) &&		//same name
+							intAction.getSort() == extAction.getSort()				//same sort
+							)
+						result.add( intExt(p, intAction, extAction) );	// apply int-ext
 				}
-			
 			}
 		}
 		

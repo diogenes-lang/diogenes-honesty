@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.Sort;
 import it.unica.co2.compliance.ComplianceChecker;
 
 import org.junit.Test;
@@ -101,4 +102,20 @@ public class ComplianceTest {
 		assertFalse( ComplianceChecker.compliance(A, B) );
 	}
 
+	
+	@Test
+	public void test5() {
+	
+		System.out.println("\n\n-- TEST 1 --");
+		
+		/*
+		 * A = a! int (+) b!
+		 * B = a?  +  b?  +  c?
+		 * 
+		 * A |x| B = true
+		 */
+		Contract A = internalSum().add("a", Sort.INT).add("b");
+		Contract B = externalSum().add("a", Sort.INT).add("b").add("c");
+		assertTrue( ComplianceChecker.compliance(A, B) );
+	}
 }

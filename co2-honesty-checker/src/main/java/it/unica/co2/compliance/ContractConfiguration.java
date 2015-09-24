@@ -7,8 +7,8 @@ import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Ready;
 import it.unica.co2.api.contract.Recursion;
-import it.unica.co2.lts.LTSState;
-import it.unica.co2.lts.LTSTransition;
+import it.unica.co2.compliance.lts.LTSState;
+import it.unica.co2.compliance.lts.LTSTransition;
 import it.unica.co2.util.Utils;
 
 import java.util.Set;
@@ -69,15 +69,9 @@ public class ContractConfiguration implements LTSState {
 			InternalAction[] intActions = ((InternalSum) (a instanceof InternalSum? a:b)).getActions();
 			ExternalAction[] extActions = ((ExternalSum) (a instanceof ExternalSum? a:b)).getActions();
 			
-			if (intActions.length==0)
-				return false;
-			
-//			Set<String> intActionsSet = Arrays.stream(intActions).map( action -> action.getName() ).collect(Collectors.toSet());
-//			Set<String> extActionsSet = Arrays.stream(extActions).map( action -> action.getName() ).collect(Collectors.toSet());
+			Set<InternalAction> intActionsSet = Utils.toSet(intActions);
+			Set<ExternalAction> extActionsSet = Utils.toSet(extActions);
 
-			Set<String> intActionsSet = Utils.toSet(intActions);
-			Set<String> extActionsSet = Utils.toSet(extActions);
-			
 			// intActionsSet ⊆ extActionsSet
 			if (extActionsSet.containsAll(intActionsSet))
 				return true;
