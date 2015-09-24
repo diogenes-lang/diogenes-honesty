@@ -4,7 +4,6 @@ package it.unica.co2.examples;
 import static it.unica.co2.api.contract.ContractFactory.*;
 
 import co2api.ContractException;
-import co2api.Message;
 import co2api.Public;
 import co2api.TST;
 import co2api.TimeExpiredException;
@@ -27,6 +26,7 @@ public class APIExampleProcess extends Participant {
 
 	public static void main(String[] args) throws ContractException {
 		HonestyChecker.isHonest(APIExampleProcess.class);
+//		new APIExampleProcess().run();
 	}
 	
 	@Override

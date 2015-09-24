@@ -115,8 +115,9 @@ public class MaudeListener extends ListenerAdapter {
 	public void classLoaded(VM vm, ClassInfo ci) {
 
 		if (ci.getName().equals(Participant.class.getName())) {
+			
 			if (participantTell == null) {
-				participantTell = ci.getMethod("tell", "(Lit/unica/co2/model/contract/Contract;)Lco2api/Public;", false); 
+				participantTell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/Contract;)Lco2api/Public;", false); 
 			}
 			
 			if (participantWaitForSession == null) {
