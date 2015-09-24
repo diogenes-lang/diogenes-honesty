@@ -84,9 +84,5 @@ public class SimpleBuyer extends Participant {
 We check the honesty with
 ```
 #!java
-@Test
-public void simpleBuyer() {
-	boolean honesty = HonestyChecker.isHonest(SimpleBuyer.class);
-	assertTrue(honesty);
-}
+HonestyChecker.isHonest(SimpleBuyer.class);
 ```
