@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class-diagram version="1.1.8" icons="true" automaticImage="PNG" always-add-relationships="false" generalizations="true" 
   realizations="true" associations="true" dependencies="false" nesting-relationships="true">  
-  <class id="1" language="java" name="it.unica.co2.model.contract.Contract" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/Contract.java" binary="false" 
+  <class id="1" language="java" name="it.unica.co2.api.contract.Contract" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/Contract.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="299" y="177"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
@@ -11,8 +11,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="2" language="java" name="it.unica.co2.model.contract.ContractWrapper" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/ContractWrapper.java" binary="false" 
+  <class id="2" language="java" name="it.unica.co2.api.contract.ContractWrapper" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/ContractWrapper.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="819" y="382"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
@@ -21,8 +21,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="3" language="java" name="it.unica.co2.model.contract.ExternalSum" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/ExternalSum.java" binary="false" 
+  <class id="3" language="java" name="it.unica.co2.api.contract.ExternalSum" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/ExternalSum.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="159" y="578"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
@@ -31,8 +31,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="4" language="java" name="it.unica.co2.model.contract.InternalSum" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/InternalSum.java" binary="false" 
+  <class id="4" language="java" name="it.unica.co2.api.contract.InternalSum" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/InternalSum.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="435" y="578"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
@@ -41,8 +41,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="5" language="java" name="it.unica.co2.model.contract.Recursion" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/Recursion.java" binary="false" 
+  <class id="5" language="java" name="it.unica.co2.api.contract.Recursion" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/Recursion.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="566" y="382"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
@@ -51,8 +51,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="6" language="java" name="it.unica.co2.model.contract.InternalAction" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/InternalAction.java" binary="false" 
+  <class id="6" language="java" name="it.unica.co2.api.contract.InternalAction" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/InternalAction.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="439" y="997"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
@@ -61,8 +61,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="7" language="java" name="it.unica.co2.model.contract.ExternalAction" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/ExternalAction.java" binary="false" 
+  <class id="7" language="java" name="it.unica.co2.api.contract.ExternalAction" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/ExternalAction.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="162" y="997"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
@@ -71,9 +71,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="8" language="java" name="it.unica.co2.model.contract.Action" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/Action.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
+  <class id="8" language="java" name="it.unica.co2.api.contract.Action" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/Action.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="299" y="797"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -81,8 +80,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="9" language="java" name="it.unica.co2.model.contract.Sum" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/Sum.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="9" language="java" name="it.unica.co2.api.contract.Sum" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/Sum.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="298" y="382"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -90,8 +89,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <enumeration id="10" language="java" name="it.unica.co2.model.contract.Sort" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/Sort.java" binary="false" corner="BOTTOM_RIGHT">    
+  <enumeration id="10" language="java" name="it.unica.co2.api.contract.Sort" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/Sort.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="613" y="871"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -99,8 +98,8 @@
       <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </enumeration>  
-  <enumeration id="11" language="java" name="it.unica.co2.model.contract.ActionType" project="co2-honesty-checker" 
-    file="/co2-honesty-checker/src/main/java/it/unica/co2/model/contract/ActionType.java" binary="false" 
+  <enumeration id="11" language="java" name="it.unica.co2.api.contract.ActionType" project="co2-honesty-checker" 
+    file="/co2-honesty-checker/src/main/java/it/unica/co2/api/contract/ActionType.java" binary="false" 
     corner="BOTTOM_RIGHT">    
     <position height="-1" width="-1" x="621" y="740"/>    
     <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
@@ -110,100 +109,108 @@
     </display>  
   </enumeration>  
   <association id="12">    
-    <bendpoint x="13" y="798"/>    
-    <bendpoint x="13" y="177"/>    
-    <end type="SOURCE" refId="8" navigable="false">      
-      <attribute id="13" name="next">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </attribute>      
-      <multiplicity id="14" minimum="0" maximum="1">        
-        <position height="0" width="0" x="0" y="0"/>      
-      </multiplicity>    
-    </end>    
-    <end type="TARGET" refId="1" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <association id="15">    
     <bendpoint x="567" y="177"/>    
     <end type="SOURCE" refId="5" navigable="false">      
-      <attribute id="16" name="contract">        
+      <attribute id="13" name="contract">        
         <position height="16" width="48" x="453" y="158"/>      
       </attribute>      
-      <multiplicity id="17" minimum="0" maximum="1">        
+      <multiplicity id="14" minimum="0" maximum="1">        
         <position height="14" width="23" x="468" y="142"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="1" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <generalization id="18">    
+  <generalization id="15">    
     <end type="SOURCE" refId="7"/>    
     <end type="TARGET" refId="8"/>  
   </generalization>  
+  <association id="16">    
+    <bendpoint x="13" y="798"/>    
+    <bendpoint x="13" y="177"/>    
+    <end type="SOURCE" refId="8" navigable="false">      
+      <attribute id="17" name="next">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="18" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="1" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
   <generalization id="19">    
-    <end type="SOURCE" refId="4"/>    
+    <end type="SOURCE" refId="3"/>    
     <end type="TARGET" refId="9"/>  
   </generalization>  
   <association id="20">    
     <end type="SOURCE" refId="8" navigable="false">      
-      <attribute id="21" name="actionType"/>      
-      <multiplicity id="22" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="11" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="23">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="1"/>  
-  </generalization>  
-  <association id="24">    
-    <end type="SOURCE" refId="8" navigable="false">      
-      <attribute id="25" name="sort"/>      
-      <multiplicity id="26" minimum="0" maximum="1"/>    
+      <attribute id="21" name="sort">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="22" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
     </end>    
     <end type="TARGET" refId="10" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <generalization id="27">    
-    <end type="SOURCE" refId="2"/>    
-    <end type="TARGET" refId="1"/>  
-  </generalization>  
-  <generalization id="28">    
-    <end type="SOURCE" refId="6"/>    
-    <end type="TARGET" refId="8"/>  
-  </generalization>  
-  <generalization id="29">    
-    <end type="SOURCE" refId="3"/>    
-    <end type="TARGET" refId="9"/>  
-  </generalization>  
-  <association id="30">    
+  <association id="23">    
     <bendpoint x="819" y="177"/>    
     <end type="SOURCE" refId="2" navigable="false">      
-      <attribute id="31" name="contract">        
+      <attribute id="24" name="contract">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="32" minimum="0" maximum="1">        
+      <multiplicity id="25" minimum="0" maximum="1">        
         <position height="14" width="23" x="388" y="142"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="1" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <association id="33">    
-    <end type="SOURCE" refId="9" navigable="false">      
-      <attribute id="34" name="actions">        
+  <association id="26">    
+    <end type="SOURCE" refId="8" navigable="false">      
+      <attribute id="27" name="actionType">        
         <position height="0" width="0" x="0" y="0"/>      
       </attribute>      
-      <multiplicity id="35" minimum="0" maximum="2147483647">        
+      <multiplicity id="28" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="11" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="29">    
+    <end type="SOURCE" refId="9" navigable="false">      
+      <attribute id="30" name="actions">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="31" minimum="0" maximum="2147483647">        
         <position height="0" width="0" x="0" y="0"/>      
       </multiplicity>    
     </end>    
     <end type="TARGET" refId="8" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
-  <generalization id="36">    
+  <generalization id="32">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <generalization id="33">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <generalization id="34">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="9"/>  
+  </generalization>  
+  <generalization id="35">    
     <end type="SOURCE" refId="9"/>    
     <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <generalization id="36">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="8"/>  
   </generalization>  
   <classifier-display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
     sort-features="false" accessors="true" visibility="true">    

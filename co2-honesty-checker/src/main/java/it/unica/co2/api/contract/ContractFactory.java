@@ -1,10 +1,4 @@
-package it.unica.co2.model;
-
-import it.unica.co2.model.contract.ContractWrapper;
-import it.unica.co2.model.contract.ExternalSum;
-import it.unica.co2.model.contract.InternalSum;
-import it.unica.co2.model.contract.Recursion;
-
+package it.unica.co2.api.contract;
 
 public class ContractFactory {
 	

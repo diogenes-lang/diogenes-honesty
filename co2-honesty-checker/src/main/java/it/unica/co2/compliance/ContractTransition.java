@@ -1,7 +1,7 @@
 package it.unica.co2.compliance;
 
-import it.unica.co2.lts.LTSState;
-import it.unica.co2.lts.LTSTransition;
+import it.unica.co2.compliance.lts.LTSState;
+import it.unica.co2.compliance.lts.LTSTransition;
 
 public class ContractTransition implements LTSTransition {
 

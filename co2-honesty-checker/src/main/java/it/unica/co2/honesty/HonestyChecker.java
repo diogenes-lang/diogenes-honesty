@@ -13,10 +13,10 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.Statistics.Event;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
 
 public class HonestyChecker {
@@ -85,10 +85,16 @@ public class HonestyChecker {
 		try (
 				InputStream jpfProps = HonestyChecker.class.getResourceAsStream("/jpf.properties");
 				InputStream co2Props = HonestyChecker.class.getResourceAsStream("/co2.properties");
+				InputStream localProps = HonestyChecker.class.getResourceAsStream("/local.properties");
 				)
 		{
 			conf.load(jpfProps);
 			conf.load(co2Props);
+			
+			if (localProps!=null) {		//not mandatory
+				System.out.println("loading local properties");
+				conf.load(localProps);
+			}
 		}
 		catch (IOException e1) {
 			throw new RuntimeException("unable to load the jpf config file", e1);

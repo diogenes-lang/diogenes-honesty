@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
 import it.unica.co2.honesty.HonestyResult;
 import it.unica.co2.honesty.Statistics;
-import it.unica.co2.model.process.Participant;
 
 public class TestExperiments {
 	

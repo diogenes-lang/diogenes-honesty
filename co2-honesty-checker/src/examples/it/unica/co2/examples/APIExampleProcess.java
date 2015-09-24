@@ -1,18 +1,17 @@
 package it.unica.co2.examples;
 
 
-import static it.unica.co2.model.ContractFactory.*;
+import static it.unica.co2.api.contract.ContractFactory.*;
 
 import co2api.ContractException;
-import co2api.Message;
 import co2api.Public;
 import co2api.TST;
 import co2api.TimeExpiredException;
 import it.unica.co2.api.Session2;
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.process.CO2Process;
+import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.process.CO2Process;
-import it.unica.co2.model.process.Participant;
 
 public class APIExampleProcess extends Participant {
 
@@ -27,6 +26,7 @@ public class APIExampleProcess extends Participant {
 
 	public static void main(String[] args) throws ContractException {
 		HonestyChecker.isHonest(APIExampleProcess.class);
+//		new APIExampleProcess().run();
 	}
 	
 	@Override

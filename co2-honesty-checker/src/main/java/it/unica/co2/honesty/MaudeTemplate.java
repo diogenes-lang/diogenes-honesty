@@ -11,10 +11,10 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
+import it.unica.co2.api.contract.Contract;
 import it.unica.co2.generators.MaudeContractGenerator;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
-import it.unica.co2.model.contract.Contract;
 
 
 public class MaudeTemplate {

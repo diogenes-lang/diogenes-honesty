@@ -10,8 +10,8 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
-import it.unica.co2.lts.LTSPropertyViolatedException;
-import it.unica.co2.lts.LTSState;
+import it.unica.co2.compliance.lts.LTSPropertyViolatedException;
+import it.unica.co2.compliance.lts.LTSState;
 import it.unica.co2.util.ObjectUtils;
 
 import java.util.List;
