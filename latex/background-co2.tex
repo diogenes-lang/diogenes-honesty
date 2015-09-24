@@ -1,24 +1,21 @@
 
 \section{Background}\label{sec:background}
 
-\begin{itemize}
-\item session types -- semantics???
-\item agreement -- only hints
-\item co2 -- semantics?
-\item honesty -- only hints?
-\item readyness ???
-\item middleware and its java classes
-\item maude model checking
-\end {itemize}
 
+\subsection{Session types and compliance}
+A contract describes the intended behaviour of \emph{one} of the two
+participants involved in a session.  We use binary session
+types~\cite{Honda98esop} to define contracts.  Session types are terms
+of a process algebra featuring internal/external choice, and
+recursion.
 
-\subsection{Session types}
-We use binary session types~\cite{Honda98esop} to define contracts.
-Session types are terms of a process algebra featuring
-internal/external choice, and recursion. 
-
-We assume a set of \emph{participants} (ranged over by ${\pmv A}, {\pmv B}, \ldots$), a set of \emph{branch labels} (ranged over by $\atom{a}, \atom{b}, \ldots$), and a set of \emph{sorts} ranged over by $\sortT, \sortTi, \ldots$ (e.g.\ \sort{int}, \sort{bool}, \sort{unit}).
-Each sort $\sort{T}$ is populated by a set of values, ranged over by $\valV, \valVi, \ldots$; as usual, we write $\valV: \sortT$ to indicate that $\valV$ has sort~$\sortT$.
+We assume a set of \emph{participants} (ranged over by
+${\pmv A}, {\pmv B}, \ldots$), a set of \emph{branch labels} (ranged
+over by $\atom{a}, \atom{b}, \ldots$), and a set of \emph{sorts}
+ranged over by $\sortT, \sortTi, \ldots$ (e.g.\ \sort{int},
+\sort{bool}, \sort{unit}).  Each sort $\sort{T}$ is populated by a set
+of values, ranged over by $\valV, \valVi, \ldots$; as usual, we write
+$\valV: \sortT$ to indicate that $\valV$ has sort~$\sortT$.
 
 \begin{definition}[Contracts] \label{def:contracts:syntax}
 Contracts are \emph{binary session types}, i.e.\ terms defined by the grammar:
@@ -41,26 +38,59 @@ the labels $\atom[i]{a}$ in the prefixes of each summation are pairwise distinct
 \end{inlinelist}
 \end{definition}
 
-An internal sum $\SumInt[i]{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$ allows a participant to choose one of the labels $\atom[i]{a}$, to pass a value of sort $\sortT[i]$, and then to behave according to the branch $\contrP[i]$.
-Dually, an external sum $\SumExt[i]{\atomIn[i]{a}\sortT[i]}{\contrP[i]}$ allows to wait for the other participant to choose one of the labels $\atom[i]{a}$, and then to receive a value of sort $\sortT[i]$ and behave according to the branch $\contrP[i]$.
+An internal sum $\SumInt[i]{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$
+allows a participant to choose one of the labels $\atom[i]{a}$, to
+pass a value of sort $\sortT[i]$, and then to behave according to the
+branch $\contrP[i]$.  Dually, an external sum
+$\SumExt[i]{\atomIn[i]{a}\sortT[i]}{\contrP[i]}$ allows to wait for
+the other participant to choose one of the labels $\atom[i]{a}$, and
+then to receive a value of sort $\sortT[i]$ and behave according to
+the branch $\contrP[i]$.
 %
-Empty internal/external sums are identified, and they are denoted with $\cnil$, which represents a \emph{success state} wherein the interaction has terminated correctly.
+Empty internal/external sums are identified, and they are denoted with
+$\cnil$, which represents a \emph{success state} wherein the
+interaction has terminated.
 
-We use the (commutative and associative) binary operators to isolate a branch in a sum: \eg,\ $\contrP = (\sumI{\atomOut{a}\sortT}{\contrPi}) \sumInt \contrPii$ means that $\contrP$ has the form $\SumInt[i \in \mathcal{I}]{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$ and there exists some $i \in \mathcal{I}$ such that $\sumI{\atomOut{a}\sortT}{\contrPi} = \sumI{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$.
-Hereafter, we will omit the $\sort{unit}$ sort and the trailing occurrences of $\cnil$, and we will only consider contracts without free occurrences of recursion variables~$\contrX$.
+%We use the (commutative and associative) binary operators to isolate a
+%branch in a sum: \eg,\
+%$\contrP = (\sumI{\atomOut{a}\sortT}{\contrPi}) \sumInt \contrPii$
+%means that $\contrP$ has the form
+%$\SumInt[i \in \mathcal{I}]{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$ and
+%there exists some $i \in \mathcal{I}$ such that
+%$\sumI{\atomOut{a}\sortT}{\contrPi} =
+%\sumI{\atomOut[i]{a}\sortT[i]}{\contrP[i]}$.
+%Hereafter, we will omit the $\sort{unit}$ sort and the trailing
+%occurrences of $\cnil$, and we will only consider contracts without
+%free occurrences of recursion variables~$\contrX$.
 
-\tizinote{Semantics ??}
-Semantics: hint
+To model the behaviour of two participants {\pmv A} and {\pmv B}
+involved in a session, we compose their contracts together into
+$\bic{\contrP}{\contrQ}$.  Their interaction is ruled by an
+operational semantics \tizinote{citare} \Cref{citare}, where the two
+participants alternate in firing actions: in partcular {\pmv A} can
+fire either if she has an internal choice, or if she is committed to a
+branch of an external choice.
+%
+To do that, the syntax of~\Cref{def:contracts:syntax} has been
+extended with the term $\ready{\atomIn{a}\val{v}} \contrSeq
+\contrP$,
+which models a participant ready to input a value $\valV$ in a branch
+with label $\atom{a}$, and then to continue as $\contrP$.  In other
+words, $\ready{\atomIn{a}\val{v}}$ acts as a one-position buffer
+shared between the two participants.
 
-\tizinote{Compliance ??}
-Compliance between contracts ensures their progress, until a
-successful state is reached.  
-
-\tizinote{culpability non la metterei} 
-In each non-final state of a
-contract there is exactly one participant who is \emph{culpable}, \ie,
-expected to make the next move. Furthermore, a participant can always
-recover from culpability in a bounded number of steps.
+%
+%
+Two composed contracts may enjoy the property of
+\emph{compliance}. The intuition is that if a contract $\contrP$ is
+compliant with a contract $\contrQ$, then in all the configurations of
+a computation of $\bic{\contrP}{\contrQ}$, whenever a participant
+wants to choose a branch in an internal sum, the other participant
+always offers the opportunity to do it.  Compliance guarantees
+that % \emph{progress}:
+whenever a computation of %$\bic{\contrP}{\contrQ}$ 
+becomes stuck, then
+both participants have reached the success state $\cnil$.
 
 
 \subsection{The \coco calculus}\label{sec:co2}
@@ -90,61 +120,61 @@ To make symbols lookup easier, we have summarised the syntactic categories
 and some notation in Table~\ref{def:notation}.
 % Some of the symbols defined therein will only be used in later sections.
 
-\begin{table}[t]
-	\footnotesize
-	\hrulefill
-	% \vspace{-10pt}
-	\[
-	\begin{array}{ll}
+% \begin{table}[t]
+% 	\footnotesize
+% 	\hrulefill
+% 	% \vspace{-10pt}
+% 	\[
+% 	\begin{array}{ll}
 	
-	\begin{array}{ll}
-	\pmv{A}, \pmv{B}, \ldots & \text{Participant names}
-	\\
-	\atom{a}, \atom{b}, \ldots & \text{Branch labels}
-	\\
-	\sortT, \sortTi, \ldots & \text{Sorts}
-	\\
-	\valV, \valVi, \ldots & \text{Values}
-	\\
-	\contrP, \contrQ, \ldots & \text{Contracts}
-	\\
-	\gamma, \gammai, \ldots & \text{Contract configurations} 
-	\\
-	%   \contrP \compliant \contrQ & \text{Compliance}
-	%   \\
-	%   \cfrown{\pmv A}{\gamma} & \text{Culpability}
-	%   \\
-	\gamma \cmove{} \gammai & \text{Transition of contracts}
-	\end{array}
+% 	\begin{array}{ll}
+% 	\pmv{A}, \pmv{B}, \ldots & \text{Participant names}
+% 	\\
+% 	\atom{a}, \atom{b}, \ldots & \text{Branch labels}
+% 	\\
+% 	\sortT, \sortTi, \ldots & \text{Sorts}
+% 	\\
+% 	\valV, \valVi, \ldots & \text{Values}
+% 	\\
+% 	\contrP, \contrQ, \ldots & \text{Contracts}
+% 	\\
+% 	\gamma, \gammai, \ldots & \text{Contract configurations} 
+% 	\\
+% 	%   \contrP \compliant \contrQ & \text{Compliance}
+% 	%   \\
+% 	%   \cfrown{\pmv A}{\gamma} & \text{Culpability}
+% 	%   \\
+% 	\gamma \cmove{} \gammai & \text{Transition of contracts}
+% 	\end{array}
 	
-	& \hspace{18pt}
+% 	& \hspace{18pt}
 	
-	\begin{array}{ll}
-	u, v,\ldots \mbox{\hspace{50pt}} & \text{Union of:} 
-	\\
-	s,t, \ldots \in \snames & \text{Session names} 
-	\\
-	x, y, \ldots \in \vars & \text{Variables} 
-	\\
-	\expE, \expEi, \ldots & \text{Expressions} 
-	\\
-	\procP,\procQ,\ldots & \text{Processes} 
-	\\
-	\sysS, \sysSi,\ldots & \text{Systems}
-	\\
-	%   \vabscontrP, \vabssysS, \ldots & \text{Value-abstract contracts/systems}
-	%   \\
-	%   \cabscontrP, \abssysS, \ldots & \text{Context-abstract contracts/systems}
-	%   \\
-	\sysS \pmove{} \sysSi & \text{Transition of systems}
-	\end{array}
+% 	\begin{array}{ll}
+% 	u, v,\ldots \mbox{\hspace{50pt}} & \text{Union of:} 
+% 	\\
+% 	s,t, \ldots \in \snames & \text{Session names} 
+% 	\\
+% 	x, y, \ldots \in \vars & \text{Variables} 
+% 	\\
+% 	\expE, \expEi, \ldots & \text{Expressions} 
+% 	\\
+% 	\procP,\procQ,\ldots & \text{Processes} 
+% 	\\
+% 	\sysS, \sysSi,\ldots & \text{Systems}
+% 	\\
+% 	%   \vabscontrP, \vabssysS, \ldots & \text{Value-abstract contracts/systems}
+% 	%   \\
+% 	%   \cabscontrP, \abssysS, \ldots & \text{Context-abstract contracts/systems}
+% 	%   \\
+% 	\sysS \pmove{} \sysSi & \text{Transition of systems}
+% 	\end{array}
 	
-	\end{array}
-	\]
-	\hrulefill
-	\vspace{-5pt}
-	\caption{Summary of notation.} \label{def:notation}
-\end{table}
+% 	\end{array}
+% 	\]
+% 	\hrulefill
+% 	\vspace{-5pt}
+% 	\caption{Summary of notation.} \label{def:notation}
+% \end{table}
 
 
 \begin{definition}\label{def:co2:syntax}
