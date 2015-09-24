@@ -5,12 +5,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.ExternalAction;
-import it.unica.co2.model.contract.ExternalSum;
-import it.unica.co2.model.contract.InternalAction;
-import it.unica.co2.model.contract.InternalSum;
-import it.unica.co2.model.contract.Recursion;
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.ExternalAction;
+import it.unica.co2.api.contract.ExternalSum;
+import it.unica.co2.api.contract.InternalAction;
+import it.unica.co2.api.contract.InternalSum;
+import it.unica.co2.api.contract.Recursion;
 
 public class MaudeContractGenerator extends AbstractContractGenerator {
 	

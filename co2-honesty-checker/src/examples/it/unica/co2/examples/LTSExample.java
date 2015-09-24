@@ -1,11 +1,12 @@
 package it.unica.co2.examples;
 
 
-import static it.unica.co2.model.ContractFactory.*;
+import static it.unica.co2.api.contract.ContractFactory.*;
+
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.compliance.ContractConfiguration;
 import it.unica.co2.lts.LTS;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.Recursion;
 
 public class LTSExample {
 

@@ -1,10 +1,10 @@
 package it.unica.co2.util;
 
-import it.unica.co2.model.contract.Action;
-
 import java.lang.reflect.Array;
 import java.util.HashSet;
 import java.util.Set;
+
+import it.unica.co2.api.contract.Action;
 
 public class Utils {
 

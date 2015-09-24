@@ -4,10 +4,10 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
+import it.unica.co2.api.contract.Contract;
 import it.unica.co2.honesty.HonestyChecker;
 import it.unica.co2.lts.LTS;
 import it.unica.co2.lts.LTSState;
-import it.unica.co2.model.contract.Contract;
 import it.unica.co2.util.ObjectUtils;
 
 import java.io.IOException;

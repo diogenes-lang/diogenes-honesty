@@ -13,10 +13,10 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.Statistics.Event;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
 
 public class HonestyChecker {

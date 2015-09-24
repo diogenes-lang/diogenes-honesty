@@ -1,0 +1,19 @@
+\begin{thebibliography}{1}
+
+\bibitem{Banavar99dc}
+G.~Banavar, T.~D. Chandra, R.~E. Strom, and D.~C. Sturman.
+\newblock A case for message oriented middleware.
+\newblock In {\em Proc. Distributed Computing}, pages 1--18, 1999.
+
+\bibitem{CO2}
+M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
+\newblock A contract-oriented middleware.
+\newblock In {\em Proc. {FACS}}, 2015.
+\newblock Extended version available at~\url{http://co2.unica.it}.
+
+\bibitem{verifiable}
+M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
+\newblock Verifiable abstractions for contract-oriented systems.
+\newblock 2015.
+
+\end{thebibliography}

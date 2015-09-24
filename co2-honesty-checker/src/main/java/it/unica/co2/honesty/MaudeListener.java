@@ -32,6 +32,10 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.bytecode.InvokeInstruction;
 import it.unica.co2.api.Session2;
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.Sort;
+import it.unica.co2.api.process.CO2Process;
+import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.dto.CO2DataStructures.AskDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoReceiveDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
@@ -45,10 +49,6 @@ import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.Sort;
-import it.unica.co2.model.process.CO2Process;
-import it.unica.co2.model.process.Participant;
 import it.unica.co2.util.ObjectUtils;
 
 public class MaudeListener extends ListenerAdapter {

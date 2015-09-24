@@ -1,10 +1,11 @@
 package it.unica.co2;
 
-import static it.unica.co2.model.ContractFactory.*;
+import static it.unica.co2.api.contract.ContractFactory.*;
 import static org.junit.Assert.*;
+
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.compliance.ComplianceChecker;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.Recursion;
 
 import org.junit.Test;
 
