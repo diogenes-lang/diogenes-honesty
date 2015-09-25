@@ -1,7 +1,7 @@
-package it.unica.co2.model.process;
+package it.unica.co2.api.process;
 
 import it.unica.co2.api.Session2;
-import it.unica.co2.model.contract.Contract;
+import it.unica.co2.api.contract.Contract;
 import it.unica.co2.util.ObjectUtils;
 import co2api.CO2ServerConnection;
 import co2api.ContractException;

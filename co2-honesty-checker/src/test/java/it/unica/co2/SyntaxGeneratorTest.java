@@ -1,10 +1,11 @@
 package it.unica.co2;
 
-import static it.unica.co2.model.ContractFactory.*;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.contract.Recursion;
+import static it.unica.co2.api.contract.ContractFactory.*;
 
 import org.junit.Test;
+
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.Recursion;
 
 
 public class SyntaxGeneratorTest {

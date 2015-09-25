@@ -4,7 +4,7 @@ apply plugin: 'eclipse'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = '1.1.0'
+version = '2.0.0'
 
 sourceSets {
     main {
@@ -17,11 +17,11 @@ sourceSets {
 jar {
 	destinationDir file(".")
 	archiveName "co2-java-honesty-${version}.${extension}"
-	from sourceSets.main.allSource
+	//from sourceSets.main.allSource
 
-	into('lib') {
-        from 'lib'
-    }
+	//into('lib') {
+    //    from 'lib'
+    //}
     
 	from {
 		configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }

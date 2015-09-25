@@ -1,12 +1,12 @@
 package it.unica.co2.examples.voucher;
 
-import static it.unica.co2.model.ContractFactory.*;
+import static it.unica.co2.api.contract.ContractFactory.*;
 
 import co2api.Message;
 import co2api.TST;
 import it.unica.co2.api.Session2;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.process.Participant;
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.process.Participant;
 
 public class VoucherBuyer extends Participant {
 

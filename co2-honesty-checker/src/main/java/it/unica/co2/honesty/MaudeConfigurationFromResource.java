@@ -13,16 +13,18 @@ public class MaudeConfigurationFromResource implements MaudeConfiguration {
 	private final Properties prop = new Properties();
 	
 	public MaudeConfigurationFromResource() {
-		this("/co2.properties");
-	}
-	
-	public MaudeConfigurationFromResource(String resourcePath) {
 
 		try (
-				InputStream in = MaudeConfigurationFromResource.class.getResourceAsStream(resourcePath);
+				InputStream co2Props = MaudeConfigurationFromResource.class.getResourceAsStream("/co2.properties");
+				InputStream localProps = MaudeConfigurationFromResource.class.getResourceAsStream("/local.properties");
 				)
 		{
-			prop.load(in);
+			prop.load(co2Props);
+			
+			if (localProps!=null) {		//not mandatory
+				System.out.println("loading local properties");
+				prop.load(localProps);
+			}
 		}
 		catch (IOException e1) {
 			throw new RuntimeException(e1);

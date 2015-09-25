@@ -1,4 +1,4 @@
-package it.unica.co2.model.contract;
+package it.unica.co2.api.contract;
 
 public class InternalAction extends Action {
 

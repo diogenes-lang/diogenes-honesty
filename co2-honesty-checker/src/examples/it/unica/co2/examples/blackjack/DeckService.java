@@ -1,10 +1,11 @@
 package it.unica.co2.examples.blackjack;
 
-import static it.unica.co2.model.ContractFactory.*;
 import it.unica.co2.api.Session2;
-import it.unica.co2.model.contract.Recursion;
-import it.unica.co2.model.process.CO2Process;
-import it.unica.co2.model.process.Participant;
+import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.process.CO2Process;
+import it.unica.co2.api.process.Participant;
+
+import static it.unica.co2.api.contract.ContractFactory.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

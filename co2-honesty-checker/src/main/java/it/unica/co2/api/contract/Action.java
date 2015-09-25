@@ -1,4 +1,4 @@
-package it.unica.co2.model.contract;
+package it.unica.co2.api.contract;
 
 import java.io.Serializable;
 
@@ -53,7 +53,7 @@ public abstract class Action implements Serializable {
 		int result = 1;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((sort == null) ? 0 : sort.hashCode());
-		result = prime * result + ((actionType == null) ? 0 : actionType.hashCode());
+//		result = prime * result + ((actionType == null) ? 0 : actionType.hashCode());
 		return result;
 	}
 
@@ -63,8 +63,8 @@ public abstract class Action implements Serializable {
 			return true;
 		if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+//		if (getClass() != obj.getClass())
+//			return false;
 		Action other = (Action) obj;
 		if (name == null) {
 			if (other.name != null)
@@ -73,8 +73,8 @@ public abstract class Action implements Serializable {
 			return false;
 		if (sort != other.sort)
 			return false;
-		if (actionType != other.actionType)
-			return false;
+//		if (actionType != other.actionType)
+//			return false;
 		return true;
 	}
 }
