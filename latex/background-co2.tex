@@ -93,7 +93,7 @@ becomes stuck, then
 both participants have reached the success state $\cnil$.
 
 
-\subsection{The \coco calculus}\label{sec:co2}
+\subsection{The \coco calculus and honesty}\label{sec:co2}
 
 We model agents and systems in the process calculus 
 \coco\cite{BZ10lics,BTZ12coordination,BSTZ13forte},
@@ -333,10 +333,11 @@ We will sometimes omit %
 the arguments of $\procX(\vec u, \vec e)$ when they are clear from the context.
 As usual, we omit trailing occurrences of~$\pnil$ in processes.
 
-
-
-
-\tizinote{honesty e/o readyness e model checking maude}
+We call  \emph{obligations} those actions a participant $\pmv A$ at a
+session $s$ in $\sysS$ has to fire.  
+%
+A \coco process is \emph{honest} if, in all possible interactions, it
+always fulfils its contractual obligations.  
 
 We now address the problem of automatically verifying honesty.
 However, this is a desirable goal, 
@@ -344,62 +345,16 @@ because it alerts system designers before they
 deploy services which could violate contracts at run-time 
 (so possibly incurring in sanctions).
 %
-Since honesty is undecidable in general~\cite{BTZ12coordination}
-(also when restricting to \coco without value-passing), 
-our goal is a verification technique which safely over-approximates it:
-\ie, only honest processes must be classified as such.
+Verifying honesty in \coco is undecidable in
+general~\cite{BTZ12coordination}, because one must consider \emph{all}
+possible execution contexts, which are infinite.  Even with usual
+syntactic restrictions required to make processes finite-state (\eg\
+no delimitation/parallel under process definitions) value-passing
+makes the semantics of \coco infinite-state.
 
-A first issue is that~\Cref{def:honesty}
-requires readiness to be preserved in \emph{all} possible contexts,
-and there is an \emph{infinite} number of such contexts.
-Another issue is that, even considering a fixed context 
-and the usual syntactic restrictions required to make
-processes finite-state
-(\eg\ no delimitation/parallel under process definitions),
-value-passing makes the semantics of \coco infinite-state.
-
-To overcome these problems, recently \cite{verifiable} proposed a new approach to check if a \coco process is honest. The idea is to provide an abstract semantics of \coco, obtained in two steps.
-
-\begin{enumerate}
-	
-	\item First, they devise a \emph{value abstraction} $\vabs{}$ 
-	of systems, which replaces each expression $\expE$
-	with a special value $\vabsDummy$.
-	They show that value abstraction is \emph{sound}
-	with respect to honesty: \ie, if $\vabs{\procP}$ is honest,
-	then also the concrete process $\procP$ is honest.
-	Furthermore, value abstraction is \emph{complete} whenever $\procP$
-	contains no conditional expressions, \ie\ if $\procP$ is honest
-	and it is $\cond$-free, then $\vabs{\procP}$ is honest, too.
-	
-	\item Second, they provide a \emph{context abstraction} $\cabs[A]{}$ 
-	of contracts and systems.
-	The abstraction $\cabs[A]{}$ is parameterised by the 
-	participant {\pmv A} the honesty of which is under consideration:
-	basically, $\cabs[A]{\sysS}$ discards the part of the system $\sysS$
-	not governed by {\pmv A}, by over-approximating its moves.
-	%
-	They states that this abstraction is sound, too,
-	and it is also complete for $\ask{}{}$-free processes.
-\end{enumerate}
-
-Summing up, by composing the two abstractions they obtain
-a sound over-approximation of honesty:
-namely, if $\cabs[A]{\vabs{\procP}}$ is honest,
-then the concrete process $\procP$ is honest.
-Conversely, if $\procP$ is honest, $\cond$-free and $\ask{}{}$-free,
-then $\cabs[A]{\vabs{\procP}}$ is honest, too.
-When $\procP$ is a finite state process
-(\ie, without delimitation/parallel under process definitions),
-then the honesty of $\cabs[A]{\vabs{\procP}}$ 
-can be verified by model checking its state space.
-
-A checker for honesty is implemented in Maude \cite{Maude01} and
-described in details in \cite{verifiable}.  This tool is widely used
-into the implementation, both in the Eclipse plug-in and in the Java
-model checker, described respectively in \Cref{chap:co2-to-java} and
-\Cref{chap:java-honesty}.  The checker can be downloaded at
-?? %\citeurl{co2-maude-download-link}% (visited on 2015-08).
+Even thought, adopting the aforementioned restrictions and with an abstraction
+to approximate values, a checker for honesty has been  implemented
+in Maude \cite{Maude01} and described in details in \cite{verifiable}.
 
 
 \subsection{Contract oriented middleware}
