@@ -339,11 +339,6 @@ session $s$ in $\sysS$ has to fire.
 A \coco process is \emph{honest} if, in all possible interactions, it
 always fulfils its contractual obligations.  
 
-We now address the problem of automatically verifying honesty.
-However, this is a desirable goal, 
-because it alerts system designers before they
-deploy services which could violate contracts at run-time 
-(so possibly incurring in sanctions).
 %
 Verifying honesty in \coco is undecidable in
 general~\cite{BTZ12coordination}, because one must consider \emph{all}
@@ -357,64 +352,21 @@ to approximate values, a checker for honesty has been  implemented
 in Maude \cite{Maude01} and described in details in \cite{verifiable}.
 
 
-\subsection{Contract oriented middleware}
-The following section briefly describe a \textit{contract-oriented
-  middleware} \cite{CO2middleware} that aims to monitor the
-interaction between mutually distrusting services and simplify the
-development of distributed applications.  A service can
-\textit{advertise} its contract without worrying about the search of a
-\textit{compliant} peer to interact with. The middleware carry about
-the creation of a session and monitors the involved services to detect
-contract violations.
+\subsection{The contract oriented middleware}
+
+\coco middleware  is a \textit{contract-oriented middleware} \cite{CO2middleware}
+that aims to monitor the interaction between mutually distrusting
+services and simplify the development of distributed applications.
+%
+A service can \textit{advertise} its contract without worrying about
+the search of a \textit{compliant} peer to interact with. The
+middleware carry about the creation of a session and monitors the
+involved services to detect contract violations.
 
 In order to interact with the middleware, a developer can choose
-between the RESTFUL API, whose drawback is warring of the order of API
-calls, and language specific API, that partially guide it to the
-correct usage. At the time of writing, there is a Java API we used in
-our implementation (see \Cref{chap:co2-to-java} and
-\Cref{chap:java-honesty}).
+between the RESTFUL API, or language specific API.
 
-\subsection{Java API}\label{sec:co2-middleware-api}
-
-%\begin{listing}[t]
-%	\inputJavaLineos{code/HelloWorld.txt}
-%	\caption{Hello world.}
-%	\label{lst:hello-world}
-%\end{listing}
-
-This section shows the Java API usage \textit{by example}. 
-
-\Cref{lst:hello-world} shows a simple ``hello world'' example. %
-At lines~\lineno{1-2} the process establishes 
-a connection with the middleware. %
-% In our first example we focus on the basic client APIs that allow to: build a new contract,
-% wait for a compliant one, handle a session.
-The contract (constructed at line~\lineno{4}) advertise that the
-process wants to send a $\atom{greet}$ing message, and waits to
-receive the name of the greeted planet.
-
-At line~\lineno{6}, we construct a \incodeType{Private} object, in a
-state where it has not been advertised to the middleware, yet. %
-As soon as it is advertised by invoking the \incodeMethod{tell} method
-at line~\lineno{7}, its state is changed into \incodeType{Public}.  At
-line~\lineno{9}, it waits for a session to be established; so that a
-\incodeType{Session} object is created, through which the process can
-interact with the participant at the other endpoint.  At
-line~\lineno{10}, it says \incode{hello}, by sending a message with
-label $\atom{greet}$. %
-%
-At line~\lineno{13}, it waits to receive a \incodeType{Message}. %
-If the other participant respects its contract,
-\incodeMethod{getStringValue} at line~\lineno{14} 
-gets the string associated to the $\atom{planet}$ action,
-and the session terminates successfully. %
-Otherwise, the \incodeMethod{waitForReceive} is unblocked,
-and a \incodeType{ContractException} is caught at line~\lineno{12}.
-
-You can download the Java API, the related documentation and some
-examples at ????%\citeurl{CO2middleware} (visited on 2015-08).
-
-\subsubsection{Contract advertisement}
+\tizinote{da spostare avanti}
 The API allows us to advertise a contract only as plain Java
 \incodeType{String} in two formats: XML and \textit{timed
   session-types} \cite{Bartoletti15forte}. The former is too verbose
@@ -422,7 +374,6 @@ and does not strictly comply our session-types definition (see
 \Cref{def:contracts:syntax}); the latter is a superset of our
 specification, so we prefer to use it on communicating with the
 middleware.
-
 In \Cref{chap:co2-to-java} we show an extended version of these API,
 providing a Java representation for contracts.
 

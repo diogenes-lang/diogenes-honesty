@@ -4,49 +4,83 @@
 
 
 \subsection{From \coco to java }
+We implemented a \coco Eclipse plugin which allows to automatically
+translate \coco processes into Java  and Maude processes.
 
-
-\subsection{\coco plugin }
-The \coco Eclipse plugin is implemented with Xtext, a framework for development of programming languages and \textit{Domain Specific Languages} (DSL) (\Cref{sec:xtext}), which moreover is part of the Eclipse ecosystem and maintained as an official project. The correct way of define our plugin would be \textit{Xtext plugin}: in fact we create an Xtext project, which provides all the scaffolding classes needed to add special functionality like code validation, syntax highlighting, etc.
-
-
-We define the \coco grammar using the Xtext DSL. Since the generated parser is LL(*), it is simple to write a grammar that fulfils the \coco specifications (although we must careful to not abuse of \textit{backtracking} due to performance reasons). The basic idea is that each rule corresponds to a Java class (instantiated when building the AST) and each declaration inside a rule is mapped to a class field. The implemented Xtext grammars are shown on \Cref{appchap:xtext-grammars}, categorized by type.
-
-Contracts contain two type of references, one to another contract and one to a recursion definition. The former is resolved between all contracts definition in the same file, except the one containing the reference, while the latter is resolved between all recursions defined into the same contract and \emph{before} the reference.
-
-\Cref{lst:co2-contract-scope} shows an example of scoping. \incode{C1} is a recursive contract, \incode{C2} and \incode{C3} are two semantically equivalent contracts, but the scope of \incode{A} is limited to \incode{C1} so \incode{C2} does not compile.
-Also \incode{C1} and \incode{C4} are semantically equivalent, but the visibility of \incode{C4} is hidden within \incode{C4} itself.
+The \coco Eclipse plugin is implemented with Xtext, a framework for
+development of programming languages and \textit{Domain Specific
+  Languages} (DSL) (\Cref{sec:xtext}).
+%, which moreover is part of the
+%Eclipse ecosystem and maintained as an official project. 
+%The correct
+%way of define our plugin would be \textit{Xtext plugin}: in fact we
+%create an Xtext project, which provides all the scaffolding classes
+%needed to add special functionality like code validation, syntax
+%highlighting, etc.
 %
-This behaviour is a little bit cumbersome and error prone: to avoid problems, you must use the \inlineCoco{rec} construct to define \textit{recursive behaviour} and use references between contracts only for \textit{composition} (manually avoiding loops). The scoping rules try to mitigate this problem, but these ones can be bypassed as shown in \Cref{lst:co2-contract-infinite}. This problem will be resolved in the future.
+%We defined the \coco grammar using the Xtext DSL. Since the generated parser is LL(*), it is simple to write a grammar that fulfils the \coco specifications (although we must careful to not abuse of \textit{backtracking} due to performance reasons). 
+Since the generated parser is LL(*), each DSL rule corresponds to a
+Java class (instantiated when building the AST) and each declaration
+inside a rule is mapped to a class field. 
 
-Processes can contain references to contracts and to other processes, allowing composition and recursive behaviour. Both contracts and processes references are resolved among all the declarations inside the same file.
+\tizinote{che cosa si vuole dire???}
+Contracts may contain two type of references, one to another contract
+and one to a recursion definition. The former is resolved between all
+contracts definition in the same file, except the one containing the
+reference, while the latter is resolved between all recursions defined
+into the same contract and \emph{before} the reference.
+
+Processes may contain references to contracts and to other processes,
+allowing composition and recursive behaviour. Both contracts and
+processes references are resolved among all the declarations inside
+the same file.
+
+%
+\tizinote{e' stata risolta?}  This behaviour is a little bit
+cumbersome and error prone: to avoid problems, you must use the
+\inlineCoco{rec} construct to define \textit{recursive behaviour} and
+use references between contracts only for \textit{composition}
+(manually avoiding loops). The scoping rules try to mitigate this
+problem, but these ones can be bypassed as shown in
+\Cref{lst:co2-contract-infinite}. This problem will be resolved in the
+future.
 
 
-\subsubsection{Code generation}
-The plugin can automatically transform from \coco syntax to Maude and Java languages.
-The code generation happens navigating the AST and translating each \coco construct to the corresponding code of the target language. The Maude representation of \coco is complete, so it is always possible to obtain a translation and verify the honesty of the process using \cite{verifiable}, as explained in \Cref{sec:maude:checker}. On the other hand, as focused in \Cref{sec:untranslatable-code}, not all processes can be translated to Java.
 
-The \inlineCoco{system} declaration is used to produce the target files, \eg \inlineCoco{system} \inlineCoco{com.example.co2.Sample} will produces \textit{Sample.maude} and \textit{Sample.java} inside the directory structure \texttt{/com/example/co2/Sample}.
+The code generation happens navigating the AST and translating each
+\coco construct to the corresponding code of the target language. The
+Maude representation of \coco is complete, so it is always possible to
+obtain a translation and verify the honesty of the process using
+\cite{verifiable}, as explained in \Cref{sec:maude:checker}. On the
+other hand, as focused in \Cref{sec:untranslatable-code}, not all
+processes can be translated to Java.
 
-A complete example of auto-generated code can be found in \Cref{chap:use-cases}.
-
-\subsection{Honesty checker}
-This chapter covers the problem of verifying the honesty of Java applications.
-To achieve this goal, \textit{Java PathFinder} (JPF, discussed in \Cref{sec:jpf}) is used to analyze the Java bytecode and to build up the agent $\sys{\pmv{A}}{\procP}$, represented as a Java object.
-After this building phase, the honesty of the process must be checked in some way: in order to reuse other related work on \coco, the Maude model-checker described in \Cref{sec:maude:checker} is used to verify the honesty.
-
-Note: in this chapter the term \textit{process} is used as the abbreviation of \coco process.
+The \inlineCoco{system} declaration is used to produce the target
+files, \eg \inlineCoco{system} \inlineCoco{com.example.co2.Sample}
+will produces \textit{Sample.maude} and \textit{Sample.java} inside
+the directory structure \texttt{/com/example/co2/Sample}.
 
 
-\subsubsection{Conclusion}
-When JPF backtracks from a state to another one, we must set the correct current prefix, otherwise the new process will be wrongly appended somewhere else. To achieve this goal we must save the \textit{new process} before starting the exploration of a new state, \eg $\fact x {\atomIn{b}} \cocoPlus \fact x {\atomIn{c}}$ in the example above. Storing it in a variable is not enough because another construct could generate other states that will override it. The solution is to adopt a \emph{stack} and read from the top when we need to retrieve the correct value to set the \textit{current prefix}.
+\subsubsection{Honesty Checker}
+To verify the honesty of Java applications, \textit{Java PathFinder}
+(JPF) is used to analyze the Java bytecode and to build up the \coco
+process $\sys{\pmv{A}}{\procP}$.  After this, the \coco process is
+translated into Maude process, and the Maude model-checker described
+in \Cref{sec:maude:checker} is used to verify the honesty.
 
-Summing up, the following data structures are required to build a single process:
-\begin{inlinelist}
-	\item the \textit{current process},
-	\item the \textit{current prefix} and
-	\item a stack to store the \textit{new process} when multiple states were generated (henceforth referred as \textit{choices stack})
-\end{inlinelist}
+
+The previous section describes how a \coco process is reconstructed from a Java program. This process is modelled into classes (\Cref{appchap:java-honesty}) and can be checked for honesty. In order to reuse other related works on \coco, we decide to serialize it as a Maude program and model-check it as described in \Cref{sec:maude:checker}. If the reconstruction is correct, we ensure that the Java program is honest and probably will not fail at runtime.
+
+
+Putting together the phases explained above, from a given
+\incodeType{Participant} we can build the corresponding \coco process
+exploring all significant states and verify its
+honesty. \incodeType{HonestyChecker.}\incodeMethod{isHonest()} is the
+provided method that allows to do so, whose input is
+\incodeType{Class}\generic[Participant]{?} and returns an enumeration
+of \incodeType{HONEST}, \incodeType{DISHONEST} or \incodeType{UNKNOWN}
+(the latter in order to cover unexpected errors occurs).
+
 
 \subsection{Process composition}\label{sec:java-process-composition}
 Process composition allows not only to write more readable processes but also to define a \textit{recursive behaviour}, like
@@ -57,7 +91,18 @@ Process composition allows not only to write more readable processes but also to
 \procP \; = \; (x) \; \tell {} {\contr{c}} \cocoSeq \procX(x) \hspace{30pt}\procX(x) \mmdef \ifte{\expE}{\fact x {\atomOut{a}} \cocoSeq \procX(x) }{ \fact x {\atomOut{b} }}
 \]
 
-In Java, it is equivalent to define a new class that extends \incodeType{CO2Process} (or \incodeType{Participant} if you need to get a new session), create a new instance and invoke its \incodeMethod{run()} method. We catch the creation of the new instance and save the left side of the definition (\eg $\procX(x)$) carrying about the formal parameters declaration. When this instance starts (entering the method \incodeMethod{run()}) the building of the current process suspends and the new one begin. On finished, the invoking process must be restored so its built phase can continue. Note although that it is not possible to append other prefixes to a process invocation (since the \coco does not permit it), but it could be the end part of a branch, as shown in \Cref{lst:if-build-example}
+In Java, it is equivalent to define a new class that extends
+\incodeType{CO2Process} (or \incodeType{Participant} if you need to
+get a new session), create a new instance and invoke its
+\incodeMethod{run()} method. We catch the creation of the new instance
+and save the left side of the definition (\eg $\procX(x)$) carrying
+about the formal parameters declaration. When this instance starts
+(entering the method \incodeMethod{run()}) the building of the current
+process suspends and the new one begin. On finished, the invoking
+process must be restored so its built phase can continue. Note
+although that it is not possible to append other prefixes to a process
+invocation (since the \coco does not permit it), but it could be the
+end part of a branch, as shown in \Cref{lst:if-build-example}
 
 %%%%%\begin{listing}
 %	\inputJavaLineos{code/jpf/if-build-composition.java}
@@ -66,13 +111,32 @@ In Java, it is equivalent to define a new class that extends \incodeType{CO2Proc
 %\end{listing}
 
 
-Under these conditions, it is necessary to use a \emph{stack} to save the data structures listed at the end of the previous section, henceforth referred as \textit{\coco{}Stack} and \textit{\coco{}StackFrame} respectively. When a process starts, a new frame is allocated onto the stack and used to build up the corresponding \coco process; once it terminates, the frame is removed. In order to obtain the full graph of invocations, the callee process takes a reference to the called one, and at the end of the day it is possible to reach each process by starting from the main one.
+Under these conditions, it is necessary to use a \emph{stack} to save
+the data structures listed at the end of the previous section,
+henceforth referred as \textit{\coco{}Stack} and
+\textit{\coco{}StackFrame} respectively. When a process starts, a new
+frame is allocated onto the stack and used to build up the
+corresponding \coco process; once it terminates, the frame is
+removed. In order to obtain the full graph of invocations, the callee
+process takes a reference to the called one, and at the end of the day
+it is possible to reach each process by starting from the main one.
 
 \subsubsection{Recursion}
-Now it is possible to define recursive processes. The problem is that $\text{JVM}_{JPF}$ would concretely execute each process call, so it could throw a \textit{stack-overflow exception} when trying to build our \coco process. At first glance, you could think that if the recursion is \textit{under control} (\ie providing a stop condition) then there will be no problems. However, we must explore all branches of if-statements, so this approach does not work.
+Now it is possible to define recursive processes. The problem is that
+$\text{JVM}_{JPF}$ would concretely execute each process call, so it
+could throw a \textit{stack-overflow exception} when trying to build
+our \coco process. At first glance, you could think that if the
+recursion is \textit{under control} (\ie providing a stop condition)
+then there will be no problems. However, we must explore all branches
+of if-statements, so this approach does not work.
 
-The idea is to detect the recursion and break method call: on \incodeMethod{run()} method invocation, before pushing the \textit{\coco{}StackFrame} onto the stack, we check that it does not contain a frame for the same process. In this way, the recursion is detected and the exploration can stop safely.
-Note that this strategy can lead to unexpected behaviour at runtime if you do not provide a stop condition.
+The idea is to detect the recursion and break method call: on
+\incodeMethod{run()} method invocation, before pushing the
+\textit{\coco{}StackFrame} onto the stack, we check that it does not
+contain a frame for the same process. In this way, the recursion is
+detected and the exploration can stop safely.  Note that this strategy
+can lead to unexpected behaviour at runtime if you do not provide a
+stop condition.
 
 %\begin{listing}
 %	\inputJavaLineos{code/jpf/rec-build-composition.java}
@@ -93,78 +157,28 @@ Note that this strategy can lead to unexpected behaviour at runtime if you do no
 \]	
 
 \subsection{Parallel processes}\label{sec:java-parallel}
-The \coco parallel process maps directly to a Java \incodeType{Thread}, which is executed asynchronously with the callee. We use the method \incodeMethod{parallel(\incodeType{Runnable})} in order to handle its invocation and the start of the new thread. The method is \emph{synchonized}, so there are not overlaps due for example to multiple threads that try to start a parallel process. In this way, when handling the call with JPF, we are sure to make the correct association between the caller and the callee thread.
+The \coco parallel process maps directly to a Java
+\incodeType{Thread}, which is executed asynchronously with the
+callee. We use the method
+\incodeMethod{parallel(\incodeType{Runnable})} in order to handle its
+invocation and the start of the new thread. The method is
+\emph{synchonized}, so there are not overlaps due for example to
+multiple threads that try to start a parallel process. In this way,
+when handling the call with JPF, we are sure to make the correct
+association between the caller and the callee thread.
 
-The execution is now more complicated due to the scheduling of the spawn threads. Fortunately JPF allows to retrieve the thread identifier when handling the method calls, so we extend our data structure using a map of $\langle thread\, ID, \coco{}Stack\rangle$. When a new thread starts, it is linked to the caller and each of them construct its \coco process independently from the other one.  
-
-\subsubsection{Example}
-The example below shows how the \coco process is built by a Java application that spawn new threads.
-
-\begin{mdframed}
-\begin{minted}[fontsize=\footnotesize,linenos]{java}
-//some code A
-
-parallel(()->{
-    //some code B
-});
-
-parallel(()->{
-    //some code C
-});
-
-//some code D
-\end{minted}
-\end{mdframed}
-
-The description is trivial: some code $A$ is executed, then a new thread executes $B$ asynchronously, another one executes $C$, finally the main thread continues with $D$.
-
-The construction is made as follow:
-
-\begin{description}
-	\item[Line \lineno{1}:] \hfill \\
-	current process: $\procFmt{A}$\\
-	current prefix: the last prefix added to $\procFmt{A}$
-	
-	\item[Line \lineno{3}:] \hfill \\
-	new process: $(\,\tau_{m1} \,|\, \tau_1\,)$\\
-	current process (main thread): $\procFmt{A} \cocoSeq (\,\tau_{m1}\, | \,\tau_1\,)$\\
-	current prefix (main thread): $\tau_{m1}$ \\
-	current process (thread-1): $\tau_1$ \hspace{30pt}(single-element sum)\\
-	current prefix (thread-1): $\tau_1$ \\
-	\textbf{Note:} the construction of the process of thread-1 starts immediately.
-	
-	\item[Line \lineno{7}:] \hfill \\
-	new process: $(\,\tau_{m2}\, | \,\tau_2\,)$\\
-	current process (main thread): $\procFmt{A} \cocoSeq (\,\tau_{m1} \cocoSeq (\,\tau_{m2} \,|\, \tau_2\,) \,| \,\tau_1\,)$\\
-	current prefix (main thread): $\tau_{m2}$ \\
-	current process (thread-2): $\tau_2$ \hspace{30pt}(single-element sum)\\
-	current prefix (thread-2): $\tau_2$ \\
-	\textbf{Note:} the construction of the process of thread-2 starts immediately.
-	
-	\item[Line \lineno{9}:] \hfill \\
-	new process: $\procFmt{D}$\\
-	current process (main thread): $\procFmt{A} \cocoSeq (\,\tau_{m1} \cocoSeq (\,\tau_{m2} \cocoSeq \procFmt{D}  \,|\, \tau_2\,) \,| \,\tau_1\,)$\\
-	
-	\item[Line \lineno{4}:] \hfill \\
-	new process: $\procFmt{B}$\\
-	current process (thread-1): $\tau_1 \cocoSeq \procFmt{B}$\\
-	
-	\item[Line \lineno{8}:] \hfill \\
-	new process: $\procFmt{C}$\\
-	current process (thread-2): $\tau_2 \cocoSeq \procFmt{C}$\\
-	
-\end{description}
-
-When the construction is finished, the first \textit{\coco{}Frame} of the main process contains the \coco process
-\[
-		\procP \; = \; \procFmt{A} \cocoSeq (\,\tau \cocoSeq (\,\tau \cocoSeq \procFmt{D}  \,|\, \tau \cocoSeq \procFmt{C}\,) \,| \,\tau \cocoSeq \procFmt{B}\,) \equiv \procFmt{A} \cocoSeq (\, \procFmt{B} \,|\, \procFmt{C}\, | \,\procFmt{D}\,)
-\]
+The execution is now more complicated due to the scheduling of the
+spawn threads. Fortunately JPF allows to retrieve the thread
+identifier when handling the method calls, so we extend our data
+structure using a map of $\langle thread\, ID,
+\coco{}Stack\rangle$.
+When a new thread starts, it is linked to the caller and each of them
+construct its \coco process independently from the other one.
 
 \subsubsection{Construction flaws}
-Unfortunately, we do not care about the actions types. This originates from the impossibility to specify the contract actions types to the middleware and it is not related to other limitations.
+Unfortunately, we do not care about the actions types. This originates
+from the impossibility to specify the contract actions types to the
+middleware and it is not related to other limitations.
 
-\section{Verification phase}\label{sec:verification-phase}
-The previous section describes how a \coco process is reconstructed from a Java program. This process is modelled into classes (\Cref{appchap:java-honesty}) and can be checked for honesty. In order to reuse other related works on \coco, we decide to serialize it as a Maude program and model-check it as described in \Cref{sec:maude:checker}. If the reconstruction is correct, we ensure that the Java program is honest and probably will not fail at runtime.
 
-\section{Honesty verification}
-Putting together the phases explained above, from a given \incodeType{Participant} we can build the corresponding \coco process exploring all significant states and verify its honesty. \incodeType{HonestyChecker.}\incodeMethod{isHonest()} is the provided method that allows to do so, whose input is \incodeType{Class}\generic[Participant]{?} and returns an enumeration of \incodeType{HONEST}, \incodeType{DISHONEST} or \incodeType{UNKNOWN} (the latter in order to cover unexpected errors occurs).
+
