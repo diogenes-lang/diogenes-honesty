@@ -1,4 +1,4 @@
-package it.unica.co2.api.contract;
+package it.unica.co2.api.contract.newapi;
 
 import java.io.Serializable;
 
@@ -6,16 +6,27 @@ public abstract class Action implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String name;
-	private final Sort sort;
-	private Contract next;
-	private final ActionType actionType;
+	protected final String name;
+	protected final Sort sort;
+	protected final ActionType actionType;
+	protected Contract next;
+	
+	public Action(Action a) {
+		this.name = a.getName();
+		this.sort = a.getSort();
+		this.actionType = a.getActionType();
+		this.next = a.getNext()!=null? a.getNext().deepCopy(): null;
+		if (next!=null)
+			next.setPreceeding(this);
+	}
 	
 	public Action(String name, Sort sort, ActionType actionType, Contract next) {
 		this.name = name;
 		this.sort = sort;
 		this.actionType = actionType;
 		this.next = next;
+		if (next!=null)
+			next.setPreceeding(this);
 	}
 
 	public String getName() {
@@ -29,14 +40,9 @@ public abstract class Action implements Serializable {
 	public ActionType getActionType() {
 		return actionType;
 	}
-
 	
 	public abstract <T extends Action> T next(Contract next);
 	
-	public <T extends Action> T next(Contract next, Class<T> clazz) {
-		this.next=next;
-		return clazz.cast(this);
-	}
 	
 	public Contract getNext() {
 		return next;

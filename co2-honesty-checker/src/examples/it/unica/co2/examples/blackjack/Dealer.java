@@ -1,18 +1,18 @@
 package it.unica.co2.examples.blackjack;
 
-import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.Contract;
-import it.unica.co2.api.contract.Recursion;
-import it.unica.co2.api.process.CO2Process;
-import it.unica.co2.api.process.Participant;
-
-import static it.unica.co2.api.contract.ContractFactory.*;
+import static it.unica.co2.api.contract.newapi.ContractFactory.*;
+import static it.unica.co2.api.contract.newapi.ContractFactory.*;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.TST;
 import co2api.TimeExpiredException;
+import it.unica.co2.api.Session2;
+import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.api.contract.newapi.Recursion;
+import it.unica.co2.api.process.CO2Process;
+import it.unica.co2.api.process.Participant;
 
 
 public class Dealer extends Participant {
@@ -35,7 +35,7 @@ public class Dealer extends Participant {
 		/*
 		 * player's contract
 		 */
-		Recursion playerContract = recursion();
+		Recursion playerContract = recursion("x");
 		
 		Contract hit = internalSum().add("card", playerContract).add("lose").add("abort");
 		Contract end = internalSum().add("win").add("lose").add("abort");
@@ -45,7 +45,7 @@ public class Dealer extends Participant {
 		/*
 		 * deck service's contract
 		 */
-		Recursion dealerServiceContract = recursion();
+		Recursion dealerServiceContract = recursion("y");
 		
 		dealerServiceContract.setContract(internalSum().add("next", externalSum().add("card", dealerServiceContract)).add("abort"));
 

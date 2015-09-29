@@ -1,11 +1,11 @@
 package it.unica.co2;
 
-import static it.unica.co2.api.contract.ContractFactory.*;
+import static it.unica.co2.api.contract.newapi.ContractFactory.*;
 
 import org.junit.Test;
 
-import it.unica.co2.api.contract.Contract;
-import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.api.contract.newapi.Recursion;
 
 
 public class SyntaxGeneratorTest {
@@ -30,7 +30,7 @@ public class SyntaxGeneratorTest {
 	@Test
 	public void test2() {
 		
-		Recursion ra = recursion();
+		Recursion ra = recursion("ra");
 		Contract A = internalSum()
 				.add("a")
 				.add("b")
@@ -38,7 +38,7 @@ public class SyntaxGeneratorTest {
 		;
 		ra.setContract(A);
 		
-		Recursion rb = recursion();
+		Recursion rb = recursion("rb");
 		Contract B = externalSum()
 				.add("a")
 				.add("b", rb) 

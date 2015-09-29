@@ -1,22 +1,19 @@
 package it.unica.co2.generators;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
-import it.unica.co2.api.contract.Contract;
-import it.unica.co2.api.contract.ContractWrapper;
-import it.unica.co2.api.contract.ExternalAction;
-import it.unica.co2.api.contract.ExternalSum;
-import it.unica.co2.api.contract.InternalAction;
-import it.unica.co2.api.contract.InternalSum;
-import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.api.contract.newapi.ContractReference;
+import it.unica.co2.api.contract.newapi.ExternalAction;
+import it.unica.co2.api.contract.newapi.ExternalSum;
+import it.unica.co2.api.contract.newapi.InternalAction;
+import it.unica.co2.api.contract.newapi.InternalSum;
+import it.unica.co2.api.contract.newapi.Recursion;
+import it.unica.co2.api.contract.newapi.RecursionReference;
 
 public abstract class AbstractContractGenerator {
 
 	protected Contract contract;
-	private char count = 'x';
-	protected Map<Recursion,String> recursions = new HashMap<Recursion,String>();
 
 	public AbstractContractGenerator() {
 		super();
@@ -26,23 +23,26 @@ public abstract class AbstractContractGenerator {
 		this.contract=c;
 	}
 
-	protected String getRecursionName() {
-		return "x"+count++;
-	}
-
 	public String generate() {
 		return convert(contract);
 	}
 	
 	protected String convert(Contract contract) {
+		
 		if (contract instanceof InternalSum)
 			return convert((InternalSum) contract);
+		
 		else if(contract instanceof ExternalSum)
 			return convert((ExternalSum) contract);
+		
 		else if(contract instanceof Recursion)
 			return convert((Recursion) contract);
-		else if(contract instanceof ContractWrapper)
-			return convert((ContractWrapper) contract);
+		
+		else if(contract instanceof RecursionReference)
+			return convert((RecursionReference) contract);
+		
+		else if(contract instanceof ContractReference)
+			return convert((ContractReference) contract);
 		
 		throw new AssertionError("Unexpected behaviour");
 	}
@@ -57,12 +57,16 @@ public abstract class AbstractContractGenerator {
 	
 	protected abstract String convert(Recursion recursion);
 	
-	protected String convert(ContractWrapper wrapper) {
-		return this.convert(wrapper.getContract());
+	protected String convert(RecursionReference ref) {
+		return ref.getReference().getName();
+	}
+	
+	protected String convert(ContractReference ref) {
+		return ref.getReference().getName();
 	}
 	
 	public Collection<String> getRecursionNames() {
-		return recursions.values();
+		return null;
 	}
 	
 }

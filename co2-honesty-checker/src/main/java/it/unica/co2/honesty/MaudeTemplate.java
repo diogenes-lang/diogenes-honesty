@@ -8,10 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.newapi.Contract;
 import it.unica.co2.generators.MaudeContractGenerator;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
@@ -45,6 +46,7 @@ public class MaudeTemplate {
 		);
 		
 		Collection<String> eqsList = getEqsContract(maudeListener.getContracts());
+		eqsList.addAll(getEqEnvContract(maudeListener.getContracts()));
 		eqsList.addAll(getEqProcess(processName, maudeListener.getCo2Process()));
 		eqsList.addAll(getEqEnv(maudeListener.getEnvProcesses()));
 		
@@ -86,6 +88,7 @@ public class MaudeTemplate {
 			"mod ${moduleName} is\n" + 
 			"\n" + 
 			"    including CO2-ABS-SEM .\n" + 
+			"    including CONTR-EQ .\n" + 
 			"    including STRING .\n" + 
 			"\n" + 
 			"    subsort String < ActName .\n" + 
@@ -151,12 +154,29 @@ public class MaudeTemplate {
 					.replace("${type}", typeVar)
 			);
 		
-		if (contracts.size()>0)
+		// contracts	
+		if (contracts.size()>0) {
+			
+			String contractsDe = contracts.stream().map((x)-> (x+"env")).collect(Collectors.joining(" "));
+			
+			ops.add(		// contracts' env
+					maudeOpsTemplate
+					.replace("${nameList}", "env")
+					.replace("${type}", "CEnv")
+			);
+			
+			ops.add(		// contracts into env
+					maudeOpsTemplate
+					.replace("${nameList}", contractsDe)
+					.replace("${type}", typeVar)
+			);
+			
 			ops.add(
 					maudeOpsTemplate
 					.replace("${nameList}", StringUtils.join(contracts, " "))
 					.replace("${type}", typeUniContract)
 			);
+		}
 		
 		return ops;
 	}
@@ -170,7 +190,7 @@ public class MaudeTemplate {
 			eqs.add(
 					maudeEqTemplate
 					.replace("${name}", c.getKey())
-					.replace("${body}", c.getValue().toMaude())
+					.replace("${body}", "defToRec("+c.getKey()+"env , env)")
 			);
 		}
 		
@@ -198,6 +218,24 @@ public class MaudeTemplate {
 		
 		return sb.toString();
 	}
+	
+	private static List<String> getEqEnvContract(Map<String, Contract> contracts) {
+		List<String> eqs = new ArrayList<String>();
+		
+		if (contracts.size()==0)
+			return eqs;
+		
+		String body = getEnvContracts(contracts);
+		
+		eqs.add("\n    *** env of contracts");
+		eqs.add(
+				maudeEqTemplate
+				.replace("${name}", "env")
+				.replace("${body}", body)
+		);
+		
+		return eqs;
+	}
 
 	private static List<String> getEqEnv(Collection<ProcessDefinitionDS> processes) {
 		List<String> eqs = new ArrayList<String>();
@@ -215,6 +253,23 @@ public class MaudeTemplate {
 		);
 		
 		return eqs;
+	}
+	
+	private static String getEnvContracts(Map<String, Contract> contracts) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("(\n");
+		
+		int i=0;
+		for (Entry<String, Contract> p : contracts.entrySet()) {
+			if (i++>0)
+				sb.append("        &\n");
+			sb.append("        ").append(p.getKey()).append("env =def ").append(p.getValue().toMaude()).append("\n");
+		}
+		
+		sb.append("    )");
+		
+		return sb.toString();
 	}
 	
 	private static String getEnv(Collection<ProcessDefinitionDS> processes) {

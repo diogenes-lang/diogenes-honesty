@@ -5,12 +5,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.unica.co2.api.contract.Contract;
-import it.unica.co2.api.contract.ExternalAction;
-import it.unica.co2.api.contract.ExternalSum;
-import it.unica.co2.api.contract.InternalAction;
-import it.unica.co2.api.contract.InternalSum;
-import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.api.contract.newapi.ExternalAction;
+import it.unica.co2.api.contract.newapi.ExternalSum;
+import it.unica.co2.api.contract.newapi.InternalAction;
+import it.unica.co2.api.contract.newapi.InternalSum;
+import it.unica.co2.api.contract.newapi.Recursion;
 
 public class MiddlewareContractGenerator extends AbstractContractGenerator{
 	
@@ -66,14 +66,8 @@ public class MiddlewareContractGenerator extends AbstractContractGenerator{
 	}
 	
 	@Override
-	protected String convert(Recursion recursion) {
-		if (recursions.containsKey(recursion))
-			return "'"+recursions.get(recursion)+"'";
-		
-		String recName = getRecursionName();
-		recursions.put(recursion, recName);
-		
-		return "REC '"+recName+"' [ "+ this.convert(recursion.getContract()) +" ] ";
+	protected String convert(Recursion rec) {
+		return "REC '"+rec.getName()+"' [ "+ this.convert(rec.getContract()) +" ] ";
 	}
 	
 	

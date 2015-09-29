@@ -1,5 +1,6 @@
 package it.unica.co2.examples;
 
+import static it.unica.co2.api.contract.newapi.ContractFactory.*;
 
 import java.util.Arrays;
 

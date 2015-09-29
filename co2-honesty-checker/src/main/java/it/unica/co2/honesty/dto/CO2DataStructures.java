@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import it.unica.co2.api.contract.Sort;
+import it.unica.co2.api.contract.newapi.Sort;
 import it.unica.co2.generators.MaudeCo2Generator;
 
 public class CO2DataStructures {

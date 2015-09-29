@@ -1,26 +1,20 @@
-package it.unica.co2.api.contract;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
+package it.unica.co2.api.contract.newapi;
 
 public abstract class Sum<T extends Action> extends Contract {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final List<T> actions = new ArrayList<>();
+	protected final T[] actions;
 	private final Class<T> clazz;
 	
 	@SafeVarargs
 	protected Sum(Class<T> clazz, T... actions) {
 		this.clazz = clazz;
-		for (T a : actions)
-			this.actions.add(clazz.cast(a));
+		this.actions=actions;
 	}
 	
-	@SuppressWarnings("unchecked")
 	public T[] getActions() {
-		return actions.toArray((T[]) Array.newInstance(clazz, actions.size()));
+		return actions;
 	}
 	
 	public Sum<T> add(String action) {
@@ -36,12 +30,6 @@ public abstract class Sum<T extends Action> extends Contract {
 	}
 	
 	abstract public Sum<T> add(String action, Sort sort, Contract next);
-	
-	public Sum<T> add(T action) {
-		actions.add(action);
-		return this;
-	}
-	
 	
 	@Override
 	public int hashCode() {

@@ -1,11 +1,7 @@
 package it.unica.co2.examples.blackjack;
 
-import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.Recursion;
-import it.unica.co2.api.process.CO2Process;
-import it.unica.co2.api.process.Participant;
-
-import static it.unica.co2.api.contract.ContractFactory.*;
+import static it.unica.co2.api.contract.newapi.ContractFactory.*;
+import static it.unica.co2.api.contract.newapi.ContractFactory.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,6 +10,10 @@ import java.util.Random;
 
 import co2api.Message;
 import co2api.TST;
+import it.unica.co2.api.Session2;
+import it.unica.co2.api.contract.newapi.Recursion;
+import it.unica.co2.api.process.CO2Process;
+import it.unica.co2.api.process.Participant;
 
 
 public class DeckService extends Participant {
@@ -41,7 +41,7 @@ public class DeckService extends Participant {
 	@Override
 	public void run() {
 		
-		Recursion contract = recursion();
+		Recursion contract = recursion("x");
 		contract.setContract(externalSum().add("next", internalSum().add("card", contract)).add("abort"));
 
 		logger.log("tell and wait");

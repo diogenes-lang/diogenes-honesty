@@ -1,9 +1,13 @@
-package it.unica.co2.api.contract;
+package it.unica.co2.api.contract.newapi;
 
 
 public class ExternalAction extends Action {
 
 	private static final long serialVersionUID = 1L;
+	
+	public ExternalAction(ExternalAction a) {
+		super(a);
+	}
 	
 	public ExternalAction( String name, Sort sort, Contract next) {
 		super(name, sort, ActionType.EXTERNAL, next);
@@ -12,6 +16,8 @@ public class ExternalAction extends Action {
 	@SuppressWarnings("unchecked")
 	@Override
 	public ExternalAction next(Contract next) {
-		return next(next, ExternalAction.class);
+		this.next=next;
+		next.setPreceeding(this);
+		return this;
 	}
 }

@@ -1,13 +1,12 @@
 package it.unica.co2.examples;
 
-import static it.unica.co2.api.contract.ContractFactory.*;
-
+import static it.unica.co2.api.contract.newapi.ContractFactory.*;
 import co2api.ContractException;
 import co2api.Message;
 import co2api.TST;
 import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.Contract;
-import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.api.contract.newapi.Recursion;
 import it.unica.co2.api.process.Participant;
 
 public class ProcessCompositionExample {
@@ -62,7 +61,7 @@ public class ProcessCompositionExample {
 		@Override
 		public void run() {
 			
-			Recursion rec = recursion().setContract(internalSum().add("a"));
+			Recursion rec = recursion("x").setContract(internalSum().add("a"));
 			Contract C = externalSum().add("request", internalSum().add("a", rec).add("b"));
 			
 			Session2<TST> session = tellAndWait(C);

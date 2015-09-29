@@ -1,8 +1,5 @@
 package it.unica.co2.api.process;
 
-import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.Contract;
-import it.unica.co2.util.ObjectUtils;
 import co2api.CO2ServerConnection;
 import co2api.ContractException;
 import co2api.Private;
@@ -10,6 +7,9 @@ import co2api.Public;
 import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
+import it.unica.co2.api.Session2;
+import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.util.ObjectUtils;
 
 
 
