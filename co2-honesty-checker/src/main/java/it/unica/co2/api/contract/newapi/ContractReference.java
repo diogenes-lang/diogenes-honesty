@@ -17,7 +17,7 @@ public class ContractReference extends Contract {
 
 	@Override
 	public String toString() {
-		return reference.getName();
+		return "cref["+reference.getName() +"-"+reference.hashCode()+"]";
 	}
 
 	@Override

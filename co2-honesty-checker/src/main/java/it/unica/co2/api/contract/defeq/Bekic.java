@@ -15,37 +15,70 @@ import it.unica.co2.api.contract.newapi.RecursionReference;
 public class Bekic {
 
 	private Map<String, ContractDefinition> env = new HashMap<String, ContractDefinition>();
+	private Map<ContractDefinition,ContractDefinition> references = new HashMap<>();	// map old/new references
 	
 	boolean bekicApplied = false;
 	
+	/**
+	 * Transform the given contracts using the Bekic theorem. All <code>ContractReference</code>s
+	 * are replaced by <Recursion> definitions.
+	 * 
+	 * @param contracts 
+	 * 			all the contracts to be converted
+	 */
 	public Bekic(ContractDefinition... contracts) {
 		
 		for (ContractDefinition c : contracts) {
 			
-			ContractDefinition newDef = c;//new ContractDefinition(c.getName());
-//			
-			this.env.put(c.getName(), newDef);
-//		
-//			for (ContractDefinition c1 : contracts)
-//				new ContractExplorer().findall(
-//						c1.getContract(), 
-//						ContractReference.class, 
-//						(x)->(x.getReference()==c), 
-//						(x)->{x.getPreceeding().next(new ContractReference(newDef));}
-//						);
-//			
-//			newDef.setContract(c.getContract().deepCopy());
+			// craete new definition
+			ContractDefinition newDef = new ContractDefinition(c.getName());
+			newDef.setContract(c.getContract().deepCopy());		// ContractReference(s) are not deep-copied (infinite loop)
+			
+			// store it into env
+			this.env.put(newDef.getName(), newDef);
+			
+			// save the old and the new object (to fix references later)
+			references.put(c, newDef);	// c is replaced by newDef
+		}
+		
+		// fix all other contracts into the new env
+		for (ContractDefinition cEnv : env.values()) {
+			new ContractExplorer().findall(
+					cEnv.getContract(), 
+					ContractReference.class, 
+					(x)->(true), 
+					(x)->{
+						ContractDefinition newDef = references.get(x.getReference());	//get the new definition
+						
+						if (newDef==null)
+							throw new IllegalArgumentException("the reference "+x+" was not found");
+						
+//						System.out.println("changing others: "+x.getReference().hashCode()+" -> "+newDef.hashCode());
+						x.getPreceeding().next(new ContractReference(newDef));
+					}
+				);
 		}
 	}
 	
 	public ContractDefinition[] defToRec() {
 		if (!bekicApplied)
-			bekic();
+			apply();
 		return env.values().toArray(new ContractDefinition[]{});
 	}
 	
-	public void bekic() {
-		printEnv();
+	public ContractDefinition defToRec(ContractDefinition c) {
+		if (!references.containsKey(c)) {
+			throw new IllegalStateException("the environment does not contain the given contract");
+		}
+		
+		if (!bekicApplied)
+			apply();
+		
+		return env.get(references.get(c));
+	}
+	
+	public void apply() {
+//		printEnv();
 		List<String> contracts = new ArrayList<>(env.keySet());
 		
 		for (String cName : contracts) {
@@ -151,7 +184,7 @@ public class Bekic {
 					);	
 		}
 		
-		printEnv();
+//		printEnv();
 		
 	}
 	

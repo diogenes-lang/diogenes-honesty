@@ -36,7 +36,7 @@ public class ContractDefinition {
 	
 	@Override
 	public String toString() {
-		return name +" = "+ contract.toString();
+		return "DEF ["+name +"-"+hashCode()+"] = "+ contract.toString();
 	}
 
 }

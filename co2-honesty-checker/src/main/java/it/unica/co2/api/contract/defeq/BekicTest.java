@@ -70,6 +70,47 @@ public class BekicTest {
 		checkEnv(env);
 	}
 	
+	@Test
+	public void testIllegalArgument() {
+		
+		System.out.println("+++++++++++ TEST 4 ++++++++++++");
+		
+		ContractDefinition c1 = def("c1");
+		ContractDefinition c2 = def("c2");
+		
+		c1.setContract(internalSum().add("a", ref(c1)).add("b", ref(c2)));
+		c2.setContract(internalSum().add("c", ref(c1)).add("d", ref(c2)));
+		
+		try {
+			new Bekic(c1).apply();
+			fail();
+		}
+		catch (IllegalArgumentException e) {
+			// invalid environment
+		}
+		catch (Exception e) {
+			fail();
+		}
+	}
+	
+	@Test
+	public void testNoSideEffect() {
+		
+		System.out.println("+++++++++++ TEST 4 ++++++++++++");
+		
+		ContractDefinition c1 = def("c1");
+		ContractDefinition c2 = def("c2");
+		
+		c1.setContract(internalSum().add("a", ref(c1)).add("b", ref(c2)));
+		c2.setContract(internalSum().add("c", ref(c1)).add("d", ref(c2)));
+		
+		Bekic bekic = new Bekic(c1, c2);
+		bekic.apply();
+		
+		assertTrue(c1!=bekic.defToRec(c1));
+		assertTrue(c2!=bekic.defToRec(c2));
+	}
+	
 	
 	private void checkEnv(ContractDefinition...  cDefs) {
 		
