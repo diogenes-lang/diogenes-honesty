@@ -2,6 +2,7 @@ package it.unica.co2.api.contract.defeq;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,9 +21,22 @@ public class Bekic {
 	
 	boolean bekicApplied = false;
 	
-	public Bekic(Set<ContractDefinition> contracts) {
-		this(contracts.toArray(new ContractDefinition[]{}));
+	
+	/**
+	 * Returns an Bekic instance. The environment is derived from the given contracts.
+	 * @param contracts
+	 * @return
+	 */
+	public static Bekic getInstance(ContractDefinition... contracts) {
+		
+		Set<ContractDefinition> env = new HashSet<>();
+		
+		for (ContractDefinition c : contracts)
+			env.addAll( ContractExplorer.getAllReferences(c) );
+		
+		return new Bekic(env.toArray(new ContractDefinition[]{}));
 	}
+	
 	
 	/**
 	 * Transform the given contracts using the Bekic theorem. All <code>ContractReference</code>s
@@ -31,7 +45,7 @@ public class Bekic {
 	 * @param contracts 
 	 * 			all the contracts to be converted
 	 */
-	public Bekic(ContractDefinition... contracts) {
+	private Bekic(ContractDefinition... contracts) {
 		
 		for (ContractDefinition c : contracts) {
 			
@@ -67,7 +81,8 @@ public class Bekic {
 	
 	public ContractDefinition[] defToRec() {
 		if (!bekicApplied)
-			apply();
+			applyBekicTheorem();
+		
 		return env.values().toArray(new ContractDefinition[]{});
 	}
 	
@@ -77,12 +92,12 @@ public class Bekic {
 		}
 		
 		if (!bekicApplied)
-			apply();
+			applyBekicTheorem();
 		
 		return env.get(references.get(c));
 	}
 	
-	public void apply() {
+	private void applyBekicTheorem() {
 //		printEnv();
 		List<String> contracts = new ArrayList<>(env.keySet());
 		
@@ -194,6 +209,7 @@ public class Bekic {
 	}
 	
 	
+	@SuppressWarnings("unused")
 	private void printEnv() {
 		
 		System.out.println("------ env ------");
