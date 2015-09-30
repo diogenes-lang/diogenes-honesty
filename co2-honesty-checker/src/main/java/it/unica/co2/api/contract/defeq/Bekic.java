@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import it.unica.co2.api.contract.newapi.ContractDefinition;
 import it.unica.co2.api.contract.newapi.ContractReference;
@@ -18,6 +19,10 @@ public class Bekic {
 	private Map<ContractDefinition,ContractDefinition> references = new HashMap<>();	// map old/new references
 	
 	boolean bekicApplied = false;
+	
+	public Bekic(Set<ContractDefinition> contracts) {
+		this(contracts.toArray(new ContractDefinition[]{}));
+	}
 	
 	/**
 	 * Transform the given contracts using the Bekic theorem. All <code>ContractReference</code>s
@@ -43,7 +48,7 @@ public class Bekic {
 		
 		// fix all other contracts into the new env
 		for (ContractDefinition cEnv : env.values()) {
-			new ContractExplorer().findall(
+			ContractExplorer.findall(
 					cEnv.getContract(), 
 					ContractReference.class, 
 					(x)->(true), 
@@ -95,7 +100,7 @@ public class Bekic {
 			
 			ContractDefinition c = env.get(cName);
 			
-			new ContractExplorer().findall(
+			ContractExplorer.findall(
 					c.getContract(), 
 					ContractReference.class, 
 					(x)->{
@@ -115,14 +120,14 @@ public class Bekic {
 			
 			ContractDefinition c = env.get(cName);
 			
-			new ContractExplorer().findall(
+			ContractExplorer.findall(
 					c.getContract(), 
 					ContractReference.class, 
 					(x)->{
 						return true;
 						},
 					(ref)->{
-						List<Recursion> recs = new ContractExplorer().findall(
+						List<Recursion> recs = ContractExplorer.findall(
 								c.getContract(), 
 								Recursion.class,
 								(rec)->{return rec.getName().equals(ref.getReference().getName());},
@@ -148,14 +153,14 @@ public class Bekic {
 			
 			ContractDefinition c = env.get(cName);
 			
-			new ContractExplorer().findall(
+			ContractExplorer.findall(
 					c.getContract(), 
 					Recursion.class, 
 					(x)->{
 						return true;
 						},
 					(rec)->{
-						List<RecursionReference> lst = new ContractExplorer().findall(
+						List<RecursionReference> lst = ContractExplorer.findall(
 								c.getContract(), 
 								RecursionReference.class,
 								(ref)->{return rec==ref.getReference();},
@@ -197,5 +202,6 @@ public class Bekic {
 		}
 		System.out.println("-----------------");
 	}
+	
 	
 }

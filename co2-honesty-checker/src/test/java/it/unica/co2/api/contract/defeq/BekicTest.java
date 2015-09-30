@@ -14,7 +14,7 @@ public class BekicTest {
 
 	@Test
 	public void test() {
-		System.out.println("+++++++++++ TEST ++++++++++++");
+		System.out.println("+++++++++++ TEST   ++++++++++++");
 		ContractDefinition c1 = def("c1");
 		c1.setContract(internalSum().add("a").add("b", ref(c1)));
 		
@@ -116,8 +116,9 @@ public class BekicTest {
 		
 		for (ContractDefinition c : cDefs) {
 			// contractReference-free
-			assertTrue( new ContractExplorer().findall(c.getContract(), ContractReference.class).isEmpty());
+			assertTrue( ContractExplorer.findall(c.getContract(), ContractReference.class).isEmpty());
 		}
 	}
+	
 	
 }

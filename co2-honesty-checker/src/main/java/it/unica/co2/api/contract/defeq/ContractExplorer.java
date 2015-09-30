@@ -8,6 +8,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.api.contract.newapi.ContractDefinition;
+import it.unica.co2.api.contract.newapi.ContractReference;
 import it.unica.co2.api.contract.newapi.ExternalAction;
 import it.unica.co2.api.contract.newapi.ExternalSum;
 import it.unica.co2.api.contract.newapi.InternalAction;
@@ -17,20 +19,17 @@ import it.unica.co2.api.contract.newapi.Recursion;
 
 public class ContractExplorer {
 
-	private Set<Contract> visited = new HashSet<>();
-	
-	
-	public <T extends Contract> List<T> findall(Contract contract, Class<T> clazz) {
+	public static <T extends Contract> List<T> findall(Contract contract, Class<T> clazz) {
 		return findall(contract, clazz, (x)->{ return true;}, (x)->{});
 	}
 	
-	public <T extends Contract> List<T> findall(Contract contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
+	public static <T extends Contract> List<T> findall(Contract contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
 		List<T> contracts = new ArrayList<>();
-		findall(contract, clazz, predicate, contracts, consumer);
+		findall(new HashSet<>(), contract, clazz, predicate, contracts, consumer);
 		return contracts;
 	}
 	
-	private <T extends Contract> void findall(Contract contract, Class<T> clazz, Predicate<T> predicate, List<T> contracts, Consumer<T> consumer) {
+	private static <T extends Contract> void findall(Set<Contract> visited, Contract contract, Class<T> clazz, Predicate<T> predicate, List<T> contracts, Consumer<T> consumer) {
 		
 		if (contract==null)
 			return;
@@ -48,20 +47,45 @@ public class ContractExplorer {
 		//continue searching
 		if (contract instanceof InternalSum)
 			for (InternalAction a : ((InternalSum) contract).getActions()) {
-				findall(a.getNext(), clazz, predicate, contracts, consumer);
+				findall(visited, a.getNext(), clazz, predicate, contracts, consumer);
 			}
 		
 		else if(contract instanceof ExternalSum)
 			for (ExternalAction a1 : ((ExternalSum) contract).getActions()) {
-				findall(a1.getNext(), clazz, predicate, contracts, consumer);
+				findall(visited, a1.getNext(), clazz, predicate, contracts, consumer);
 			}
 		
 		else if(contract instanceof Recursion)
-			findall(((Recursion) contract).getContract(), clazz, predicate, contracts, consumer);
-		
-//		else if(contract instanceof ContractReference)
-//			findall(((ContractReference) contract).getReference().getContract(), clazz, predicate, contracts, consumer);
+			findall(visited, ((Recursion) contract).getContract(), clazz, predicate, contracts, consumer);
 		
 	}
 
+	
+	public static Set<ContractDefinition> getAllReferences(ContractDefinition c) {
+		
+		Set<ContractDefinition> accumulator = new HashSet<>();
+		getReferences(c, accumulator);
+		
+		return accumulator;
+	}
+	
+	private static void getReferences(ContractDefinition c, Set<ContractDefinition> acc) {
+		
+		List<ContractReference> refs = ContractExplorer.findall(
+				c.getContract(), 
+				ContractReference.class
+			);
+		
+		for (ContractReference cRef : refs) {
+			
+			if (acc.contains(cRef.getReference())) {
+				// acc contains cRef.getReference() and all its references
+			}
+			else {
+				acc.add(cRef.getReference());
+				getReferences(cRef.getReference(), acc);
+			}
+		}
+		
+	}
 }
