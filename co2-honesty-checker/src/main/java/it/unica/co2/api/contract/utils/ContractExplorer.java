@@ -1,4 +1,4 @@
-package it.unica.co2.api.contract.defeq;
+package it.unica.co2.api.contract.utils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -7,14 +7,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import it.unica.co2.api.contract.newapi.Contract;
-import it.unica.co2.api.contract.newapi.ContractDefinition;
-import it.unica.co2.api.contract.newapi.ContractReference;
-import it.unica.co2.api.contract.newapi.ExternalAction;
-import it.unica.co2.api.contract.newapi.ExternalSum;
-import it.unica.co2.api.contract.newapi.InternalAction;
-import it.unica.co2.api.contract.newapi.InternalSum;
-import it.unica.co2.api.contract.newapi.Recursion;
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.ContractReference;
+import it.unica.co2.api.contract.ExternalAction;
+import it.unica.co2.api.contract.ExternalSum;
+import it.unica.co2.api.contract.InternalAction;
+import it.unica.co2.api.contract.InternalSum;
+import it.unica.co2.api.contract.Recursion;
 
 
 public class ContractExplorer {

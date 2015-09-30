@@ -1,9 +1,10 @@
 package it.unica.co2.examples;
 
-import static it.unica.co2.api.contract.newapi.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.*;
+
 import co2api.TST;
 import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
 
 public class DISHONEST extends Participant {

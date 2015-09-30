@@ -1,16 +1,15 @@
 package it.unica.co2.examples.plugin;
 
-import static it.unica.co2.api.contract.newapi.ContractFactory.*;
-
+import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.TST;
 import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.newapi.ContractDefinition;
-import it.unica.co2.api.contract.newapi.Recursion;
-import it.unica.co2.api.contract.newapi.Sort;
+import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
 

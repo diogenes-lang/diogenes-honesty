@@ -1,4 +1,4 @@
-package it.unica.co2.api.contract.newapi;
+package it.unica.co2.api.contract;
 
 
 public class RecursionReference extends Contract {

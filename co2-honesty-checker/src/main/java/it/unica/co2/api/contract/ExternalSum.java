@@ -1,4 +1,4 @@
-package it.unica.co2.api.contract.newapi;
+package it.unica.co2.api.contract;
 
 import java.util.Arrays;
 

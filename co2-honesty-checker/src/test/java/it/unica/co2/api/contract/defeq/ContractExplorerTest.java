@@ -1,6 +1,6 @@
 package it.unica.co2.api.contract.defeq;
 
-import static it.unica.co2.api.contract.newapi.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -8,9 +8,10 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import it.unica.co2.api.contract.newapi.Contract;
-import it.unica.co2.api.contract.newapi.ContractDefinition;
-import it.unica.co2.api.contract.newapi.ContractReference;
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.ContractReference;
+import it.unica.co2.api.contract.utils.ContractExplorer;
 
 
 

@@ -1,4 +1,4 @@
-package it.unica.co2.api.contract.defeq;
+package it.unica.co2.api.contract.bekic;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -6,12 +6,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
-import it.unica.co2.api.contract.newapi.ContractDefinition;
-import it.unica.co2.api.contract.newapi.ContractReference;
-import it.unica.co2.api.contract.newapi.Recursion;
-import it.unica.co2.api.contract.newapi.RecursionReference;
+import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.ContractReference;
+import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.RecursionReference;
+import it.unica.co2.api.contract.utils.ContractExplorer;
+
+import java.util.Set;
 
 
 public class Bekic {

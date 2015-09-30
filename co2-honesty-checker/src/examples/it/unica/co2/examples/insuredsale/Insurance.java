@@ -1,11 +1,12 @@
 package it.unica.co2.examples.insuredsale;
 
-import static it.unica.co2.api.contract.newapi.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.*;
+
 import co2api.ContractException;
 import co2api.Message;
 import co2api.TST;
 import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.newapi.Contract;
+import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
 
 
