@@ -41,7 +41,7 @@ public class DeckService extends Participant {
 	public void run() {
 		
 		Recursion contract = recursion("x");
-		contract.setContract(externalSum().add("next", internalSum().add("card", contract)).add("abort"));
+		contract.setContract(externalSum().add("next", internalSum().add("card", recRef(contract))).add("abort"));
 
 		logger.log("tell and wait");
 		Session2<TST> session = tellAndWait(contract);

@@ -27,7 +27,7 @@ public class Player extends Participant {
 
 		Recursion contract = recursion("x");
 		
-		Contract hit = externalSum().add("card", contract).add("lose").add("abort");
+		Contract hit = externalSum().add("card", recRef(contract)).add("lose").add("abort");
 		Contract end = externalSum().add("win").add("lose").add("abort");
 		
 		contract.setContract(internalSum().add("hit", hit).add("stand", end));

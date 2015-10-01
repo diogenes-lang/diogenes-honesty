@@ -27,7 +27,7 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 	
 	@Override
 	protected String convert(InternalSum contract) {
-		if (contract.getActions().length==0)
+		if (contract.getActions().size()==0)
 			return "0";
 		
 		List<String> actions = new ArrayList<>();
@@ -39,7 +39,7 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 	
 	@Override
 	protected String convert(ExternalSum contract) {
-		if (contract.getActions().length==0)
+		if (contract.getActions().size()==0)
 			return "0";
 			
 		List<String> actions = new ArrayList<>();
@@ -100,7 +100,7 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 	@Override
 	protected String convert(Recursion rec) {
 		
-		return "rec "+rec.getName()+"["+hashCode()+"] . ( "+ this.convert(rec.getContract()) +" ) ";
+		return "rec "+rec.getName()+" . ( "+ this.convert(rec.getContract()) +" ) ";
 	}
 	
 }

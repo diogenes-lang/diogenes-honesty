@@ -1,19 +1,21 @@
 package it.unica.co2.api.contract;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public abstract class Sum<T extends Action> extends Contract {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final T[] actions;
-	private final Class<T> clazz;
+	protected final List<T> actions = new ArrayList<>();;
 	
 	@SafeVarargs
-	protected Sum(Class<T> clazz, T... actions) {
-		this.clazz = clazz;
-		this.actions=actions;
+	protected Sum(T... actions) {
+		this.actions.addAll(Arrays.asList(actions));
 	}
 	
-	public T[] getActions() {
+	public List<T> getActions() {
 		return actions;
 	}
 	

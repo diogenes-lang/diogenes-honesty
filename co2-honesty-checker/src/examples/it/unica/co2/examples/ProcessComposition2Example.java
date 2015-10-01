@@ -47,8 +47,7 @@ public class ProcessComposition2Example {
 		public void run() {
 			
 			Recursion rec = recursion("x");
-			Contract recBody = externalSum().add("a", rec).add("b", rec);
-			rec.setContract(recBody);
+			rec.setContract(externalSum().add("a", recRef(rec)).add("b", recRef(rec)));
 			
 			Contract C = externalSum().add("request", rec);
 			

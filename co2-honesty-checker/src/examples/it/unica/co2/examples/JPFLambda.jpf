@@ -1,0 +1,8 @@
+
+target = it.unica.co2.examples.JPFLambda
+
+native_classpath+=./bin
+classpath+=./bin/
+sourcepath+=./src/
+
+cg.enumerate_random = true

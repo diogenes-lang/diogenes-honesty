@@ -20,7 +20,11 @@ import it.unica.co2.api.contract.Recursion;
 public class ContractExplorer {
 
 	public static <T extends Contract> List<T> findall(Contract contract, Class<T> clazz) {
-		return findall(contract, clazz, (x)->{ return true;}, (x)->{});
+		return findall(contract, clazz, (x)->{});
+	}
+	
+	public static <T extends Contract> List<T> findall(Contract contract, Class<T> clazz, Consumer<T> consumer) {
+		return findall(contract, clazz, (x)->{ return true;}, consumer);
 	}
 	
 	public static <T extends Contract> List<T> findall(Contract contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
@@ -57,6 +61,9 @@ public class ContractExplorer {
 		
 		else if(contract instanceof Recursion)
 			findall(visited, ((Recursion) contract).getContract(), clazz, predicate, contracts, consumer);
+		
+		else if(contract instanceof ContractReference)
+			findall(visited, ((ContractReference) contract).getReference().getContract(), clazz, predicate, contracts, consumer);
 		
 	}
 

@@ -36,7 +36,7 @@ public class Dealer extends Participant {
 		 */
 		Recursion playerContract = recursion("x");
 		
-		Contract hit = internalSum().add("card", playerContract).add("lose").add("abort");
+		Contract hit = internalSum().add("card", recRef(playerContract)).add("lose").add("abort");
 		Contract end = internalSum().add("win").add("lose").add("abort");
 		
 		playerContract.setContract(externalSum().add("hit", hit).add("stand", end));
@@ -46,7 +46,7 @@ public class Dealer extends Participant {
 		 */
 		Recursion dealerServiceContract = recursion("y");
 		
-		dealerServiceContract.setContract(internalSum().add("next", externalSum().add("card", dealerServiceContract)).add("abort"));
+		dealerServiceContract.setContract(internalSum().add("next", externalSum().add("card", recRef(dealerServiceContract))).add("abort"));
 
 		/*
 		 * PROCESS

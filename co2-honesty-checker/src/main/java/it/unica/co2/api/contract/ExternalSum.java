@@ -1,7 +1,5 @@
 package it.unica.co2.api.contract;
 
-import java.util.Arrays;
-
 import org.apache.commons.lang3.StringUtils;
 
 
@@ -10,28 +8,25 @@ public class ExternalSum extends Sum<ExternalAction> {
 	private static final long serialVersionUID = 1L;
 
 	public ExternalSum(ExternalSum sum) {
-		super(ExternalAction.class, new ExternalAction[sum.actions.length]);
-		
-		for (int i=0; i<sum.actions.length; i++) {
-			actions[i] = new ExternalAction(sum.actions[i]);
+		for (ExternalAction a : sum.getActions()) {
+			actions.add(new ExternalAction(a));
 		}
 	}
 	
 	public ExternalSum(ExternalAction... actions) {
-		super(ExternalAction.class, actions);
+		super(actions);
 	}
 	
 	@Override
 	public ExternalSum add(String name, Sort sort, Contract next) {
-		ExternalAction[] newActions = Arrays.copyOf(actions, actions.length+1);
-		newActions[newActions.length-1]=new ExternalAction(name, sort, next);
-		return new ExternalSum(newActions);
+		actions.add(new ExternalAction(name, sort, next));
+		return this;
 	}
 	
 	@Override
 	public String toString() {
-		if (actions.length==1)
-			return actions[0].toString();
+		if (actions.size()==1)
+			return actions.get(0).toString();
 		else
 			return "("+StringUtils.join(actions, " + ")+")";
 	}

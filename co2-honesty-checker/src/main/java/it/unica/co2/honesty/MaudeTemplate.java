@@ -13,7 +13,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import it.unica.co2.api.contract.Contract;
-import it.unica.co2.generators.MaudeContractGenerator;
+import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.utils.ContractExplorer;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 
@@ -71,12 +72,15 @@ public class MaudeTemplate {
 		
 		for (Contract c : contracts) {
 			
-			MaudeContractGenerator gen = new MaudeContractGenerator(c);
-			gen.generate();
-			
-			set.addAll(gen.getRecursionNames());
+			ContractExplorer.findall(
+					c, 
+					Recursion.class,
+					(x)->(true),
+					(x)->{
+						set.add(x.getName());
+					});
 		}
-
+		
 		return set;
 	}
 

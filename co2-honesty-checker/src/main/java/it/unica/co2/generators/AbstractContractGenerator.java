@@ -1,7 +1,5 @@
 package it.unica.co2.generators;
 
-import java.util.Collection;
-
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.ExternalAction;
@@ -10,6 +8,7 @@ import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
+import it.unica.co2.api.contract.utils.ContractExplorer;
 
 public abstract class AbstractContractGenerator {
 
@@ -24,8 +23,27 @@ public abstract class AbstractContractGenerator {
 	}
 
 	public String generate() {
+		checkRecursion();
 		return convert(contract);
 	}
+	
+	
+	private void checkRecursion() {
+		ContractExplorer.findall(
+				contract, 
+				Recursion.class,
+				(x)->(true),
+				(x)->{
+					ContractExplorer.findall(
+							x.getContract(), 
+							Recursion.class,
+							(y)->(y==x),
+							(y)->{
+								throw new IllegalStateException("");
+							});
+				});
+	}
+	
 	
 	protected String convert(Contract contract) {
 		
@@ -63,10 +81,6 @@ public abstract class AbstractContractGenerator {
 	
 	protected String convert(ContractReference ref) {
 		return ref.getReference().getName();
-	}
-	
-	public Collection<String> getRecursionNames() {
-		return null;
 	}
 	
 }
