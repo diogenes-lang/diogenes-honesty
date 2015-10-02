@@ -6,12 +6,12 @@
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="lib" path="lib/co2apiHL.jar" sourcepath="/co2-api"/>
-	<classpathentry kind="lib" path="lib/co2apiHL-fake-2.0.0.jar" sourcepath="/jpf-core"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.4.jar"/>
 	<classpathentry kind="lib" path="lib/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/jpf-annotations.jar"/>
 	<classpathentry kind="lib" path="lib/jpf-classes.jar"/>
 	<classpathentry kind="lib" path="lib/jpf.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
+	<classpathentry kind="lib" path="lib/co2apiHL-fake-2.0.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

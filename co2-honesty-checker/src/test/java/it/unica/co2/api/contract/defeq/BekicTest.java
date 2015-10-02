@@ -3,6 +3,9 @@ package it.unica.co2.api.contract.defeq;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 import it.unica.co2.api.contract.ContractDefinition;
@@ -96,7 +99,11 @@ public class BekicTest {
 		
 		for (ContractDefinition c : cDefs) {
 			// contractReference-free
-			assertTrue( ContractExplorer.findall(c.getContract(), ContractReference.class).isEmpty());
+			
+			List<ContractReference> crefs = new ArrayList<>();
+			ContractExplorer.findAll(c.getContract(), ContractReference.class, (x)-> {crefs.add(x);});
+			
+			assertTrue( crefs.isEmpty() );
 		}
 	}
 	

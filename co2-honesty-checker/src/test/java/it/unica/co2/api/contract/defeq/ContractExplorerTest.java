@@ -3,6 +3,7 @@ package it.unica.co2.api.contract.defeq;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -33,7 +34,14 @@ public class ContractExplorerTest {
 		
 		System.out.println(c);
 		
-		List<ContractReference> contracts = ContractExplorer.findall(c, ContractReference.class, (x)-> {return true;}, (x)->{x.getPreceeding().next(internalSum().add("pippo"));});
+		List<ContractReference> contracts = new ArrayList<>();
+				
+		ContractExplorer.findAll(
+				c, 
+				ContractReference.class, 
+				(x)->{
+					contracts.add(x);
+				});
 	
 		assertEquals(3, contracts.size());
 		

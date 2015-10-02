@@ -29,17 +29,16 @@ public abstract class AbstractContractGenerator {
 	
 	
 	private void checkRecursion() {
-		ContractExplorer.findall(
+		ContractExplorer.findAll(
 				contract, 
 				Recursion.class,
-				(x)->(true),
 				(x)->{
-					ContractExplorer.findall(
+					ContractExplorer.findAll(
 							x.getContract(), 
 							Recursion.class,
 							(y)->(y==x),
 							(y)->{
-								throw new IllegalStateException("");
+								throw new IllegalStateException("detected infinite contract loop");
 							});
 				});
 	}

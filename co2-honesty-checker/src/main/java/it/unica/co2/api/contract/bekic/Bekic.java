@@ -64,7 +64,7 @@ public class Bekic {
 		
 		// fix all other contracts into the new env
 		for (ContractDefinition cEnv : env.values()) {
-			ContractExplorer.findall(
+			ContractExplorer.findAll(
 					cEnv.getContract(), 
 					ContractReference.class, 
 					(x)->(true), 
@@ -117,7 +117,7 @@ public class Bekic {
 			
 			ContractDefinition c = env.get(cName);
 			
-			ContractExplorer.findall(
+			ContractExplorer.findAll(
 					c.getContract(), 
 					ContractReference.class, 
 					(x)->{
@@ -137,18 +137,23 @@ public class Bekic {
 			
 			ContractDefinition c = env.get(cName);
 			
-			ContractExplorer.findall(
+			ContractExplorer.findAll(
 					c.getContract(), 
 					ContractReference.class, 
 					(x)->{
 						return true;
 						},
 					(ref)->{
-						List<Recursion> recs = ContractExplorer.findall(
+						
+						List<Recursion> recs = new ArrayList<>();
+						
+						ContractExplorer.findAll(
 								c.getContract(), 
 								Recursion.class,
 								(rec)->{return rec.getName().equals(ref.getReference().getName());},
-								(rec)->{});
+								(rec)->{
+									recs.add(rec);
+								});
 						
 						if (recs.size()>=1) {
 							ref.getPreceeding().next( new RecursionReference(recs.get(0)) );
@@ -170,14 +175,15 @@ public class Bekic {
 			
 			ContractDefinition c = env.get(cName);
 			
-			ContractExplorer.findall(
+			ContractExplorer.findAll(
 					c.getContract(), 
 					Recursion.class, 
 					(x)->{
 						return true;
 						},
 					(rec)->{
-						List<RecursionReference> lst = ContractExplorer.findall(
+						List<RecursionReference> lst = new ArrayList<>();
+						ContractExplorer.findAll(
 								c.getContract(), 
 								RecursionReference.class,
 								(ref)->{return rec==ref.getReference();},

@@ -1,18 +1,42 @@
 package it.unica.co2.examples;
 
-import java.util.Arrays;
+import static it.unica.co2.api.contract.utils.ContractFactory.*;
+
+import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.generators.MaudeContractGenerator;
 
 public class JPFLambda {
 	
-	public static void main (String[] args) throws Exception {
+	public static void main (String[] args) {
 		
+		/*
+		 * player's contract
+		 */
+		Recursion playerContract = recursion("x");
 		
-		Arrays.stream(new Integer[]{1,2,3,4,5,6,7,8,9,10})
-			.map( p -> p+1 )
-			.forEach((x)->{
-				System.out.println(x);
-			});
+		Contract hit = internalSum().add("card", recRef(playerContract)).add("lose").add("abort");
+		Contract end = internalSum().add("win").add("lose").add("abort");
 		
+		playerContract.setContract(externalSum().add("hit", hit).add("stand", end));
+		
+		/*
+		 * deck service's contract
+		 */
+		Recursion dealerServiceContract = recursion("y");
+		
+		dealerServiceContract.setContract(internalSum().add("next", externalSum().add("card", recRef(dealerServiceContract))).add("abort"));
+
+		
+		System.out.println(
+				new MaudeContractGenerator(playerContract).generate()
+				);
+	
+		System.out.println(
+				new MaudeContractGenerator(dealerServiceContract).generate()
+				);
 	}
+	
+	
 	
 }

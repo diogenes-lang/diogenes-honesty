@@ -72,7 +72,7 @@ public class MaudeTemplate {
 		
 		for (Contract c : contracts) {
 			
-			ContractExplorer.findall(
+			ContractExplorer.findAll(
 					c, 
 					Recursion.class,
 					(x)->(true),
