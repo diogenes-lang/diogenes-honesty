@@ -31,6 +31,8 @@ public class BekicTest {
 		System.out.println(c);
 		System.out.println(cBekic);
 		
+		assertTrue(c!=cBekic);
+		
 		checkEnv(cBekic);
 	}
 	
@@ -44,16 +46,16 @@ public class BekicTest {
 		c1.setContract(internalSum().add("a1").add("b1", ref(c2)));
 		c2.setContract(internalSum().add("a2").add("b2", ref(c1)));
 		
-		ContractDefinition[] env = Bekic.getInstance(c1,c2).defToRec();
 		
+		Bekic instance = Bekic.getInstance(c1,c2);
 		
 		System.out.println(c1);
+		System.out.println(instance.defToRec(c1));
+		
 		System.out.println(c2);
+		System.out.println(instance.defToRec(c2));
 		
-		System.out.println(env[0]);
-		System.out.println(env[1]);
-		
-		checkEnv(env);
+		checkEnv(instance.defToRec());
 	}
 	
 	@Test
@@ -67,9 +69,16 @@ public class BekicTest {
 		c1.setContract(internalSum().add("a", ref(c1)).add("b", ref(c2)));
 		c2.setContract(internalSum().add("c", ref(c1)).add("d", ref(c2)));
 		
-		ContractDefinition[] env = Bekic.getInstance(c1,c2).defToRec();
+
+		Bekic instance = Bekic.getInstance(c1,c2);
 		
-		checkEnv(env);
+		System.out.println(c1);
+		System.out.println(instance.defToRec(c1));
+		
+		System.out.println(c2);
+		System.out.println(instance.defToRec(c2));
+		
+		checkEnv(instance.defToRec());
 	}
 	
 	@Test
@@ -83,29 +92,18 @@ public class BekicTest {
 		c1.setContract(internalSum().add("a").add("b", recursion("pippo").setContract(internalSum().add("pippo"))));
 		c2.setContract(internalSum().add("c").add("d"));
 		
-		ContractDefinition[] env = Bekic.getInstance(c1,c2).defToRec();
 		
-		checkEnv(env);
+		Bekic instance = Bekic.getInstance(c1,c2);
+		
+		System.out.println(c1);
+		System.out.println(instance.defToRec(c1));
+		
+		System.out.println(c2);
+		System.out.println(instance.defToRec(c2));
+		
+		checkEnv(instance.defToRec());
 	}
 	
-	
-	@Test
-	public void testNoSideEffect() {
-		
-		System.out.println("+++++++++++ TEST 4 ++++++++++++");
-		
-		ContractDefinition c1 = def("c1");
-		ContractDefinition c2 = def("c2");
-		
-		c1.setContract(internalSum().add("a", ref(c1)).add("b", ref(c2)));
-		c2.setContract(internalSum().add("c", ref(c1)).add("d", ref(c2)));
-		
-		Bekic bekic = Bekic.getInstance(c1, c2);
-		bekic.defToRec();
-		
-		assertTrue(c1!=bekic.defToRec(c1));
-		assertTrue(c2!=bekic.defToRec(c2));
-	}
 	
 	
 	private void checkEnv(ContractDefinition...  cDefs) {

@@ -21,8 +21,9 @@ public class Bekic {
 	private Map<String, ContractDefinition> env = new HashMap<String, ContractDefinition>();
 	private Map<ContractDefinition,ContractDefinition> references = new HashMap<>();	// map old/new references
 	
-	boolean bekicApplied = false;
+	private boolean bekicApplied = false;
 	
+	private boolean DEBUG = false;
 	
 	/**
 	 * Returns an Bekic instance. The environment is derived from the given contracts.
@@ -66,14 +67,14 @@ public class Bekic {
 		// fix all other contracts into the new env
 		for (ContractDefinition cEnv : env.values()) {
 			
-			System.out.println("[init] "+cEnv);
+			log("[init] "+cEnv);
 			
 			ContractExplorer.findAll(
 					cEnv.getContract(), 
 					ContractReference.class, 
 					(x)->{
 						
-						System.out.println("[init]     "+x);
+						log("[init]     "+x);
 						
 						ContractDefinition newDef = references.get(x.getReference());	//get the new definition
 						
@@ -106,12 +107,12 @@ public class Bekic {
 	
 	private void applyBekicTheorem() {
 
-		System.out.println("\n====================================================================== START");
+		log("\n====================================================================== START");
 		printEnv();
 		
 		List<String> contracts = new ArrayList<>(env.keySet());
 		
-		System.out.println("\n====================================================================== STEP 0");
+		log("\n====================================================================== STEP 0");
 		for (String cName : contracts) {
 			
 			ContractDefinition c = env.get(cName);
@@ -121,13 +122,13 @@ public class Bekic {
 		}
 		printEnv();
 		
-		System.out.println("\n====================================================================== STEP 1");
+		log("\n====================================================================== STEP 1");
 		
 		for (String cName : contracts) {
 			
 			ContractDefinition c = env.get(cName);
 
-			System.out.println("[STEP 1] "+c.getId());
+			log("[STEP 1] "+c.getId());
 			
 			ContractExplorer.findAll(
 					c.getContract(), 
@@ -136,30 +137,30 @@ public class Bekic {
 						return !x.getReference().getName().equals(cName);
 						},
 					(cRef)->{
-						System.out.println("[STEP 1]    reference: "+cRef);
-						System.out.println("[STEP 1]    preceding: "+cRef.getPreceeding());
+						log("[STEP 1]    reference: "+cRef);
+						log("[STEP 1]    preceding: "+cRef.getPreceeding());
 						cRef.getPreceeding().next( cRef.getReference().getContract().deepCopy() );
 					}
 				);
 			
-			System.out.println("[STEP 1] NEW: "+c);	
+			log("[STEP 1] NEW: "+c);	
 		}
 		
 		printEnv();
 		
 		
-		System.out.println("\n====================================================================== STEP 2");
+		log("\n====================================================================== STEP 2");
 		for (String cName : contracts) {
 			
 			ContractDefinition c = env.get(cName);
 			
-			System.out.println("[STEP 2] "+c.getId());
+			log("[STEP 2] "+c.getId());
 			
 			ContractExplorer.findAll(
 					c.getContract(), 
 					ContractReference.class, 
 					(ref)->{
-						System.out.println("[STEP 2]    creference: "+ref);
+						log("[STEP 2]    creference: "+ref);
 						
 						List<Recursion> recs = new ArrayList<>();
 
@@ -167,14 +168,14 @@ public class Bekic {
 								c.getContract(), 
 								Recursion.class,
 								(rec)->{
-									System.out.println("[STEP 2]        search: "+rec);
+									log("[STEP 2]        search: "+rec);
 									return rec.getName().equals(ref.getReference().getName());
 								},
 								(rec)->{
 									recs.add(rec);
 								});
 
-						System.out.println("[STEP 2]    available rec: "+recs.stream().map((x)->(x.getName())).collect(Collectors.joining(",")));
+						log("[STEP 2]    available rec: "+recs.stream().map((x)->(x.getName())).collect(Collectors.joining(",")));
 						
 						if (recs.size()>=1) {
 							ref.getPreceeding().next( new RecursionReference(recs.get(0)) );
@@ -191,7 +192,7 @@ public class Bekic {
 		printEnv();
 		
 		
-		System.out.println("\n====================================================================== STEP 3");
+		log("\n====================================================================== STEP 3");
 		for (String cName : contracts) {
 			
 			ContractDefinition c = env.get(cName);
@@ -209,8 +210,7 @@ public class Bekic {
 									lst.add(x);
 								});
 						
-						if (lst.size()==0) {
-							//remove recursion
+						if (lst.size()==0) {	//remove recursion
 							
 							if (rec.getPreceeding()!=null) {
 								rec.getPreceeding().next( rec.getContract() );
@@ -224,18 +224,22 @@ public class Bekic {
 				);	
 		}
 		
-		System.out.println("\n====================================================================== END");
+		printEnv();
+		log("\n====================================================================== END");
 		printEnv();
 	}
 	
 	
-	@SuppressWarnings("unused")
 	private void printEnv() {
 		
 		for (Entry<String, ContractDefinition> c : env.entrySet()) {
-			System.out.println("[ENV]    "+c.getValue().toString());
+			log("[ENV]    "+c.getValue().toString());
 		}
 	}
 	
+	private void log(Object obj) {
+		if (DEBUG)
+			System.out.println(obj);
+	}
 	
 }

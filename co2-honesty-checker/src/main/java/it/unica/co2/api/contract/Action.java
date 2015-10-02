@@ -4,9 +4,6 @@ import java.io.Serializable;
 
 public abstract class Action implements Serializable {
 
-	private static int CLASS_ID = 0;
-	private final int ID=CLASS_ID++;
-	
 	private static final long serialVersionUID = 1L;
 
 	protected final String name;
@@ -53,7 +50,7 @@ public abstract class Action implements Serializable {
 
 	@Override
 	public String toString() {
-		return name +"["+ID+"]"+ (this instanceof InternalAction?"!":"?") + (sort!=Sort.UNIT? ":"+sort: "") + (next!=null? " . "+next.toString(): "") ;
+		return name + (this instanceof InternalAction?"!":"?") + (sort!=Sort.UNIT? ":"+sort: "") + (next!=null? " . "+next.toString(): "") ;
 	}
 
 	@Override

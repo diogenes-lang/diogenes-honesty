@@ -6,9 +6,6 @@ import java.util.List;
 
 public abstract class Sum<T extends Action> extends Contract {
 
-	private static int CLASS_ID = 0;
-	protected final int ID=CLASS_ID++;
-
 	private static final long serialVersionUID = 1L;
 
 	protected final List<T> actions = new ArrayList<>();;

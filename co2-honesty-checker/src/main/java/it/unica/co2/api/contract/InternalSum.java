@@ -26,9 +26,9 @@ public class InternalSum extends Sum<InternalAction> {
 	@Override
 	public String toString() {
 		if (actions.size()==1)
-			return "<"+ID+">"+actions.get(0).toString();
+			return actions.get(0).toString();
 		else
-			return "(<"+ID+">"+StringUtils.join(actions, " (+) ")+")";
+			return StringUtils.join(actions, " (+) ")+")";
 	}
 	
 	@Override
