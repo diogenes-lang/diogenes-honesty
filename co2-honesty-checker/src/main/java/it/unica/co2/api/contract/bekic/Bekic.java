@@ -100,7 +100,7 @@ public class Bekic {
 	}
 	
 	private void applyBekicTheorem() {
-//		printEnv();
+		printEnv();
 		List<String> contracts = new ArrayList<>(env.keySet());
 		
 		for (String cName : contracts) {
@@ -212,7 +212,7 @@ public class Bekic {
 					);	
 		}
 		
-//		printEnv();
+		printEnv();
 		
 	}
 	

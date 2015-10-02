@@ -28,10 +28,12 @@ public class ContractExplorer {
 	}
 	
 	public static <T extends Contract> void findAll(Contract contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
-		findall(new HashSet<>(), contract, clazz, predicate, consumer);
+		Set<T> acc = new HashSet<>();
+		findall(new HashSet<>(), contract, clazz, predicate, acc);
+		acc.stream().forEach(consumer);
 	}
 	
-	private static <T extends Contract> void findall(Set<Contract> visited, Contract contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
+	private static <T extends Contract> void findall(Set<Contract> visited, Contract contract, Class<T> clazz, Predicate<T> predicate, Set<T> acc) {
 		
 		if (contract==null)
 			return;
@@ -42,25 +44,25 @@ public class ContractExplorer {
 		visited.add(contract);	//add to visited
 
 		if (clazz.isInstance(contract) && predicate.test(clazz.cast(contract))) {
-			consumer.accept(clazz.cast(contract));
+			acc.add(clazz.cast(contract));
 		}
 		
 		//continue searching
 		if (contract instanceof InternalSum)
 			for (InternalAction a : ((InternalSum) contract).getActions()) {
-				findall(visited, a.getNext(), clazz, predicate, consumer);
+				findall(visited, a.getNext(), clazz, predicate, acc);
 			}
 		
 		else if(contract instanceof ExternalSum)
 			for (ExternalAction a1 : ((ExternalSum) contract).getActions()) {
-				findall(visited, a1.getNext(), clazz, predicate, consumer);
+				findall(visited, a1.getNext(), clazz, predicate, acc);
 			}
 		
 		else if(contract instanceof Recursion)
-			findall(visited, ((Recursion) contract).getContract(), clazz, predicate, consumer);
+			findall(visited, ((Recursion) contract).getContract(), clazz, predicate, acc);
 		
 		else if(contract instanceof ContractReference)
-			findall(visited, ((ContractReference) contract).getReference().getContract(), clazz, predicate, consumer);
+			findall(visited, ((ContractReference) contract).getReference().getContract(), clazz, predicate, acc);
 		
 	}
 
