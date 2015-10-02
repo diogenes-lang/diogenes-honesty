@@ -6,6 +6,9 @@ import java.util.List;
 
 public abstract class Sum<T extends Action> extends Contract {
 
+	private static int CLASS_ID = 0;
+	protected final int ID=CLASS_ID++;
+
 	private static final long serialVersionUID = 1L;
 
 	protected final List<T> actions = new ArrayList<>();;
@@ -32,31 +35,5 @@ public abstract class Sum<T extends Action> extends Contract {
 	}
 	
 	abstract public Sum<T> add(String action, Sort sort, Contract next);
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((actions == null) ? 0 : actions.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Sum<?> other = (Sum<?>) obj;
-		if (actions == null) {
-			if (other.actions != null)
-				return false;
-		}
-		else if (!actions.equals(other.actions))
-			return false;
-		return true;
-	}
 	
 }

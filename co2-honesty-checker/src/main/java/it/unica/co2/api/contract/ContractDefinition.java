@@ -9,18 +9,6 @@ public class ContractDefinition {
 		this.name = name;
 	}
 
-//	public ContractDefinition(ContractDefinition def) {
-//		this.name = def.name;
-//		this.contract = def.contract.deepCopy();
-//		
-//		new ContractExplorer().findall(
-//				contract, 
-//				ContractReference.class, 
-//				(x)->(x.getReference()==def), 
-//				(x)->{x.getPreceeding().next(new ContractReference(this));}
-//				);
-//	}
-
 	public String getName() {
 		return name;
 	}
@@ -38,5 +26,8 @@ public class ContractDefinition {
 	public String toString() {
 		return "DEF ["+name +"-"+hashCode()+"] = "+ contract.toString();
 	}
-
+	
+	public String getId() {
+		return "DEF ["+name +"-"+hashCode()+"]";
+	}
 }

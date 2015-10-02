@@ -3,14 +3,12 @@ package it.unica.co2.api.contract.bekic;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Test;
 
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
-import it.unica.co2.api.contract.bekic.Bekic;
+import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.RecursionReference;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 
 
@@ -20,12 +18,20 @@ public class BekicTest {
 	@Test
 	public void test() {
 		System.out.println("+++++++++++ TEST   ++++++++++++");
-		ContractDefinition c1 = def("c1");
-		c1.setContract(internalSum().add("a").add("b", ref(c1)));
 		
-		ContractDefinition[] env = Bekic.getInstance(c1).defToRec();
+		// C = a (+) b . C
 		
-		checkEnv(env);
+		ContractDefinition c = def("c");
+		c.setContract(internalSum().add("a").add("b", ref(c)));
+		
+		// C = rec X . ( a (+) b . X )
+		
+		ContractDefinition cBekic = Bekic.getInstance(c).defToRec(c);
+		
+		System.out.println(c);
+		System.out.println(cBekic);
+		
+		checkEnv(cBekic);
 	}
 	
 	@Test
@@ -39,6 +45,13 @@ public class BekicTest {
 		c2.setContract(internalSum().add("a2").add("b2", ref(c1)));
 		
 		ContractDefinition[] env = Bekic.getInstance(c1,c2).defToRec();
+		
+		
+		System.out.println(c1);
+		System.out.println(c2);
+		
+		System.out.println(env[0]);
+		System.out.println(env[1]);
 		
 		checkEnv(env);
 	}
@@ -98,14 +111,68 @@ public class BekicTest {
 	private void checkEnv(ContractDefinition...  cDefs) {
 		
 		for (ContractDefinition c : cDefs) {
+
 			// contractReference-free
+			ContractExplorer.findAll(
+					c.getContract(), 
+					ContractReference.class,
+					(x)-> {
+						fail();
+					}
+				);
 			
-			List<ContractReference> crefs = new ArrayList<>();
-			ContractExplorer.findAll(c.getContract(), ContractReference.class, (x)-> {crefs.add(x);});
 			
-			assertTrue( crefs.isEmpty() );
+			// each recRef points to a Recursion in the same contract before reaching the reference itself
+			BooleanW flag = new BooleanW();
+			flag.value = false;
+			
+			ContractExplorer.findAll(
+					c.getContract(), 
+					RecursionReference.class,
+					(x)-> {
+						ContractExplorer.findAll(
+								c.getContract(),
+								Recursion.class,
+								(y)-> (x.getReference()==y),
+								(y)-> {
+									flag.value=true;
+								}
+							);
+						
+						assertTrue(flag.value);
+						flag.value = false;
+					}
+				);
+			
+			// each recRef points to a Recursion in the same contract before reaching the reference itself
+			flag.value = false;
+			
+			ContractExplorer.findAll(
+					c.getContract(), 
+					Recursion.class,
+					(x)-> {
+						ContractExplorer.findAll(
+								c.getContract(),
+								RecursionReference.class,
+								(y)-> (y.getReference()==x),
+								(y)-> {
+									flag.value=true;
+								}
+							);
+						
+						assertTrue(flag.value);
+						flag.value = false;
+					}
+				);
+						
 		}
 	}
 	
-	
+
+	private static class BooleanW {
+		boolean value;
+	}
 }
+
+
+
