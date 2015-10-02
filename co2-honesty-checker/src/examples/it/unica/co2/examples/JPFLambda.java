@@ -4,7 +4,7 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
-import it.unica.co2.generators.MaudeContractGenerator;
+import it.unica.co2.api.contract.generators.MaudeContractGenerator;
 
 public class JPFLambda {
 	

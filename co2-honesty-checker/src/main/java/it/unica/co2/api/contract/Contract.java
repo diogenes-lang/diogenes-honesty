@@ -2,8 +2,8 @@ package it.unica.co2.api.contract;
 
 import java.io.Serializable;
 
-import it.unica.co2.generators.MaudeContractGenerator;
-import it.unica.co2.generators.MiddlewareContractGenerator;
+import it.unica.co2.api.contract.generators.MaudeContractGenerator;
+import it.unica.co2.api.contract.generators.MiddlewareContractGenerator;
 
 public abstract class Contract implements Serializable {
 

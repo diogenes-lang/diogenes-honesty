@@ -1,4 +1,4 @@
-package it.unica.co2.api.contract.defeq;
+package it.unica.co2.api.contract.bekic;
 
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import static org.junit.Assert.*;

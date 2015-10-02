@@ -1,4 +1,4 @@
-package it.unica.co2.generators;
+package it.unica.co2.honesty.dto;
 
 import org.apache.commons.lang3.StringUtils;
 

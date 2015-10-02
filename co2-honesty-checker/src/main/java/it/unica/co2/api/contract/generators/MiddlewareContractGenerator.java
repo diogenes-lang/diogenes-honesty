@@ -1,4 +1,4 @@
-package it.unica.co2.generators;
+package it.unica.co2.api.contract.generators;
 
 import java.util.ArrayList;
 import java.util.List;

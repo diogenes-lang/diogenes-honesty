@@ -1,4 +1,4 @@
-package it.unica.co2.generators;
+package it.unica.co2.api.contract.generators;
 
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractReference;
