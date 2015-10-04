@@ -74,7 +74,7 @@ public abstract class Participant extends CO2Process {
 		
 		if (connection==null)
 			setConnection();
-		
+
 		try {
 			serializedContract=ObjectUtils.serializeObjectToStringQuietly(c);
 			sessionName = Session2.getNextSessionName();

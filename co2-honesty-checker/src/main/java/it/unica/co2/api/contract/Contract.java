@@ -2,6 +2,7 @@ package it.unica.co2.api.contract;
 
 import java.io.Serializable;
 
+import it.unica.co2.api.contract.bekic.Bekic;
 import it.unica.co2.api.contract.generators.MaudeContractGenerator;
 import it.unica.co2.api.contract.generators.TSTContractGenerator;
 
@@ -27,6 +28,9 @@ public abstract class Contract implements Serializable {
 	}
 	
 	public String toTST() {
-		return new TSTContractGenerator(this).generate();
+		
+		return new TSTContractGenerator(
+				Bekic.getInstance(this).defToRec()
+				).generate();
 	}
 }

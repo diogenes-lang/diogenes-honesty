@@ -7,10 +7,6 @@ public class RecursionReference extends Contract {
 	
 	private final Recursion reference;
 	
-	public RecursionReference(RecursionReference ref) {
-		this.reference = new Recursion(ref.getReference());
-	}
-
 	public RecursionReference(Recursion reference) {
 		this.reference=reference;
 	}
@@ -26,6 +22,6 @@ public class RecursionReference extends Contract {
 	
 	@Override
 	public Contract deepCopy() {
-		return new RecursionReference(this);
+		return new RecursionReference(reference);
 	}
 }

@@ -1,5 +1,6 @@
 package it.unica.co2.api.contract;
 
+import it.unica.co2.api.contract.utils.ContractExplorer;
 
 public class Recursion extends Contract {
 
@@ -26,6 +27,16 @@ public class Recursion extends Contract {
 	
 	public Recursion setContract(Contract contract) {
 		this.contract = contract;
+		
+		ContractExplorer.findAll(
+				contract, 
+				Recursion.class,
+				(x)->(x==this),
+				(x)->{
+					System.out.println("[WARN] infinite loop detected. Trying to fix it");
+					x.getPreceeding().next(new RecursionReference(this));
+				});
+		
 		return this;
 	}
 	

@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Recursion;
@@ -22,8 +23,9 @@ public class Bekic {
 	private Map<ContractDefinition,ContractDefinition> references = new HashMap<>();	// map old/new references
 	
 	private boolean bekicApplied = false;
+	private static final String ANONYMOUS = "_ANONYMOUS";
 	
-	private boolean DEBUG = false;
+	private static boolean DEBUG = true;
 	
 	/**
 	 * Returns an Bekic instance. The environment is derived from the given contracts.
@@ -38,8 +40,16 @@ public class Bekic {
 			env.add(c);
 			env.addAll( ContractExplorer.getAllReferences(c) );
 		}
-			
+
 		return new Bekic(env.toArray(new ContractDefinition[]{}));
+	}
+	
+
+	public static Bekic getInstance(Contract contract) {
+		
+		ContractDefinition cDef = new ContractDefinition(ANONYMOUS);
+		cDef.setContract(contract);
+		return getInstance(cDef);
 	}
 	
 	
@@ -53,6 +63,7 @@ public class Bekic {
 	private Bekic(ContractDefinition... contracts) {
 		
 		for (ContractDefinition c : contracts) {
+			
 			// craete new definition
 			ContractDefinition newDef = new ContractDefinition(c.getName());
 			newDef.setContract(c.getContract().deepCopy());		// ContractReference(s) are not deep-copied (infinite loop)
@@ -87,11 +98,19 @@ public class Bekic {
 		}
 	}
 	
-	public ContractDefinition[] defToRec() {
+	public ContractDefinition[] getEnv() {
 		if (!bekicApplied)
 			applyBekicTheorem();
 		
 		return env.values().toArray(new ContractDefinition[]{});
+	}
+	
+	public Contract defToRec() {
+		
+		if (!env.containsKey(ANONYMOUS))
+			throw new IllegalStateException("this method is not allowed. You must use Bekic.getInstance(Contract)");
+		
+		return env.get(ANONYMOUS).getContract();
 	}
 	
 	public ContractDefinition defToRec(ContractDefinition c) {
@@ -227,6 +246,8 @@ public class Bekic {
 		printEnv();
 		log("\n====================================================================== END");
 		printEnv();
+		
+		bekicApplied=true;
 	}
 	
 	
@@ -237,7 +258,7 @@ public class Bekic {
 		}
 	}
 	
-	private void log(Object obj) {
+	private static void log(Object obj) {
 		if (DEBUG)
 			System.out.println(obj);
 	}

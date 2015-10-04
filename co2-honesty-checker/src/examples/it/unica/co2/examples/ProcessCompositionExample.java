@@ -62,7 +62,8 @@ public class ProcessCompositionExample {
 		@Override
 		public void run() {
 			
-			Recursion rec = recursion("x").setContract(internalSum().add("a"));
+			Recursion rec = recursion("x");
+			rec.setContract(internalSum().add("a", recRef(rec)));
 			Contract C = externalSum().add("request", internalSum().add("a", rec).add("b"));
 			
 			Session2<TST> session = tellAndWait(C);

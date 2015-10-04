@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Recursion;
@@ -55,7 +56,7 @@ public class BekicTest {
 		System.out.println(c2);
 		System.out.println(instance.defToRec(c2));
 		
-		checkEnv(instance.defToRec());
+		checkEnv(instance.getEnv());
 	}
 	
 	@Test
@@ -78,7 +79,7 @@ public class BekicTest {
 		System.out.println(c2);
 		System.out.println(instance.defToRec(c2));
 		
-		checkEnv(instance.defToRec());
+		checkEnv(instance.getEnv());
 	}
 	
 	@Test
@@ -101,9 +102,30 @@ public class BekicTest {
 		System.out.println(c2);
 		System.out.println(instance.defToRec(c2));
 		
-		checkEnv(instance.defToRec());
+		checkEnv(instance.getEnv());
 	}
 	
+	
+	
+	@Test
+	public void test4() {
+		System.out.println("+++++++++++ TEST 4 ++++++++++++");
+		
+		// C = a (+) b . C
+		
+		Recursion rec = recursion("x");
+		rec.setContract(internalSum().add("a").add("b", recRef(rec)));
+		
+		// C = rec X . ( a (+) b . X )
+		
+		Contract cBekic = Bekic.getInstance(rec).defToRec();
+		
+		System.out.println(rec);
+		System.out.println(cBekic);
+		
+		assertTrue(rec!=cBekic);
+		
+	}
 	
 	
 	private void checkEnv(ContractDefinition...  cDefs) {
