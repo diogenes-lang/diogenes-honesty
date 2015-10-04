@@ -3,7 +3,7 @@ package it.unica.co2.api.contract;
 import java.io.Serializable;
 
 import it.unica.co2.api.contract.generators.MaudeContractGenerator;
-import it.unica.co2.api.contract.generators.MiddlewareContractGenerator;
+import it.unica.co2.api.contract.generators.TSTContractGenerator;
 
 public abstract class Contract implements Serializable {
 
@@ -26,7 +26,7 @@ public abstract class Contract implements Serializable {
 		return new MaudeContractGenerator(this).generate();
 	}
 	
-	public String toMiddleware() {
-		return new MiddlewareContractGenerator(this).generate();
+	public String toTST() {
+		return new TSTContractGenerator(this).generate();
 	}
 }

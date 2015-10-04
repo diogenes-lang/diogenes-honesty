@@ -12,9 +12,9 @@ import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
 
-public class MiddlewareContractGenerator extends AbstractContractGenerator{
+public class TSTContractGenerator extends AbstractContractGenerator{
 	
-	public MiddlewareContractGenerator(Contract c) {
+	public TSTContractGenerator(Contract c) {
 		super(c);
 	}
 

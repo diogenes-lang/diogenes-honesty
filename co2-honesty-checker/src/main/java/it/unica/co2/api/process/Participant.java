@@ -79,9 +79,9 @@ public abstract class Participant extends CO2Process {
 			serializedContract=ObjectUtils.serializeObjectToStringQuietly(c);
 			sessionName = Session2.getNextSessionName();
 			
-			logger.log("middleware syntax contract <"+c.toMiddleware()+">");
+			logger.log("middleware syntax contract <"+c.toTST()+">");
 
-			TST tst = new TST(c.toMiddleware());
+			TST tst = new TST(c.toTST());
 			Private<TST> pvt = tst.toPrivate(connection);
 			
 			logger.log("telling contract <"+c+">");

@@ -19,12 +19,12 @@ public class SyntaxGeneratorTest {
 		System.out.println("------------------");
 		System.out.println("toString: "+A);
 		System.out.println("toMaude: "+A.toMaude());
-		System.out.println("toMiddleware: "+A.toMiddleware());
+		System.out.println("toMiddleware: "+A.toTST());
 
 		System.out.println("------------------");
 		System.out.println("toString: "+B);
 		System.out.println("toMaude: "+B.toMaude());
-		System.out.println("toMiddleware: "+B.toMiddleware());
+		System.out.println("toMiddleware: "+B.toTST());
 	}
 	
 	@Test
@@ -49,11 +49,11 @@ public class SyntaxGeneratorTest {
 		System.out.println("------------------");
 		System.out.println("toString: "+ra);
 		System.out.println("toMaude: "+ra.toMaude());
-		System.out.println("toMiddleware: "+ra.toMiddleware());
+		System.out.println("toMiddleware: "+ra.toTST());
 		
 		System.out.println("------------------");
 		System.out.println("toString: "+rb);
 		System.out.println("toMaude: "+rb.toMaude());
-		System.out.println("toMiddleware: "+rb.toMiddleware());
+		System.out.println("toMiddleware: "+rb.toTST());
 	}
 }
