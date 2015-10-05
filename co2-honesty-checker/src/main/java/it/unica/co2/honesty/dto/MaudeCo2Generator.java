@@ -12,6 +12,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.RetractDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
@@ -24,6 +25,9 @@ public class MaudeCo2Generator {
 		
 		if (prefix instanceof AskDS) {
 			return toMaude((AskDS)prefix, initialSpace);
+		}
+		else if (prefix instanceof RetractDS) {
+			return toMaude((RetractDS)prefix, initialSpace);
 		}
 		else if (prefix instanceof TellDS) {
 			return toMaude((TellDS)prefix, initialSpace);
@@ -69,6 +73,10 @@ public class MaudeCo2Generator {
 	
 	public static String toMaude(AskDS prefix, String initialSpace) {
 		return "ask \""+prefix.session+"\" True . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
+	}
+	
+	public static String toMaude(RetractDS prefix, String initialSpace) {
+		return "retract \""+prefix.session+"\" . "+(prefix.next==null? "0": toMaude(prefix.next, initialSpace));
 	}
 	
 	public static String toMaude(TellDS prefix, String initialSpace) {

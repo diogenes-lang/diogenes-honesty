@@ -13,6 +13,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import co2api.ContractExpiredException;
+import co2api.TimeExpiredException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
@@ -46,6 +48,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.RetractDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
@@ -117,7 +120,7 @@ public class MaudeListener extends ListenerAdapter {
 		if (ci.getName().equals(Participant.class.getName())) {
 			
 			if (participantTell == null) {
-				participantTell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/Contract;)Lco2api/Public;", false); 
+				participantTell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/Contract;Ljava/lang/Integer;)Lco2api/Public;", false); 
 			}
 			
 			if (participantWaitForSession == null) {
@@ -370,23 +373,47 @@ public class MaudeListener extends ListenerAdapter {
 				/* 
 				 * if you were here, you invoke waitForSession() with a timeout
 				 */
-				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
 
-				assert sum.prefixes.size()==2;		// t . (...) + ask "" (True) . (...)
+				if (ex.getExceptionClassname().equals(TimeExpiredException.class.getName())) {
+
+					log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
+					
+					assert sum.prefixes.size()==2 || sum.prefixes.size()==3;		// t . (...) + ask "" (True) . (...)
+					
+					//get the tau prefix
+					TauDS tau = null;
+					
+					if (sum.prefixes.get(0) instanceof TauDS)
+						tau=(TauDS) sum.prefixes.get(0);
+					else
+						tau=(TauDS) sum.prefixes.get(1);
+					
+					popSum(tstate,tau);
+					setCurrentPrefix(tstate,tau);
+				}
+				else  if (ex.getExceptionClassname().equals(ContractExpiredException.class.getName())) {
+					
+					log.info("CONTRACT_EXPIRED: "+ex.getExceptionClassname());
+					
+					// the exception can be thrown by any waitForSession() (timeout or not)
+					
+					ElementInfo participantObj = currentThread.getThisElementInfo();
+					String sessionName = participantObj.getStringField("sessionName");
+					
+					RetractDS retract = new RetractDS();
+					retract.session = sessionName;
+					
+					sum.prefixes.add(retract);
+					setCurrentPrefix(tstate, retract);
+				}
+				else {
+					throw new IllegalStateException("unexpected exception: "+ex.getExceptionClassname());
+				}
 				
-				//get the tau prefix
-				TauDS tau = null;
-				
-				if (sum.prefixes.get(0) instanceof TauDS)
-					tau=(TauDS) sum.prefixes.get(0);
-				else
-					tau=(TauDS) sum.prefixes.get(1);
-				
-				popSum(tstate,tau);
-				setCurrentPrefix(tstate,tau);
 			}
 			else {
 				
+				log.info("normal behaviour");
 				/*
 				 * get the returned value
 				 */
@@ -401,7 +428,7 @@ public class MaudeListener extends ListenerAdapter {
 				
 				log.info("session: "+sessionName);
 				
-				assert sum.prefixes.size()==1 || sum.prefixes.size()==2;		// the t prefix can not be present when waitForSession is invoked without timeout
+				assert sum.prefixes.size()==1 || sum.prefixes.size()==2 || sum.prefixes.size()==3;		// the t prefix can not be present when waitForSession is invoked without timeout
 				
 				AskDS ask = null;
 

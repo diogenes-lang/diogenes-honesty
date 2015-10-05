@@ -2,6 +2,7 @@ package it.unica.co2.api.process;
 
 import co2api.CO2ServerConnection;
 import co2api.ContractException;
+import co2api.ContractExpiredException;
 import co2api.Private;
 import co2api.Public;
 import co2api.Session;
@@ -90,7 +91,7 @@ public abstract class Participant extends CO2Process {
 		return tell(c, 0);
 	}
 	
-	public Public<TST> tell (Contract c, Integer delay) {
+	public Public<TST> tell (Contract c, Integer delay) throws ContractExpiredException {
 		
 		if (connection==null)
 			setConnection();
@@ -105,7 +106,7 @@ public abstract class Participant extends CO2Process {
 			Private<TST> pvt = tst.toPrivate(connection);
 			
 			logger.log("telling contract <"+c+">");
-			return pvt.tell();
+			return pvt.tell(delay);
 
 		}
 		catch (ContractException e) {
@@ -126,6 +127,7 @@ public abstract class Participant extends CO2Process {
 	public Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) throws TimeExpiredException {
 		try {
 			logger.log("waiting for a session");
+			sessionName = Session2.getNextSessionName();
 			
 			Session<TST> session = null;
 			if (timeout==-1) {

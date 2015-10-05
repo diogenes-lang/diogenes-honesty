@@ -59,7 +59,11 @@ public class CO2DataStructures {
 	public static class AskDS extends PrefixDS {
 
 		public String session;
+	}
+	
+	public static class RetractDS extends PrefixDS {
 
+		public String session;
 	}
 
 	public static class DoReceiveDS extends PrefixDS {
@@ -74,7 +78,6 @@ public class CO2DataStructures {
 		public String session;
 		public String action;
 		public Sort sort;
-
 	}
 
 	
