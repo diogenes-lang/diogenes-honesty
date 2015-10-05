@@ -114,11 +114,11 @@ public class HonestyChecker {
 		String classpath = classpathEntries
 			.sorted(
 					(a,b) -> {
-						if (a.contains("co2apiHL-fake")) {
-			                return (b.contains("co2apiHL-fake")) ? 0 : -1;
+						if (a.equals("co2apiHL.jar")) {
+			                return (b.equals("co2apiHL.jar")) ? 0 : 1;
 			            } 
-						else if (b.contains("co2apiHL-fake")) {
-			                return 1;
+						else if (b.contains("co2apiHL.jar")) {
+			                return -1;
 			            } 
 						else {
 			                return 0;

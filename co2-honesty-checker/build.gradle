@@ -4,7 +4,7 @@ apply plugin: 'eclipse'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-version = '2.0.0'
+version = '2.1.0'
 
 sourceSets {
     main {
@@ -36,8 +36,8 @@ dependencies {
 
 	compile 'org.apache.commons:commons-lang3:3.4'
 
-	//set all *.jar into /lib excluding co2apiHL-fake-1.0.0.jar
-    compile fileTree(dir: 'lib', include: '*.jar'/*, exclude: "co2apiHL-fake-1.0.0.jar"*/)
+	//set all *.jar into /lib excluding co2apiHL.jar
+    compile fileTree(dir: 'lib', include: '*.jar', exclude: "co2apiHL.jar")
 }
 
 eclipse {
