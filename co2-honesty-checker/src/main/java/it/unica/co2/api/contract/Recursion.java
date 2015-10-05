@@ -33,8 +33,7 @@ public class Recursion extends Contract {
 				Recursion.class,
 				(x)->(x==this),
 				(x)->{
-					System.out.println("[WARN] infinite loop detected. Trying to fix it");
-					x.getPreceeding().next(new RecursionReference(this));
+					throw new IllegalArgumentException("the given contract contains a Recursion referring to this object (infinite loop)");
 				});
 		
 		return this;

@@ -34,15 +34,15 @@ public class SyntaxGeneratorTest {
 		Contract A = internalSum()
 				.add("a")
 				.add("b")
-				.add("c", ra)
+				.add("c", recRef(ra))
 		;
 		ra.setContract(A);
 		
 		Recursion rb = recursion("rb");
 		Contract B = externalSum()
 				.add("a")
-				.add("b", rb) 
-				.add("c", rb)
+				.add("b", recRef(rb)) 
+				.add("c", recRef(rb))
 		;
 		rb.setContract(B);
 		
