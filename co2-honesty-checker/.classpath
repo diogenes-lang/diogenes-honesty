@@ -12,6 +12,6 @@
 	<classpathentry kind="lib" path="lib/jpf-classes.jar"/>
 	<classpathentry kind="lib" path="lib/jpf.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.12.jar"/>
-	<classpathentry kind="lib" path="lib/co2apiHL-fake-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/co2apiHL-fake-2.0.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

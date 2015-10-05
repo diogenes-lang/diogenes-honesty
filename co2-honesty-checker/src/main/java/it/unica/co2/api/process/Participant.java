@@ -9,6 +9,7 @@ import co2api.TST;
 import co2api.TimeExpiredException;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.util.ObjectUtils;
 
 
@@ -55,6 +56,11 @@ public abstract class Participant extends CO2Process {
 	@SuppressWarnings("unused") private String serializedContract;
 	@SuppressWarnings("unused") private String sessionName;
 	
+	
+	public Session2<TST> tellAndWait(ContractDefinition cDef) {
+		return tellAndWait(cDef.getContract());
+	}
+	
 	public Session2<TST> tellAndWait(Contract c) {
 		try {
 			return tellAndWait(c, -1);
@@ -70,7 +76,21 @@ public abstract class Participant extends CO2Process {
 		return waitForSession( tell(c) , timeout);
 	}
 	
+	
+	
+	public Public<TST> tell (ContractDefinition cDef) {
+		return tell(cDef.getContract());
+	}
+	
+	public Public<TST> tell (ContractDefinition cDef, Integer delay) {
+		return tell(cDef.getContract(), delay);
+	}
+	
 	public Public<TST> tell (Contract c) {
+		return tell(c, 0);
+	}
+	
+	public Public<TST> tell (Contract c, Integer delay) {
 		
 		if (connection==null)
 			setConnection();
