@@ -3,7 +3,6 @@ package it.unica.co2.honesty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -13,7 +12,7 @@ import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.JPFConfigException;
 import gov.nasa.jpf.JPFException;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.Statistics.Event;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
@@ -186,8 +185,8 @@ public class HonestyChecker {
 				
 				System.out.println("CO2 maude contracts:");
 				
-				for (Entry<String, Contract> c : maudeListener.getContracts().entrySet()) {
-					System.out.println("    "+c.getKey()+": "+c.getValue().toMaude());
+				for (ContractDefinition c : maudeListener.getContracts().values()) {
+					System.out.println("    "+c.getName()+": "+c.getContract().toMaude());
 				}
 				
 				System.out.println("CO2 maude defined process:");

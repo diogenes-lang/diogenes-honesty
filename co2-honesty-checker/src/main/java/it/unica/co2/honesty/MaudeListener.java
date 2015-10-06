@@ -34,7 +34,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.bytecode.InvokeInstruction;
 import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
@@ -78,8 +78,7 @@ public class MaudeListener extends ListenerAdapter {
 	/*
 	 * all told contracts
 	 */
-	private Map<String, Contract> contracts = new TreeMap<>();
-	private int contractCount=0;
+	private Map<String, ContractDefinition> contracts = new TreeMap<>();
 	
 	/*
 	 * all sessions of the process under test
@@ -120,7 +119,7 @@ public class MaudeListener extends ListenerAdapter {
 		if (ci.getName().equals(Participant.class.getName())) {
 			
 			if (participantTell == null) {
-				participantTell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/Contract;Ljava/lang/Integer;)Lco2api/Public;", false); 
+				participantTell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/ContractDefinition;Ljava/lang/Integer;)Lco2api/Public;", false); 
 			}
 			
 			if (participantWaitForSession == null) {
@@ -344,12 +343,13 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ElementInfo ei = currentThread.getThisElementInfo();
 			
-			String cName = getContractName();
 			String sessionName = ei.getStringField("sessionName");
-			contracts.put(cName, ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), Contract.class));
+			
+			ContractDefinition cDef = ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), ContractDefinition.class);
+			contracts.put(cDef.getName(), cDef);
 			sessions.add(sessionName);
 			
-			tell.contractName = cName;
+			tell.contractName = cDef.getName();
 			tell.session = sessionName;
 			
 			setCurrentProcess(tstate,sum);		//set the current process
@@ -808,8 +808,8 @@ public class MaudeListener extends ListenerAdapter {
 //		printInfo();
 		
 		log.info("contracts:");
-		for (Entry<String, Contract> entry : contracts.entrySet()) {
-			log.info("\t"+entry.getKey()+" --> "+entry.getValue().toMaude());
+		for (Entry<String, ContractDefinition> entry : contracts.entrySet()) {
+			log.info("\t"+entry.getKey()+" --> "+entry.getValue().getContract().toMaude());
 		}
 		
 		log.info("env processes:");
@@ -896,10 +896,6 @@ public class MaudeListener extends ListenerAdapter {
 			log.info("[T-ID: "+thID+"] top-currentPrefix --> "+(frame.prefix!=null? frame.prefix.toString():"null"));
 		}
 		
-	}
-	
-	private String getContractName() {
-		return "C"+contractCount++;
 	}
 	
 	private String getFirstStringArgument(ThreadInfo currentThread) {
@@ -1049,7 +1045,7 @@ public class MaudeListener extends ListenerAdapter {
 		return threadStates.get(mainThread).co2ProcessesStack.firstElement().process;
 	}
 	
-	public Map<String, Contract> getContracts() {
+	public Map<String, ContractDefinition> getContracts() {
 		return contracts;
 	}
 	

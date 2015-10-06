@@ -58,11 +58,11 @@ public abstract class Participant extends CO2Process {
 	@SuppressWarnings("unused") private String sessionName;
 	
 	
-	public Session2<TST> tellAndWait(ContractDefinition cDef) {
-		return tellAndWait(cDef.getContract());
+	public Session2<TST> tellAndWait(Contract c) {
+		return tellAndWait(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c));
 	}
 	
-	public Session2<TST> tellAndWait(Contract c) {
+	public Session2<TST> tellAndWait(ContractDefinition c) {
 		try {
 			return tellAndWait(c, -1);
 		}
@@ -73,39 +73,38 @@ public abstract class Participant extends CO2Process {
 	}
 	
 	//keep it private!
-	private Session2<TST> tellAndWait(Contract c, Integer timeout) throws TimeExpiredException {
+	private Session2<TST> tellAndWait(ContractDefinition c, Integer timeout) throws TimeExpiredException {
 		return waitForSession( tell(c) , timeout);
 	}
 	
 	
 	
-	public Public<TST> tell (ContractDefinition cDef) {
-		return tell(cDef.getContract());
-	}
 	
-	public Public<TST> tell (ContractDefinition cDef, Integer delay) {
-		return tell(cDef.getContract(), delay);
+	public Public<TST> tell (Contract c, Integer delay) {
+		return tell(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c), delay);
 	}
-	
+
 	public Public<TST> tell (Contract c) {
 		return tell(c, 0);
 	}
 	
-	public Public<TST> tell (Contract c, Integer delay) throws ContractExpiredException {
+	public Public<TST> tell (ContractDefinition cDef) {
+		return tell(cDef, 0);
+	}
+	
+	public Public<TST> tell (ContractDefinition cDef, Integer delay) throws ContractExpiredException {
 		
 		if (connection==null)
 			setConnection();
 
 		try {
-			serializedContract=ObjectUtils.serializeObjectToStringQuietly(c);
+			serializedContract=ObjectUtils.serializeObjectToStringQuietly(cDef);
 			sessionName = Session2.getNextSessionName();
 			
-			logger.log("middleware syntax contract <"+c.toTST()+">");
-
-			TST tst = new TST(c.toTST());
+			TST tst = new TST(cDef.getContract().toTST());
 			Private<TST> pvt = tst.toPrivate(connection);
 			
-			logger.log("telling contract <"+c+">");
+			logger.log("telling contract <"+cDef.getContract().toTST()+">");
 			return pvt.tell(delay);
 
 		}

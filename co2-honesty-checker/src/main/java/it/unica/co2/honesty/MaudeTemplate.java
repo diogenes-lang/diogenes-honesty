@@ -6,13 +6,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
@@ -33,7 +32,7 @@ public class MaudeTemplate {
 		String processName = maudeListener.getProcessUnderTestClass().getSimpleName();
 		
 		Collection<String> contractNames = maudeListener.getContracts().keySet();
-		Collection<String> variableNames = getVariableNames(maudeListener.getContracts().values());
+		Collection<String> variableNames = getRecVariableNames(maudeListener.getContracts().values());
 		Collection<String> processesIde =  maudeListener.getEnvProcessesNames();
 		
 		String ops = StringUtils.join( 
@@ -66,14 +65,14 @@ public class MaudeTemplate {
 	
 	
 	
-	private static Collection<String> getVariableNames(Collection<Contract> contracts) {
+	private static Collection<String> getRecVariableNames(Collection<ContractDefinition> contracts) {
 		
 		Set<String> set = new HashSet<>();
 		
-		for (Contract c : contracts) {
+		for (ContractDefinition c : contracts) {
 			
 			ContractExplorer.findAll(
-					c, 
+					c.getContract(), 
 					Recursion.class,
 					(x)->(true),
 					(x)->{
@@ -161,7 +160,7 @@ public class MaudeTemplate {
 		// contracts	
 		if (contracts.size()>0) {
 			
-			String contractsDe = contracts.stream().map((x)-> (x+"env")).collect(Collectors.joining(" "));
+			String contractsDe = contracts.stream().map((x)-> (x+"-env")).collect(Collectors.joining(" "));
 			
 			ops.add(		// contracts' env
 					maudeOpsTemplate
@@ -186,16 +185,18 @@ public class MaudeTemplate {
 	}
 	
 	
-	private static List<String> getEqsContract(Map<String, Contract> contracts) {
+	private static List<String> getEqsContract(Map<String, ContractDefinition> contracts) {
 		List<String> eqs = new ArrayList<String>();
 		
 		eqs.add("\n    *** list of contracts");
-		for (Entry<String, Contract> c : contracts.entrySet()) {
+		for (String c : contracts.keySet()) {
+
 			eqs.add(
 					maudeEqTemplate
-					.replace("${name}", c.getKey())
-					.replace("${body}", "defToRec("+c.getKey()+"env , env)")
+					.replace("${name}", c)
+					.replace("${body}", "defToRec("+c+"-env , env)")
 			);
+			
 		}
 		
 		return eqs;
@@ -223,7 +224,7 @@ public class MaudeTemplate {
 		return sb.toString();
 	}
 	
-	private static List<String> getEqEnvContract(Map<String, Contract> contracts) {
+	private static List<String> getEqEnvContract(Map<String, ContractDefinition> contracts) {
 		List<String> eqs = new ArrayList<String>();
 		
 		if (contracts.size()==0)
@@ -259,16 +260,19 @@ public class MaudeTemplate {
 		return eqs;
 	}
 	
-	private static String getEnvContracts(Map<String, Contract> contracts) {
+	private static String getEnvContracts(Map<String, ContractDefinition> contracts) {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("(\n");
 		
 		int i=0;
-		for (Entry<String, Contract> p : contracts.entrySet()) {
+		for (ContractDefinition p : contracts.values()) {
+			
+			p.setName( p.getName()+"-env" );
+			
 			if (i++>0)
 				sb.append("        &\n");
-			sb.append("        ").append(p.getKey()).append("env =def ").append(p.getValue().toMaude()).append("\n");
+			sb.append("        ").append(p.getName()).append(" =def ").append(p.getContract().toMaude()).append("\n");
 		}
 		
 		sb.append("    )");

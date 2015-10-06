@@ -1,8 +1,6 @@
 package it.unica.co2.api.contract.utils;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -74,26 +72,18 @@ public class ContractExplorer {
 	
 	private static void getReferences(ContractDefinition c, Set<ContractDefinition> acc) {
 		
-		List<ContractReference> refs = new ArrayList<>();
-		
 		ContractExplorer.findAll(
 				c.getContract(), 
 				ContractReference.class,
 				(x)->{
-					refs.add(x);
+					if (acc.contains(x.getReference())) {
+						// acc contains cRef.getReference() and all its references
+					}
+					else {
+						acc.add(x.getReference());
+						getReferences(x.getReference(), acc);
+					}
 				}
 			);
-		
-		for (ContractReference cRef : refs) {
-			
-			if (acc.contains(cRef.getReference())) {
-				// acc contains cRef.getReference() and all its references
-			}
-			else {
-				acc.add(cRef.getReference());
-				getReferences(cRef.getReference(), acc);
-			}
-		}
-		
 	}
 }

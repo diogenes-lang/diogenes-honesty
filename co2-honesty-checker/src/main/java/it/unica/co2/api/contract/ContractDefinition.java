@@ -6,13 +6,17 @@ public class ContractDefinition implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private final String name;
+	private String name;
 	private Contract contract;
 	
 	public ContractDefinition(String name) {
 		this.name = name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+	
 	public String getName() {
 		return name;
 	}
