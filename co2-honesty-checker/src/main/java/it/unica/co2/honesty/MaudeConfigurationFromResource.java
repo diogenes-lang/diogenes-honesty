@@ -10,6 +10,9 @@ import org.apache.commons.lang3.Validate;
 
 public class MaudeConfigurationFromResource implements MaudeConfiguration {
 
+	
+	public static final String HONESTY_MAUDE_CO2_MAUDE = "honesty.maude.co2-maude";
+	public static final String HONESTY_MAUDE_EXEC = "honesty.maude.exec";
 	private final Properties prop = new Properties();
 	
 	public MaudeConfigurationFromResource() {
@@ -25,6 +28,15 @@ public class MaudeConfigurationFromResource implements MaudeConfiguration {
 				System.out.println("loading local properties");
 				prop.load(localProps);
 			}
+			
+			String sysPropMaudeExec = System.getProperty(HONESTY_MAUDE_EXEC);
+			String sysPropMaudeCo2 = System.getProperty(HONESTY_MAUDE_CO2_MAUDE);
+			
+			if (sysPropMaudeExec!=null)
+				prop.setProperty(HONESTY_MAUDE_EXEC, sysPropMaudeExec);
+			
+			if (sysPropMaudeCo2!=null)
+				prop.setProperty(HONESTY_MAUDE_CO2_MAUDE, sysPropMaudeCo2);
 		}
 		catch (IOException e1) {
 			throw new RuntimeException(e1);
@@ -49,7 +61,7 @@ public class MaudeConfigurationFromResource implements MaudeConfiguration {
 		Validate.notNull(path, "the property "+key+" is mandatory");
 		
 		File file = Paths.get(path).toFile();
-		Validate.isTrue(file.exists(), "the property "+key+" point to the not existent file "+file);
+		Validate.isTrue(file.exists(), "invalid property '"+key+"': the file '"+file+"' does not exist");
 		
 		return file;
 	}
@@ -72,15 +84,15 @@ public class MaudeConfigurationFromResource implements MaudeConfiguration {
 	
 	@Override
 	public File getCo2MaudeDir() {
-		File file = getFileProperty("honesty.maude.co2-maude");
-		Validate.isTrue(file.isDirectory(), "file "+file+" is not a directory");
+		File file = getFileProperty(HONESTY_MAUDE_CO2_MAUDE);
+		Validate.isTrue(file.isDirectory(), "file '"+file+"' is not a directory");
 		return file;
 	}
 	
 	@Override
 	public File getMaudeExec() {
-		File file = getFileProperty("honesty.maude.exec");
-		Validate.isTrue(file.isFile(), "file "+file+" is not a file");
+		File file = getFileProperty(HONESTY_MAUDE_EXEC);
+		Validate.isTrue(file.isFile(), "file '"+file+"' is not a file");
 		return file;
 	}
 	

@@ -7,6 +7,7 @@ import co2api.TimeExpiredException;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.honesty.HonestyChecker;
 
 public class HONEST extends Participant {
 
@@ -37,6 +38,6 @@ public class HONEST extends Participant {
 	}
 	
 	public static void main(String[] args) {
-		new HONEST().run();
+		HonestyChecker.isHonest(HONEST.class);
 	}
 }
