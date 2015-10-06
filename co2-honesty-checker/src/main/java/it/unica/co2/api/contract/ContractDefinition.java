@@ -1,6 +1,10 @@
 package it.unica.co2.api.contract;
 
-public class ContractDefinition {
+import java.io.Serializable;
+
+public class ContractDefinition implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private final String name;
 	private Contract contract;
