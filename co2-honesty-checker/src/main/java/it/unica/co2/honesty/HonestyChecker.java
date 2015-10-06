@@ -36,7 +36,7 @@ public class HonestyChecker {
 			participant = participantClass.newInstance();
 		}
 		catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
-			throw new RuntimeException("error instatiating the class "+participantClass, e);
+			throw new RuntimeException("error instantiating the class "+participantClass, e);
 		}
 		
 		stats.update(Event.JPF_START);
