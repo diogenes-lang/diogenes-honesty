@@ -3,160 +3,38 @@
 
 
 
-\subsection{From \coco to java }
+\subsubsection{From \coco to java }
 We implemented a \coco Eclipse plugin which allows to automatically
-translate \coco processes into Java  and Maude processes.
+translate \coco processes into both a Java and a Maude process. 
 
 The \coco Eclipse plugin is implemented with Xtext, a framework for
 development of programming languages and \textit{Domain Specific
   Languages} (DSL) (\Cref{sec:xtext}).
-%, which moreover is part of the
-%Eclipse ecosystem and maintained as an official project. 
-%The correct
-%way of define our plugin would be \textit{Xtext plugin}: in fact we
-%create an Xtext project, which provides all the scaffolding classes
-%needed to add special functionality like code validation, syntax
-%highlighting, etc.
-%
-%We defined the \coco grammar using the Xtext DSL. Since the generated parser is LL(*), it is simple to write a grammar that fulfils the \coco specifications (although we must careful to not abuse of \textit{backtracking} due to performance reasons). 
 Since the generated parser is LL(*), each DSL rule corresponds to a
-Java class (instantiated when building the AST) and each declaration
-inside a rule is mapped to a class field. 
-
-\tizinote{che cosa si vuole dire???}
-Contracts may contain two type of references, one to another contract
-and one to a recursion definition. The former is resolved between all
-contracts definition in the same file, except the one containing the
-reference, while the latter is resolved between all recursions defined
-into the same contract and \emph{before} the reference.
-
-Processes may contain references to contracts and to other processes,
-allowing composition and recursive behaviour. Both contracts and
-processes references are resolved among all the declarations inside
-the same file.
-
-%
-\tizinote{e' stata risolta?}  This behaviour is a little bit
-cumbersome and error prone: to avoid problems, you must use the
-\inlineCoco{rec} construct to define \textit{recursive behaviour} and
-use references between contracts only for \textit{composition}
-(manually avoiding loops). The scoping rules try to mitigate this
-problem, but these ones can be bypassed as shown in
-\Cref{lst:co2-contract-infinite}. This problem will be resolved in the
-future.
-
-
+Java class (instantiated when building the Abstract Syntax Tree AST) and
+each declaration inside a rule is mapped to a class field.
 
 The code generation happens navigating the AST and translating each
-\coco construct to the corresponding code of the target language. The
-Maude representation of \coco is complete, so it is always possible to
+\coco construct to the corresponding code of the target language.
+For the java process translation, we use  the Contract Oriented
+Middleware'classes, albeit slightly enhanced.
+
+The Maude representation of \coco is complete, so it is always possible to
 obtain a translation and verify the honesty of the process using
 \cite{verifiable}, as explained in \Cref{sec:maude:checker}. On the
 other hand, as focused in \Cref{sec:untranslatable-code}, not all
 processes can be translated to Java.
 
-The \inlineCoco{system} declaration is used to produce the target
-files, \eg \inlineCoco{system} \inlineCoco{com.example.co2.Sample}
-will produces \textit{Sample.maude} and \textit{Sample.java} inside
-the directory structure \texttt{/com/example/co2/Sample}.
+\subsubsection{Honesty Checker in Java}
+We also implemented a class \incodeType{HonestyChecker} to verify the
+honesty of Java applications. The idea is the reverse of the one in
+the previous section: using \textit{Java PathFinder} (JPF) we analyze
+the Java bytecode and we build up the \coco process. Then, we
+translate the \coco process into a Maude process and we check its honesty.
 
+\tizinote{dire che il check tiene conto dell'invocazione di librerie e terze parti per capire se un'azione verra' fatta davvero}
 
-\subsubsection{Honesty Checker}
-To verify the honesty of Java applications, \textit{Java PathFinder}
-(JPF) is used to analyze the Java bytecode and to build up the \coco
-process $\sys{\pmv{A}}{\procP}$.  After this, the \coco process is
-translated into Maude process, and the Maude model-checker described
-in \Cref{sec:maude:checker} is used to verify the honesty.
-
-
-The previous section describes how a \coco process is reconstructed from a Java program. This process is modelled into classes (\Cref{appchap:java-honesty}) and can be checked for honesty. In order to reuse other related works on \coco, we decide to serialize it as a Maude program and model-check it as described in \Cref{sec:maude:checker}. If the reconstruction is correct, we ensure that the Java program is honest and probably will not fail at runtime.
-
-
-Putting together the phases explained above, from a given
-\incodeType{Participant} we can build the corresponding \coco process
-exploring all significant states and verify its
-honesty. \incodeType{HonestyChecker.}\incodeMethod{isHonest()} is the
-provided method that allows to do so, whose input is
-\incodeType{Class}\generic[Participant]{?} and returns an enumeration
-of \incodeType{HONEST}, \incodeType{DISHONEST} or \incodeType{UNKNOWN}
-(the latter in order to cover unexpected errors occurs).
-
-
-\subsection{Process composition}\label{sec:java-process-composition}
-Process composition allows not only to write more readable processes but also to define a \textit{recursive behaviour}, like
-\[ 
-\contr{c} \mmdef \rec{\contrX}{\atomOut{a}\contrSeq \contrX \sumInt \atomOut{b}}
-\]
-\[
-\procP \; = \; (x) \; \tell {} {\contr{c}} \cocoSeq \procX(x) \hspace{30pt}\procX(x) \mmdef \ifte{\expE}{\fact x {\atomOut{a}} \cocoSeq \procX(x) }{ \fact x {\atomOut{b} }}
-\]
-
-In Java, it is equivalent to define a new class that extends
-\incodeType{CO2Process} (or \incodeType{Participant} if you need to
-get a new session), create a new instance and invoke its
-\incodeMethod{run()} method. We catch the creation of the new instance
-and save the left side of the definition (\eg $\procX(x)$) carrying
-about the formal parameters declaration. When this instance starts
-(entering the method \incodeMethod{run()}) the building of the current
-process suspends and the new one begin. On finished, the invoking
-process must be restored so its built phase can continue. Note
-although that it is not possible to append other prefixes to a process
-invocation (since the \coco does not permit it), but it could be the
-end part of a branch, as shown in \Cref{lst:if-build-example}
-
-%%%%%\begin{listing}
-%	\inputJavaLineos{code/jpf/if-build-composition.java}
-%	\caption{Example of process composition into a \textit{if} statement}
-%	\label{lst:if-build-example}
-%\end{listing}
-
-
-Under these conditions, it is necessary to use a \emph{stack} to save
-the data structures listed at the end of the previous section,
-henceforth referred as \textit{\coco{}Stack} and
-\textit{\coco{}StackFrame} respectively. When a process starts, a new
-frame is allocated onto the stack and used to build up the
-corresponding \coco process; once it terminates, the frame is
-removed. In order to obtain the full graph of invocations, the callee
-process takes a reference to the called one, and at the end of the day
-it is possible to reach each process by starting from the main one.
-
-\subsubsection{Recursion}
-Now it is possible to define recursive processes. The problem is that
-$\text{JVM}_{JPF}$ would concretely execute each process call, so it
-could throw a \textit{stack-overflow exception} when trying to build
-our \coco process. At first glance, you could think that if the
-recursion is \textit{under control} (\ie providing a stop condition)
-then there will be no problems. However, we must explore all branches
-of if-statements, so this approach does not work.
-
-The idea is to detect the recursion and break method call: on
-\incodeMethod{run()} method invocation, before pushing the
-\textit{\coco{}StackFrame} onto the stack, we check that it does not
-contain a frame for the same process. In this way, the recursion is
-detected and the exploration can stop safely.  Note that this strategy
-can lead to unexpected behaviour at runtime if you do not provide a
-stop condition.
-
-%\begin{listing}
-%	\inputJavaLineos{code/jpf/rec-build-composition.java}
-%	\caption{Example of recursive process calls}
-%	\label{lst:rec-build-example}
-%\end{listing}
-
-\Cref{lst:rec-build-example} shows a Java recursive application. The corresponding \coco process will be
-
-\[
-	\begin{array}{rcl}
-		\procP & \; = \;& (x)\; \tell {} {\freeze x \contrP} \cocoSeq \ask{x}{true} \cocoSeq \procPi(x)
-	\\
-	\procPi(x) & \; \mmdef \;& \fact x {\atomOut{a}} \cocoSeq \procPii(x)
-	\\
-	\procPii(x) & \; \mmdef \;& \fact x {\atomIn{b}} \cocoSeq \procPi(x)
-	\end{array}
-\]	
-
-\subsection{Parallel processes}\label{sec:java-parallel}
+\subsubsection{Parallel processes}\label{sec:java-parallel}
 The \coco parallel process maps directly to a Java
 \incodeType{Thread}, which is executed asynchronously with the
 callee. We use the method
@@ -167,18 +45,18 @@ multiple threads that try to start a parallel process. In this way,
 when handling the call with JPF, we are sure to make the correct
 association between the caller and the callee thread.
 
-The execution is now more complicated due to the scheduling of the
-spawn threads. Fortunately JPF allows to retrieve the thread
-identifier when handling the method calls, so we extend our data
-structure using a map of $\langle thread\, ID,
-\coco{}Stack\rangle$.
-When a new thread starts, it is linked to the caller and each of them
-construct its \coco process independently from the other one.
+% The execution is now more complicated due to the scheduling of the
+% spawn threads. Fortunately JPF allows to retrieve the thread
+% identifier when handling the method calls, so we extend our data
+% structure using a map of $\langle thread\, ID,
+% \coco{}Stack\rangle$.
+% When a new thread starts, it is linked to the caller and each of them
+% construct its \coco process independently from the other one.
 
-\subsubsection{Construction flaws}
-Unfortunately, we do not care about the actions types. This originates
-from the impossibility to specify the contract actions types to the
-middleware and it is not related to other limitations.
+% \subsubsection{Construction flaws}
+% Unfortunately, we do not care about the actions types. This originates
+% from the impossibility to specify the contract actions types to the
+% middleware and it is not related to other limitations.
 
 
 

@@ -7,7 +7,7 @@ A contract describes the intended behaviour of \emph{one} of the two
 participants involved in a session.  We use binary session
 types~\cite{Honda98esop} to define contracts.  Session types are terms
 of a process algebra featuring internal/external choice, and
-recursion.
+recursion.2
 
 We assume a set of \emph{participants} (ranged over by
 ${\pmv A}, {\pmv B}, \ldots$), a set of \emph{branch labels} (ranged
@@ -84,11 +84,11 @@ shared between the two participants.
 Two composed contracts may enjoy the property of
 \emph{compliance}. The intuition is that if a contract $\contrP$ is
 compliant with a contract $\contrQ$, then in all the configurations of
-a computation of $\bic{\contrP}{\contrQ}$, whenever a participant
+a computation, whenever a participant
 wants to choose a branch in an internal sum, the other participant
 always offers the opportunity to do it.  Compliance guarantees
 that % \emph{progress}:
-whenever a computation of %$\bic{\contrP}{\contrQ}$ 
+whenever a computation  %$\bic{\contrP}{\contrQ}$ 
 becomes stuck, then
 both participants have reached the success state $\cnil$.
 
@@ -363,17 +363,5 @@ the search of a \textit{compliant} peer to interact with. The
 middleware carry about the creation of a session and monitors the
 involved services to detect contract violations.
 
-In order to interact with the middleware, a developer can choose
-between the RESTFUL API, or language specific API.
 
-\tizinote{da spostare avanti}
-The API allows us to advertise a contract only as plain Java
-\incodeType{String} in two formats: XML and \textit{timed
-  session-types} \cite{Bartoletti15forte}. The former is too verbose
-and does not strictly comply our session-types definition (see
-\Cref{def:contracts:syntax}); the latter is a superset of our
-specification, so we prefer to use it on communicating with the
-middleware.
-In \Cref{chap:co2-to-java} we show an extended version of these API,
-providing a Java representation for contracts.
 
