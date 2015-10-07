@@ -21,3 +21,5 @@ xtend-gen
 *.pdf.mk
 *.pdfsync
 *.pyg
+
+*.jar
