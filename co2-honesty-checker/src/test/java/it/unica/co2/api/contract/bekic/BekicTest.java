@@ -32,8 +32,10 @@ public class BekicTest {
 		System.out.println(c);
 		System.out.println(cBekic);
 		
-		assertTrue(c!=cBekic);
+//		System.out.println(c.getContract().toTST());
+//		System.out.println(cBekic.getContract().toTST());
 		
+		assertTrue(c!=cBekic);
 		checkEnv(cBekic);
 	}
 	
@@ -111,12 +113,8 @@ public class BekicTest {
 	public void test4() {
 		System.out.println("+++++++++++ TEST 4 ++++++++++++");
 		
-		// C = a (+) b . C
-		
 		Recursion rec = recursion("x");
 		rec.setContract(internalSum().add("a").add("b", recRef(rec)));
-		
-		// C = rec X . ( a (+) b . X )
 		
 		Contract cBekic = Bekic.getInstance(rec).defToRec();
 		
@@ -127,6 +125,34 @@ public class BekicTest {
 		
 	}
 	
+	
+	@Test
+	public void test5() {
+		System.out.println("+++++++++++ TEST 5 ++++++++++++");
+		
+		Contract c = internalSum().add("a", empty());
+		
+		System.out.println(c);
+		System.out.println(c.toMaude());
+		System.out.println(c.toTST());
+	}
+	
+	
+	@Test
+	public void test6() {
+		System.out.println("+++++++++++ TEST 6 ++++++++++++");
+		
+		Recursion playerContract = recursion("x");
+		
+		Contract hit = internalSum().add("card", recRef(playerContract)).add("lose").add("abort");
+		Contract end = internalSum().add("win").add("lose").add("abort");
+		
+		playerContract.setContract(externalSum().add("hit", hit).add("stand", end));
+		
+		System.out.println(playerContract);
+		System.out.println(playerContract.toMaude());
+		System.out.println(playerContract.toTST());
+	}
 	
 	private void checkEnv(ContractDefinition...  cDefs) {
 		

@@ -38,7 +38,9 @@ public class Bekic {
 		
 		for (ContractDefinition c : contracts) {
 			env.add(c);
-			env.addAll( ContractExplorer.getAllReferences(c) );
+			
+			Set<ContractDefinition> refs = ContractExplorer.getAllReferences(c);
+			env.addAll( refs );
 		}
 
 		return new Bekic(env.toArray(new ContractDefinition[]{}));
@@ -110,6 +112,9 @@ public class Bekic {
 		if (!env.containsKey(ANONYMOUS))
 			throw new IllegalStateException("this method is not allowed. You must use Bekic.getInstance(Contract)");
 		
+		if (!bekicApplied)
+			applyBekicTheorem();
+		
 		return env.get(ANONYMOUS).getContract();
 	}
 	
@@ -136,7 +141,13 @@ public class Bekic {
 			
 			ContractDefinition c = env.get(cName);
 			
-			Recursion rec = new Recursion(cName).setContract(c.getContract());
+			Recursion rec = new Recursion(cName);
+			
+			System.out.println("[rec] "+rec.hashCode());			
+			rec.setContract(c.getContract());
+			
+			
+			
 			c.setContract( rec );
 		}
 		printEnv();

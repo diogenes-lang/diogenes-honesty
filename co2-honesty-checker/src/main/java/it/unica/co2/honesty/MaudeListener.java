@@ -35,7 +35,9 @@ import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.bytecode.InvokeInstruction;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Sort;
+import it.unica.co2.api.contract.utils.ContractExplorer;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.dto.CO2DataStructures.AskDS;
@@ -347,6 +349,16 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ContractDefinition cDef = ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), ContractDefinition.class);
 			contracts.put(cDef.getName(), cDef);
+			
+			ContractExplorer.findAll(
+					cDef.getContract(), 
+					ContractReference.class,
+					(x)->(x.getReference()!=cDef),
+					(x)->{
+						contracts.put(x.getReference().getName(), x.getReference());
+					}
+				);
+			
 			sessions.add(sessionName);
 			
 			tell.contractName = cDef.getName();

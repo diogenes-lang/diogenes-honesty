@@ -12,11 +12,6 @@ public class Recursion extends Contract {
 		this.name=name;
 	}
 	
-	public Recursion(Recursion rec) {
-		this.name = rec.name;
-		this.contract = rec.contract.deepCopy();
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -26,12 +21,15 @@ public class Recursion extends Contract {
 	}
 	
 	public Recursion setContract(Contract contract) {
+		
 		this.contract = contract;
 		
 		ContractExplorer.findAll(
 				contract, 
-				Recursion.class,
-				(x)->(x==this),
+				Contract.class,
+				(x)->{
+					return x==this;
+				},
 				(x)->{
 					throw new IllegalArgumentException("the given contract contains a Recursion referring to this object (infinite loop)");
 				});
@@ -46,6 +44,16 @@ public class Recursion extends Contract {
 	
 	@Override
 	public Contract deepCopy() {
-		return new Recursion(name).setContract(contract.deepCopy());
+		
+		Contract cCopy = contract.deepCopy();
+		Recursion copy = new Recursion(name).setContract(cCopy);
+		
+		ContractExplorer.findAll(	// fix recursion references
+				cCopy, 
+				RecursionReference.class,
+				(x)->(x.getReference()==this),
+				(x)->{x.getPreceeding().next(new RecursionReference(copy));});
+		
+		return copy;
 	}
 }

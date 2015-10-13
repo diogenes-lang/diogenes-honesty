@@ -1,42 +1,38 @@
 package it.unica.co2.examples;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
-
-import it.unica.co2.api.contract.Contract;
-import it.unica.co2.api.contract.Recursion;
-import it.unica.co2.api.contract.generators.MaudeContractGenerator;
+import java.util.function.Consumer;
 
 public class JPFLambda {
 	
 	public static void main (String[] args) {
 		
-		/*
-		 * player's contract
-		 */
-		Recursion playerContract = recursion("x");
+		Foo foo = new Foo();
 		
-		Contract hit = internalSum().add("card", recRef(playerContract)).add("lose").add("abort");
-		Contract end = internalSum().add("win").add("lose").add("abort");
-		
-		playerContract.setContract(externalSum().add("hit", hit).add("stand", end));
-		
-		/*
-		 * deck service's contract
-		 */
-		Recursion dealerServiceContract = recursion("y");
-		
-		dealerServiceContract.setContract(internalSum().add("next", externalSum().add("card", recRef(dealerServiceContract))).add("abort"));
-
-		
-		System.out.println(
-				new MaudeContractGenerator(playerContract).generate()
-				);
-	
-		System.out.println(
-				new MaudeContractGenerator(dealerServiceContract).generate()
-				);
+		new Foo().test(foo);
+		System.out.println("---------------------------------");
+		new Foo().test(foo);
 	}
 	
+	public static void fooMethod(Foo foo, Consumer<Foo> consumer) {
+		consumer.accept(foo);
+	}
+}
+
+class Foo {
 	
+	public Foo test(Foo foo1) {
+
+		System.out.println("this.hashCode(): "+this.hashCode());
+		System.out.println("foo1.hashCode(): "+foo1.hashCode());
+		
+		JPFLambda.fooMethod(
+				foo1, 
+				(x)-> {
+					System.out.println("[lambda] this.hashCode(): "+this.hashCode());
+					System.out.println("[lambda] x.hashCode(): "+x.hashCode());
+				});
+		
+		return this;
+	}
 	
 }

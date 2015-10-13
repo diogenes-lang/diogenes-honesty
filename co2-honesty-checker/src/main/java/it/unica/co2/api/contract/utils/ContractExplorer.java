@@ -28,7 +28,10 @@ public class ContractExplorer {
 	public static <T extends Contract> void findAll(Contract contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
 		Set<T> acc = new HashSet<>();
 		findAll(new HashSet<>(), contract, clazz, predicate, acc);
-		acc.stream().forEach(consumer);
+		
+		for (T c : acc) {
+			consumer.accept(c);
+		}
 	}
 	
 	private static <T extends Contract> void findAll(Set<Contract> visited, Contract contract, Class<T> clazz, Predicate<T> predicate, Set<T> acc) {

@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.EmptyContract;
 import it.unica.co2.api.contract.ExternalAction;
 import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalAction;
@@ -101,6 +102,11 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 	protected String convert(Recursion rec) {
 		
 		return "rec "+rec.getName()+" . ( "+ this.convert(rec.getContract()) +" ) ";
+	}
+	
+	@Override
+	protected String convert(EmptyContract recursion) {
+		return "0";
 	}
 	
 }

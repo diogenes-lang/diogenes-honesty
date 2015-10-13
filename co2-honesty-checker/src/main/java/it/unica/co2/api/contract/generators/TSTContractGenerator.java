@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.EmptyContract;
 import it.unica.co2.api.contract.ExternalAction;
 import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalAction;
@@ -43,8 +44,8 @@ public class TSTContractGenerator extends AbstractContractGenerator{
 		
 		sb.append("!").append(contract.getName());
 		
-		if (contract.getNext()!=null)
-			sb.append(" . (")
+		if (contract.getNext()!=null && !(contract.getNext() instanceof EmptyContract))
+			sb.append(" . ( ")
 			.append( this.convert(contract.getNext()))
 			.append(" )");
 
@@ -57,7 +58,7 @@ public class TSTContractGenerator extends AbstractContractGenerator{
 		
 		sb.append("?").append(contract.getName());
 		
-		if (contract.getNext()!=null)
+		if (contract.getNext()!=null && !(contract.getNext() instanceof EmptyContract))
 			sb.append(" . ( ")
 			.append( this.convert(contract.getNext()))
 			.append(" )");
@@ -68,6 +69,12 @@ public class TSTContractGenerator extends AbstractContractGenerator{
 	@Override
 	protected String convert(Recursion rec) {
 		return "REC '"+rec.getName()+"' [ "+ this.convert(rec.getContract()) +" ] ";
+	}
+
+
+	@Override
+	protected String convert(EmptyContract recursion) {
+		return "";
 	}
 	
 	

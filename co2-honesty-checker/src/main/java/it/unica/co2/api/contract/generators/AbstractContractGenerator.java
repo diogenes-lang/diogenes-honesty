@@ -2,6 +2,7 @@ package it.unica.co2.api.contract.generators;
 
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractReference;
+import it.unica.co2.api.contract.EmptyContract;
 import it.unica.co2.api.contract.ExternalAction;
 import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalAction;
@@ -42,6 +43,9 @@ public abstract class AbstractContractGenerator {
 		else if(contract instanceof ContractReference)
 			return convert((ContractReference) contract);
 		
+		else if(contract instanceof EmptyContract)
+			return convert((EmptyContract) contract);
+		
 		throw new IllegalStateException("Unexpected contract "+contract.getClass());
 	}
 	
@@ -54,6 +58,8 @@ public abstract class AbstractContractGenerator {
 	protected abstract String convert(ExternalAction action);
 	
 	protected abstract String convert(Recursion recursion);
+	
+	protected abstract String convert(EmptyContract recursion);
 	
 	protected String convert(RecursionReference ref) {
 		return ref.getReference().getName();

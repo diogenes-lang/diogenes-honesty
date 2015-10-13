@@ -2,12 +2,17 @@ package it.unica.co2.api.contract.utils;
 
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
+import it.unica.co2.api.contract.EmptyContract;
 import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
 
 public class ContractFactory {
+	
+	public static EmptyContract empty() {
+		return new EmptyContract();
+	}
 	
 	public static InternalSum internalSum() {
 		return new InternalSum();
