@@ -13,6 +13,7 @@ xtend-gen
 
 **local.properties
 
+
 *.aux
 *.log
 *.orig
@@ -21,6 +22,8 @@ xtend-gen
 *.pdf.mk
 *.pdfsync
 *.pyg
+*synctex.gz
+*.blg
 
 *.jar
 */lib/
