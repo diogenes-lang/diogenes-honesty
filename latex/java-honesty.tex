@@ -16,14 +16,76 @@ each declaration inside a rule is mapped to a class field.
 
 The code generation happens navigating the AST and translating each
 \coco construct to the corresponding code of the target language.
-For the java process translation, we use  the Contract Oriented
-Middleware'classes, albeit slightly enhanced.
 
 The Maude representation of \coco is complete, so it is always possible to
 obtain a translation and verify the honesty of the process using
-\cite{verifiable}, as explained in \Cref{sec:maude:checker}. On the
-other hand, as focused in \Cref{sec:untranslatable-code}, not all
-processes can be translated to Java.
+\cite{verifiable}.
+
+For the java process translation, we use the Contract Oriented
+Middleware's classes, albeit slightly enhanced. 
+We model a \coco agent $\sys{\pmv{A}}{\procP}$ as a java class 
+(\incodeType{Participant}) that provides some utility methods (\eg to advertise
+a contract, to wait the establishment of a session, or to spawn a \coco
+parallel process) and it relieves the programmer of carrying about the
+middleware details. It extends the class \incodeType{CO2Process} which
+implements the \incodeType{Runnable} interface. 
+%
+Both Participant and CO2Process are abstract classes, so the programmer must
+implement the \emph{run} method that will contain the behaviour of the process.
+
+Not all \coco processes can be translated to java, so we focused on some
+specific \coco \emph{patterns}.
+
+\nicolanote{ho abbozzato una tabella. Mancano diversi pattern e potrebbe non starci in una pagina.}
+
+\begin{figure}[t]
+\centering
+
+\begin{tabular}{|p{2.5cm}|p{3cm}|p{6cm}|}
+    \hline
+    pattern &
+    description &
+    java code \\
+    \hline\hline
+
+    $\tell {} {\freeze x \contrP} \cocoSeq \procP$ & 
+    It advertises the contract $\contrP$ & 
+\begin{minted}[fontsize=\footnotesize,breaklines,mathescape]{java}
+Contract c = ...;
+Public p = tell(c);
+// $\procP$
+\end{minted}
+    \\\hline
+    
+    $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{} \cocoSeq \procP$ & 
+    It advertises the contract $\contrP$ and waits for a session & 
+\begin{minted}[fontsize=\footnotesize,breaklines,mathescape]{java}
+Contract c = ...;
+Public p = tell(c);
+Session session = waitForSession(p);
+// $\procP$
+\end{minted}   
+    \\\hline
+    
+    $\tell {} {\freeze x \contrP} \cocoSeq 
+    \ask{x}{} \cocoSeq \procP[1] \cocoPlus
+    \tau \cocoSeq \procP[2]$ & 
+    It advertises the contract $\contrP$ and waits for a session. If the session is fused in time, the execution continues in $\procP[1]$, otherwise in $\procP[2]$.& 
+\begin{minted}[fontsize=\scriptsize,breaklines,mathescape]{java}
+Contract c = ...;
+Public p = tell(c);
+try {
+    int timeout = ...;
+    Session session = waitForSession(p,timeout);
+    // $\procP[1]$
+} catch(TimeExpiredException e) {
+    // $\procP[2]$
+}
+\end{minted}   
+        \\\hline
+\end{tabular}
+
+\end{figure}
 
 \subsubsection{Honesty Checker in Java}
 We also implemented a class \incodeType{HonestyChecker} to verify the

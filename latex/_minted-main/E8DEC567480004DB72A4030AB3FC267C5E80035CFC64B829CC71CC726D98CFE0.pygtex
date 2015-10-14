@@ -1,0 +1,11 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8}]
+\PYGfriendly{n}{Contract} \PYGfriendly{n}{c} \PYGfriendly{o}{=} \PYGfriendly{o}{...;}
+\PYGfriendly{n}{Public} \PYGfriendly{n}{p} \PYGfriendly{o}{=} \PYGfriendly{n}{tell}\PYGfriendly{o}{(}\PYGfriendly{n}{c}\PYGfriendly{o}{);}
+\PYGfriendly{k}{try} \PYGfriendly{o}{\PYGfriendlyZob{}}
+    \PYGfriendly{k+kt}{int} \PYGfriendly{n}{timeout} \PYGfriendly{o}{=} \PYGfriendly{o}{...;}
+    \PYGfriendly{n}{Session} \PYGfriendly{n}{session} \PYGfriendly{o}{=} \PYGfriendly{n}{waitForSession}\PYGfriendly{o}{(}\PYGfriendly{n}{p}\PYGfriendly{o}{,}\PYGfriendly{n}{timeout}\PYGfriendly{o}{);}
+    \PYGfriendly{c+c1}{// $\procP[1]$}
+\PYGfriendly{o}{\PYGfriendlyZcb{}} \PYGfriendly{k}{catch}\PYGfriendly{o}{(}\PYGfriendly{n}{TimeExpiredException} \PYGfriendly{n}{e}\PYGfriendly{o}{)} \PYGfriendly{o}{\PYGfriendlyZob{}}
+    \PYGfriendly{c+c1}{// $\procP[2]$}
+\PYGfriendly{o}{\PYGfriendlyZcb{}}
+\end{Verbatim}
