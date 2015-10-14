@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
@@ -25,7 +24,7 @@ public class Bekic {
 	private boolean bekicApplied = false;
 	private static final String ANONYMOUS = "_ANONYMOUS";
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 	
 	/**
 	 * Returns an Bekic instance. The environment is derived from the given contracts.
@@ -142,11 +141,8 @@ public class Bekic {
 			ContractDefinition c = env.get(cName);
 			
 			Recursion rec = new Recursion(cName);
-			
-			System.out.println("[rec] "+rec.hashCode());			
+			log("[rec] "+rec.hashCode());			
 			rec.setContract(c.getContract());
-			
-			
 			
 			c.setContract( rec );
 		}
@@ -198,14 +194,14 @@ public class Bekic {
 								c.getContract(), 
 								Recursion.class,
 								(rec)->{
-									log("[STEP 2]        search: "+rec);
+									log("[STEP 2]        search: "+rec.getName());
 									return rec.getName().equals(ref.getReference().getName());
 								},
 								(rec)->{
 									recs.add(rec);
 								});
 
-						log("[STEP 2]    available rec: "+recs.stream().map((x)->(x.getName())).collect(Collectors.joining(",")));
+						log("[STEP 2]    available recs: "+recs.size());
 						
 						if (recs.size()>=1) {
 							ref.getPreceeding().next( new RecursionReference(recs.get(0)) );
@@ -218,7 +214,7 @@ public class Bekic {
 						}
 					);	
 		}
-		
+
 		printEnv();
 		
 		

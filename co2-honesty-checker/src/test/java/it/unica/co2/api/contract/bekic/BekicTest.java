@@ -10,6 +10,7 @@ import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
+import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 
 
@@ -153,6 +154,24 @@ public class BekicTest {
 		System.out.println(playerContract.toMaude());
 		System.out.println(playerContract.toTST());
 	}
+	
+	@Test
+	public void test7() {
+		System.out.println("+++++++++++ TEST 7 ++++++++++++");
+		
+		ContractDefinition C = def("C");
+		ContractDefinition Cread = def("Cread");
+		ContractDefinition Cwrite = def("Cwrite");
+		
+		C.setContract(externalSum().add("req", Sort.STRING, internalSum().add("ackR", Sort.UNIT, ref(Cread)).add("ackW", Sort.UNIT, ref(Cwrite)).add("error", Sort.UNIT)));
+		Cread.setContract(internalSum().add("data", Sort.INT, externalSum().add("ack", Sort.INT, ref(Cread))).add("error", Sort.UNIT));
+		Cwrite.setContract(empty());
+		
+		System.out.println(C.getContract());
+		System.out.println(C.getContract().toMaude());
+		System.out.println(C.getContract().toTST());
+	}
+	
 	
 	private void checkEnv(ContractDefinition...  cDefs) {
 		
