@@ -1,0 +1,12 @@
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8}]
+\PYGfriendly{n}{Session} \PYGfriendly{n}{x} \PYGfriendly{o}{=} \PYGfriendly{o}{...;}
+\PYGfriendly{n}{Message} \PYGfriendly{n}{msg} \PYGfriendly{o}{=} \PYGfriendly{n}{x}\PYGfriendly{o}{.}\PYGfriendly{n+na}{waitForReceive}\PYGfriendly{o}{(}\PYGfriendly{l+s}{\PYGfriendlyZdq{}a\PYGfriendlyZus{}1\PYGfriendlyZdq{}}\PYGfriendly{o}{,} \PYGfriendly{o}{...,} \PYGfriendly{l+s}{\PYGfriendlyZdq{}a\PYGfriendlyZus{}n\PYGfriendlyZdq{}}\PYGfriendly{o}{);}
+
+\PYGfriendly{k}{switch}\PYGfriendly{o}{(}\PYGfriendly{n}{msg}\PYGfriendly{o}{.}\PYGfriendly{n+na}{getLabel}\PYGfriendly{o}{())} \PYGfriendly{o}{\PYGfriendlyZob{}}
+\PYGfriendly{k}{case} \PYGfriendly{l+s}{\PYGfriendlyZdq{}a\PYGfriendlyZus{}1\PYGfriendlyZdq{}}\PYGfriendly{o}{:} \PYGfriendly{c+c1}{// $\procP[1]$}
+    \PYGfriendly{k}{break}\PYGfriendly{o}{;}
+\PYGfriendly{o}{...}
+\PYGfriendly{k}{case} \PYGfriendly{l+s}{\PYGfriendlyZdq{}a\PYGfriendlyZus{}n\PYGfriendlyZdq{}}\PYGfriendly{o}{:} \PYGfriendly{c+c1}{// $\procP[n]$}
+    \PYGfriendly{k}{break}\PYGfriendly{o}{;}
+\PYGfriendly{o}{\PYGfriendlyZcb{}}
+\end{Verbatim}
