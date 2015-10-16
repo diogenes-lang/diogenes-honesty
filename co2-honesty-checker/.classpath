@@ -12,5 +12,7 @@
 	<classpathentry kind="lib" path="lib/jpf.jar" sourcepath="/jpf-core"/>
 	<classpathentry kind="lib" path="lib/junit-4.12.jar" sourcepath="/home/nicola/.m2/repository/junit/junit/4.12/junit-4.12-sources.jar"/>
 	<classpathentry kind="lib" path="lib/co2apiHL-fake-2.0.3.jar"/>
+	<classpathentry kind="lib" path="lib/bcel-5.2.jar"/>
+	<classpathentry kind="lib" path="lib/jpf-nhandler.jar" sourcepath="/jpf-nhandler"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
