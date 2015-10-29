@@ -1,6 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`\$=3\catcode`\^=7\catcode`\_=8}]
-\PYGfriendly{n}{Contract} \PYGfriendly{n}{c} \PYGfriendly{o}{=} \PYGfriendly{o}{...;}
-\PYGfriendly{n}{Public} \PYGfriendly{n}{p} \PYGfriendly{o}{=} \PYGfriendly{n}{tell}\PYGfriendly{o}{(}\PYGfriendly{n}{c}\PYGfriendly{o}{);}
-\PYGfriendly{n}{Session} \PYGfriendly{n}{session} \PYGfriendly{o}{=} \PYGfriendly{n}{waitForSession}\PYGfriendly{o}{(}\PYGfriendly{n}{p}\PYGfriendly{o}{);}
-\PYGfriendly{c+c1}{// $\procP$}
-\end{Verbatim}

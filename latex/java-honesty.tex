@@ -23,90 +23,177 @@ obtain a translation and verify the honesty of the process using
 
 For the java process translation, we use the Contract Oriented
 Middleware's classes, albeit slightly enhanced. 
-We model a \coco agent $\sys{\pmv{A}}{\procP}$ as a java class 
-(\incodeType{Participant}) that provides some utility methods (\eg to advertise
-a contract, to wait the establishment of a session, or to spawn a \coco
-parallel process) and it relieves the programmer of carrying about the
-middleware details. It extends the class \incodeType{CO2Process} which
-implements the \incodeType{Runnable} interface. 
 %
-Both Participant and CO2Process are abstract classes, so the programmer must
-implement the \emph{run} method that will contain the behaviour of the process.
+The translation is not complete, so we define a the subset \cocosub as follows:
 
-Not all \coco processes can be translated to java, so we focused on some
-specific \coco \emph{patterns}.
+\begin{definition}\label{def:co2sub}
+	The syntax of \cocosub is defined as follows:
+	\[
+	\small
+	\begin{array}{r@{\hskip 0.1cm}lclcccccccccccc}   
+	& \sysS \, (\text{Systems}) & ::= & 
+	\emptysys 
+	~\bnfmid ~ \sys {\pmv A} \procP 
+	\; \bnfmid \; \sys s \gamma 
+	\; \bnfmid \; (u)\sysS
+	\; \bnfmid \; \sysS \mid \sysS
+	\; \bnfmid \; \setenum{\freeze u \contrP}_{\pmv A}
+	\\[.8pc]
+	
+	& \procP \, (\text{Processes})& ::= &  
+	\ifte{\expE}{\procP}{\procP}
+	\; \bnfmid \; \procX(\vec u,\vec e)
+	\; \bnfmid \; \procP \cocoPar \procP
+	\\[.5pc]
+	& & &
+	\bnfmid \; \tellwait{}{\freeze{u} {\contrP}} \cocoSeq \procP
+	\; \bnfmid \; \tellretract{}{\freeze{u} {\contrP}} \cocoSeq \procP : \procP
+	\\[.5pc]
+	& & &
+	\bnfmid \; \send u {\atomOut{a} e} \cocoSeq \procP
+	\; \bnfmid \; \receive u \langle\;
+    	\cocoSum[i]{{\atomIn{a_i} x_i : \sortT_i} \cocoSeq \procP[\!i]} \cocoPlus \tau \cocoSeq \procP 
+    	\;\rangle	
+	\end{array}
+	\]
+\end{definition}
 
-\nicolanote{ho abbozzato una tabella. Mancano diversi pattern e potrebbe non starci in una pagina.}
+\emph{Systems} are the same of \coco, whereas the set of \emph{processes}
+is changed and \emph{prefixes} were removed. 
+
+\Cref{fig:co2sub:equiv} shows the new processes defined in terms of \coco.
+$\tellwait{}{\freeze{u} {\contrP}} \cocoSeq \procP$ advertise the contract 
+$\contrP$ and wait until a new session is established, then the execution 
+continue with $\procP$.
+%
+$\tellretract{}{\freeze{u} {\contrP}} \cocoSeq \procP : \procPi$ advertise the
+contract $\contrP$ and wait until a new session is established for a while, then 
+the execution continue with $\procP$.
+If the timeout expires, the execution continue with $\procPi$ and the session 
+cannot longer be established.
+%
+$\send u {\atomOut{a} e} \cocoSeq \procP$ is the output action and 
+$\receive u \langle\; \cocoSum[i]{{\atomIn{a} x : \sortT} \cocoSeq \procP[\!i]} \cocoPlus \tau \cocoSeq \procP\;\rangle$ represent an external choice where $\tau$ models a
+timeout in the case no input is received (it can be omitted).
+
 
 \begin{figure}[t]
-\centering
-\def\arraystretch{1.5}
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}[t]{|p{3cm}|p{8cm}|}
-    \hline
-    pattern &
-    java code \\
-    \hline\hline
+	\hrulefill
+	\footnotesize
+	\[
+	\begin{array}{rcl}
+	
+	\tellwait{}{\freeze{u} {\contrP}} \cocoSeq \procP
+	&\equiv&
+	(u) (\tell{}{\freeze{u} \contrP} \cocoSeq \ask{u}{true} \cocoSeq \procP)
+	
+	\\[8pt]
+	\tellretract{}{\freeze{u} {\contrP}} \cocoSeq \procP : \procPi
+	&\equiv&
+	(u) (\tell{}{\freeze{u} \contrP} \cocoSeq 
+	( \ask{u}{true} \cocoSeq \procP \cocoPlus \retract{u}{} \cocoSeq \procPi) )
+	
+	\\[8pt]
+	\send u {\atomOut{a} e} \cocoSeq \procP
+	&\equiv&
+    \fact{u} {\atomOut{a} e} \, \cocoSeq \procP
 
-%    $\tell {} {\freeze x \contrP} \cocoSeq \procP$ &
-%\begin{tabminted}[breaklines,mathescape]{java}
-%Contract c = ...;
-%Public p = tell(c);
-%// $\procP$
-%\end{tabminted}
-%    \\\hline
-%    
-%    $\tell {} {\freeze x \contrP} \cocoSeq \ask{x}{} \cocoSeq \procP$ & 
-%\begin{tabminted}[breaklines,mathescape]{java}
-%Contract c = ...;
-%Public p = tell(c);
-%Session session = waitForSession(p);
-%// $\procP$
-%\end{tabminted}   
-%    \\\hline
-    
-    $\tell {} {\freeze x \contrP} \cocoSeq 
-    \ask{x}{} \cocoSeq \procP[1] \cocoPlus
-    \tau \cocoSeq \procP[2]$ &
-\begin{tabminted}[breaklines,mathescape]{java}
-Contract c = ...;
-Public p = tell(c);
+	\\[8pt]
+	\receive u 
+	\langle\;
+	\cocoSum[i]{{\atomIn{a_i} x_i : \sortT_i} \cocoSeq \procP[\!i]} 
+	\cocoPlus \tau \cocoSeq \procP 
+    \;\rangle
+	&\equiv&
+	(\cocoSum[i]{\fact {u} {\atomIn{a_i} x_i : \sortT_i} \cocoSeq \procP[\!i]}) \cocoPlus \tau \cocoSeq \procP
+	
+	\end{array}
+	\]
+	\hrulefill
+	\vspace{-5pt}
+	\caption[]{Structural equivalence for \cocosub processes}
+	\label{fig:co2sub:equiv}
+	\vspace{-10pt}
+\end{figure}
+
+
+Now we can model a \cocosub agent $\sys{\pmv{A}}{\procP}$ in java.
+The abstract class \incodeType{Participant} models the agent and
+it provides some utility methods and it relieves the programmer of 
+carrying about the middleware details.
+We define the function $\sigma : \procP \longrightarrow java$ as follows
+
+\begin{cocomapping}
+  
+    $\sigma( \tellwait{}{\freeze{u} {\contrP}} \cocoSeq \procP )$ &
+
+\begin{lstlisting}[language=java,mathescape=true,aboveskip=-0.2 \baselineskip]
+// 'c' is a Contract defined somewhere
+Session u = waitForSession( tell(c) );
+$\sigma(\procP)$
+\end{lstlisting}
+
+\end{cocomapping}
+
+\begin{cocomapping}
+
+    $\sigma( \tellretract{}{\freeze{u} {\contrP}} \cocoSeq \procP : \procPi ) $ &
+%
+\begin{lstlisting}[language=java,mathescape=true,aboveskip=-0.2 \baselineskip]
+// 'c' is a Contract defined somewhere
+// 'delay' is an integer defined somewhere
+Public p = tell(c, delay);
 try {
-    int timeout = ...;
-    Session session = waitForSession(p,timeout);
-    // $\procP[1]$
-} catch(TimeExpiredException e) {
-    // $\procP[2]$
+    Session session = waitForSession(p);
+    $\sigma(\procP)$
+} catch(ContractExpiredException e) {
+    $\sigma(\procPi)$
 }
-\end{tabminted}   
-    \\\hline
-    
-    $\fact{x}{} \atomIn{a_1} \cocoSeq \procP[1] \cocoPlus 
-    \dots \cocoPlus 
-    \fact{x}{} \atomIn{a_n} \cocoSeq \procP[n] \cocoPlus
-    \tau \cocoSeq \procP$ &
-\begin{tabminted}[breaklines,mathescape]{java}
-Session x = ...;
-int timeout = ...;
+\end{lstlisting}
 
+
+\end{cocomapping}
+
+\begin{cocomapping}
+   
+    $\sigma( \send u {\atomOut{a} e} \cocoSeq \procP ) $ &
+%
+\begin{lstlisting}[language=java,mathescape=true,aboveskip=-0.2 \baselineskip]
+// 'u' is a Session defined somewhere
+u.send("a", $e$)
+$\sigma(\procP)$
+\end{lstlisting}
+
+\end{cocomapping}
+
+\begin{cocomapping}
+
+    $\sigma( \receive u 
+    	\langle\;
+    	\cocoSum[i] {\atomIn{a_i} x_i : \sortT_i} \cocoSeq \procP[i]
+    	\cocoPlus \tau \cocoSeq \procP 
+        \;\rangle ) $ &
+%
+\begin{lstlisting}[language=java,mathescape=true,aboveskip=-0.2 \baselineskip]
+// 'u' is a Session defined somewhere
+// 'timeout' is an integer defined somewhere
 try {
-    Message msg = x.waitForReceive(timeout, "a_1", ..., "a_n");
+    Message msg = u.waitForReceive(timeout, "a_1", ..., "a_n")
     
     switch(msg.getLabel()) {
-    case "a_1": // $\procP[1]$
-        break;
-    ...
-    case "a_n": // $\procP[n]$
+    
+    case "a_i":
+        $\sortT_i$ "x_i" = msg.getValue($\sortT_i$.class);
+        $\sigma(\procP[i])$
         break;
     }
-} catch(TimeExpiredException e) {
-   // $\procP$
+    
+} catch (TimeExpiredException) {
+    $\sigma(\procP)$
 }
-\end{tabminted}
-    \\\hline
-\end{tabular}
+\end{lstlisting}
 
-\end{figure}
+\end{cocomapping}
 
 \subsubsection{Honesty Checker in Java}
 We also implemented a class \incodeType{HonestyChecker} to verify the

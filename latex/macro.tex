@@ -59,7 +59,9 @@
 
 \newcommand{\Real}[1]{\mathrm{Real}}
 
+\newcommand{\minus}{\scalebox{1}[1.5]{$-$}}
 \newcommand{\coco}{CO\textsubscript{2}\xspace}
+\newcommand{\cocosub}{CO\rlap{\textsubscript{2}}\textsuperscript{\minus}\xspace}
 % \newcommand{\cccp}{\mbox{\texttt{adcc}}}
 
 \newcommand{\tuple}[1]{\ensuremath{\langle {#1} \rangle}}
@@ -109,8 +111,13 @@
 \newcommand{\ifte}[3]{\cond~{#1}~\then~{#2}~\owise~{#3}}
 \newcommand{\fact}[2]{\cocoFmt{do}_{#1}\,{#2}}
 \newcommand{\tell}[2]{\cocoFmt{tell}^{#1}\,{#2}}
+\newcommand{\tellretract}[2]{\cocoFmt{tell?}^{#1}\,{#2}}
+\newcommand{\tellwait}[2]{\cocoFmt{tellAndWait}^{#1}\,{#2}}
+\newcommand{\send}[1]{\cocoFmt{send}_{#1}\,}
+\newcommand{\receive}[1]{\cocoFmt{receive}_{#1}\,}
 \newcommand{\freeze}[2]{\downarrow_{#1}{#2}}
 \newcommand{\ask}[2]{\ifempty{#2}{\cocoFmt{ask}_{{#1}}}{\cocoFmt{ask}_{{#1}}\,{#2}}}
+\newcommand{\retract}[1]{\cocoFmt{retract}_{{#1}}}
 \newcommand{\fuse}{\cocoFmt{fuse}}
 \newcommand{\pref}[1][]{\cocoFmt{\pi}_{{\cocoColor{#1}}}}
 \newcommand{\prefi}[1][]{\cocoFmt{\pi'}_{{\cocoColor{#1}}}}
@@ -629,3 +636,16 @@ at}}{\end{minipage}\end{center} \hket\end{definition}\medskip\end{minipage}}
   \let\@finalstrut\tabminted@finalstrut
 }
 \makeatother
+
+
+
+
+\newenvironment{cocomapping}{
+\small
+\centering
+\def\arraystretch{1.5}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{p{4cm}p{7.5cm}} 
+}{
+\end{tabular}
+}

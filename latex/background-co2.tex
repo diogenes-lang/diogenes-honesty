@@ -204,6 +204,7 @@ and some notation in Table~\ref{def:notation}.
 	\; \bnfmid \; \fact u {\atomOut{a} e}
 	\; \bnfmid \; \fact u {\atomIn{a} x : \sortT}
 	\; \bnfmid \; \ask {u} {\!\phi}
+	\; \bnfmid \; \retract {u}
 	\end{array}
 	\]
 	If $\vec u = u_0,\hdots,u_n$,
@@ -287,6 +288,8 @@ and contract query $\ask{u}{\phi}$
 In each prefix $\pref \neq \tau$, 
 the index $u$ refers to the target session involved in
 the execution of $\pref$.
+
+\nicolanote{aggiungere descrizione della $\retract{u}$ e aggiornare la semantica in appendice}
 
 \smallskip
 The only binder for names is the
