@@ -7,8 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Stack;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,10 +60,12 @@ public class MaudeListener extends ListenerAdapter {
 	public MaudeListener(Config conf, Class<? extends Participant> processClass) {
 		
 		if (conf.getBoolean("honesty.listener.log", false)) {
-			log.setLevel(Level.ALL);
+			log.setLevel(Level.INFO);
+			ThreadState.logger.setLevel(Level.INFO);
 		}
 		else {
 			log.setLevel(Level.OFF);
+			ThreadState.logger.setLevel(Level.OFF);
 		}
 		
 		this.processUnderTestClass = processClass;
@@ -165,7 +165,7 @@ public class MaudeListener extends ListenerAdapter {
 	public void executeInstruction(VM vm, ThreadInfo ti, Instruction insn) {
 
 		ClassInfo ci = ti.getExecutingClassInfo();
-		ThreadState tstate = threadStates.get(vm.getCurrentThread());
+		ThreadState tstate = threadStates.get(ti);
 
 		if (
 				methodsToSkip.contains(insn.getMethodInfo()) &&
@@ -175,67 +175,7 @@ public class MaudeListener extends ListenerAdapter {
 			log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
 			ti.skipInstruction(insn.getMethodInfo().getLastInsn());
 		}
-		
-		else
-//		if (
-//				insn instanceof JVMInvokeInstruction && 
-//				ci.isInstanceOf(CO2Process.class.getName()) 
-//				) {
-//			
-//			JVMInvokeInstruction invokeInsn = (JVMInvokeInstruction) insn;
-//			
-//			MethodInfo invokedMethod = invokeInsn.getInvokedMethod();
-//			ClassInfo invokedClass = invokedMethod.getClassInfo();
-//			
-//			if (
-//					invokedMethod.getName().equals("run") &&
-//					envProcesses.containsKey(invokedClass.getName())
-//					) {
-//				
-//				ProcessDefinitionDS proc = envProcesses.get(invokedClass.getName());
-//
-//				ProcessCallDS pCall = new ProcessCallDS();
-////				pCall.ref = proc;
-//				
-//				setCurrentProcess(tstate,pCall);
-//				setCurrentPrefix(tstate,null);
-//				
-//				boolean recursiveCall = checkForRecursion(tstate,proc);
-//				
-//				if (recursiveCall || proc.alreadyBuilt) {
-//					
-//					if (recursiveCall) {
-//						// the call is recursive: stop search
-//						log.info("recursive call detected, terminating");
-//					}
-//					
-//					if (proc.alreadyBuilt) {
-//						// the process was already called
-//						// the flag is set when called process returns (exit of the 'run' method)
-//						log.info("process already built: "+proc.toString());
-//					}
-//					
-//					Instruction nextInsn = invokeInsn.getNext();
-//					
-//					ti.skipInstruction(nextInsn);	//skip the invocation
-//				}
-//				else {
-//					log.info("NOT recursive call");
-//					
-//					CO2StackFrame frame = new CO2StackFrame();
-//					frame.prefix = proc.firstPrefix;
-//					frame.process = proc;
-//					
-//					log.info("adding processCall onto the stack");
-//					tstate.co2ProcessesStack.push(frame);
-//					
-//					log.info(proc.toString());
-//				}
-//			}
-//			
-//		}
-//		else 
-		if (
+		else if (
 				insn instanceof SwitchInstruction && 
 				ci.isInstanceOf(CO2Process.class.getName())
 				) {
@@ -243,45 +183,34 @@ public class MaudeListener extends ListenerAdapter {
 			/*
 			 * switch statements use if-instructions that must be not considered for branch exploration
 			 */
-			log.info("");
-			log.info("SWITCH : setting start="+switchInsn.getPosition()+" , end="+switchInsn.getTarget());
-			log.info("methodIfExcluded: "+tstate.methodInfoIfExcluded);
-			tstate.startIfExcluded = switchInsn.getPosition();		// where the switch starts
-			tstate.endIfExcluded = switchInsn.getTarget();			// where the switch ends
-			tstate.methodInfoIfExcluded = switchInsn.getMethodInfo();
+			log.finer("");
+			log.finer("SWITCH : setting start="+switchInsn.getPosition()+" , end="+switchInsn.getTarget());
+			tstate.setSwitchInsn(switchInsn);
 		}
-		else if (
+		else if (	
 				insn instanceof IfInstruction && 
-				ci.isInstanceOf(CO2Process.class.getName()) && 			// consider only 'if' into classes are instance of CO2Process
-				insn.getMethodInfo().getName().equals("run") && 		// consider only 'if' into the run method
-				!ci.getName().equals(Participant.class.getName()) && 	// ignore 'if' instructions into Participant.class
-				!ci.getName().equals(CO2Process.class.getName()) && 	// ignore 'if' instructions into Participant.class
-					(
-						insn.getPosition()<tstate.startIfExcluded || 
-						insn.getPosition()>tstate.endIfExcluded || 
-						!insn.getMethodInfo().equals(tstate.methodInfoIfExcluded)
-					)// skip if instructions related to switch statements
+				tstate.considerIfInstruction((IfInstruction) insn)
 				) {
 			
 			IfInstruction ifInsn = (IfInstruction) insn;
 			
 			if (!ti.isFirstStepInsn()) { // top half - first execution
 
-				log.info("TOP HALF");
+				log.finer("TOP HALF");
 				
-				log.info("");
-				printInfo(tstate);
-				log.info("--IF_THEN_ELSE--");
+				log.finer("");
+				tstate.printInfo();
+				log.finer("--IF_THEN_ELSE--");
 				
 				IfThenElseDS ifThenElse = new IfThenElseDS();
 				ifThenElse.thenStmt = new PrefixPlaceholderDS();
 				ifThenElse.elseStmt = new PrefixPlaceholderDS();
 				
 				
-				setCurrentProcess(tstate,ifThenElse);		//set the current process
-				pushIfElse(tstate, ifThenElse);
+				tstate.setCurrentProcess(ifThenElse);		//set the current process
+				tstate.pushIfElse(ifThenElse);
 
-				BooleanChoiceGenerator cg = new BooleanChoiceGenerator("ifThenElseCG_"+tstate.co2ProcessesStack.peek().ifElseStack.size(), false);
+				BooleanChoiceGenerator cg = new BooleanChoiceGenerator(tstate.getBooleanChoiceGeneratorName(), false);
 
 				vm.getSystemState().setNextChoiceGenerator(cg);
 				ti.skipInstruction(insn);
@@ -289,11 +218,11 @@ public class MaudeListener extends ListenerAdapter {
 			}
 			else {
 
-				log.info("BOTTOM HALF");
+				log.finer("BOTTOM HALF");
 				
 				// bottom half - reexecution at the beginning of the next
 				// transition
-				BooleanChoiceGenerator cg = vm.getSystemState().getCurrentChoiceGenerator("ifThenElseCG_"+tstate.co2ProcessesStack.peek().ifElseStack.size(), BooleanChoiceGenerator.class);
+				BooleanChoiceGenerator cg = vm.getSystemState().getCurrentChoiceGenerator(tstate.getBooleanChoiceGeneratorName(), BooleanChoiceGenerator.class);
 
 				assert cg != null : "no 'ifThenElseCG' BooleanChoiceGenerator found";
 				
@@ -303,43 +232,43 @@ public class MaudeListener extends ListenerAdapter {
 				Boolean myChoice = cg.getNextChoice();
 				
 				
-				PrefixPlaceholderDS thenTau = tstate.co2ProcessesStack.peek().ifElseStack.peek().ifThenElse.thenStmt;
-				PrefixPlaceholderDS elseTau = tstate.co2ProcessesStack.peek().ifElseStack.peek().ifThenElse.elseStmt;
+				PrefixPlaceholderDS thenTau = tstate.getThenPlaceholder();
+				PrefixPlaceholderDS elseTau = tstate.getElsePlaceholder();
 				
-				log.info("thenTau: "+thenTau);
-				log.info("elseTau: "+elseTau);
+				log.finer("thenTau: "+thenTau);
+				log.finer("elseTau: "+elseTau);
 				
 				
 				if (myChoice){
 					/*
 					 * then branch
 					 */
-					log.info("THEN branch, setting tau, choice: "+myChoice);
-//					log.info("next insn: "+ifInsn.getNext().getPosition());
+					log.finer("THEN branch, setting tau, choice: "+myChoice);
+					log.finer("next insn: "+ifInsn.getNext().getPosition());
 					
-					setCurrentPrefix(tstate,thenTau);		//set the current prefix
+					tstate.setCurrentPrefix(thenTau);		//set the current prefix
 
 					ti.skipInstruction(ifInsn.getNext());
 					
-					setPeekThen(tstate);
-					popIfElse(tstate);
+					tstate.setPeekThen();
+					tstate.popIfElse();
 				}
 				else {
 					/*
 					 * else branch
 					 */
-					log.info("ELSE branch, setting tau, choice: "+myChoice);
-//					log.info("next insn: "+ifInsn.getTarget().getPosition());
+					log.finer("ELSE branch, setting tau, choice: "+myChoice);
+					log.finer("next insn: "+ifInsn.getTarget().getPosition());
 
-					setCurrentPrefix(tstate,elseTau);		//set the current prefix
+					tstate.setCurrentPrefix(elseTau);		//set the current prefix
 					
 					ti.skipInstruction(ifInsn.getTarget());
 					
-					setPeekElse(tstate);
-					popIfElse(tstate);
+					tstate.setPeekElse();
+					tstate.popIfElse();
 				}
 				
-				printInfo(tstate);
+				tstate.printInfo(Level.FINER);
 			}
 
 		}
@@ -354,7 +283,7 @@ public class MaudeListener extends ListenerAdapter {
 
 		if (exitedMethod == participantTell) {
 			log.info("");
-			printInfo(tstate);
+			tstate.printInfo();
 			log.info("--TELL-- (method exited)");
 			
 			TellDS tell = new TellDS();
@@ -381,20 +310,20 @@ public class MaudeListener extends ListenerAdapter {
 			tell.contractName = cDef.getName();
 			tell.session = sessionName;
 			
-			setCurrentProcess(tstate,sum);		//set the current process
-			setCurrentPrefix(tstate,tell);
+			tstate.setCurrentProcess(sum);		//set the current process
+			tstate.setCurrentPrefix(tell);
 
-			printInfo(tstate);
+			tstate.printInfo();
 		}
 		else if (exitedMethod == participantWaitForSession) {
 
 			log.info("");
-			printInfo(tstate);
+			tstate.printInfo();
 			log.info("--WAIT FOR SESSION-- (method exited)");
 			
 			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
-			SumDS sum = tstate.co2ProcessesStack.peek().sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			SumDS sum = tstate.getSum();									//the sum of possible choice (set by entered-method)
 			
 			log.info("sumStack.peek(): "+sum.toString());
 			
@@ -417,8 +346,8 @@ public class MaudeListener extends ListenerAdapter {
 					else
 						tau=(TauDS) sum.prefixes.get(1);
 					
-					popSum(tstate,tau);
-					setCurrentPrefix(tstate,tau);
+					tstate.popSum(tau);
+					tstate.setCurrentPrefix(tau);
 				}
 				else  if (ex.getExceptionClassname().equals(ContractExpiredException.class.getName())) {
 					
@@ -433,7 +362,7 @@ public class MaudeListener extends ListenerAdapter {
 					retract.session = sessionName;
 					
 					sum.prefixes.add(retract);
-					setCurrentPrefix(tstate, retract);
+					tstate.setCurrentPrefix( retract);
 				}
 				else {
 					throw new IllegalStateException("unexpected exception: "+ex.getExceptionClassname());
@@ -479,22 +408,22 @@ public class MaudeListener extends ListenerAdapter {
 				
 				ask.session = sessionName;
 				
-				popSum(tstate,ask);
-				setCurrentPrefix(tstate,ask);		//set the current prefix
+				tstate.popSum(ask);
+				tstate.setCurrentPrefix(ask);		//set the current prefix
 			}
 			
-			printInfo(tstate);
+			tstate.printInfo();
 		}
 		else if (exitedMethod == sessionWaitForReceive) {
 
 			log.info("");
-			printInfo(tstate);
+			tstate.printInfo();
 			log.info("--SUM OF RECEIVE-- (method exited)");
 			
 			
 			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
 			
-			SumDS sum = tstate.co2ProcessesStack.peek().sumStack.peek().sum;		//the sum of possible choice (set by entered-method)
+			SumDS sum = tstate.getSum();									//the sum of possible choice (set by entered-method)
 			log.info("sumStack.peek(): "+sum.toString());
 			
 			if (ex!=null) {
@@ -509,8 +438,8 @@ public class MaudeListener extends ListenerAdapter {
 				
 				TauDS p = (TauDS) sum.prefixes.get(sum.prefixes.size()-1);
 				
-				popSum(tstate,p);
-				setCurrentPrefix(tstate,p);
+				tstate.popSum(p);
+				tstate.setCurrentPrefix(p);
 			}
 			else {
 				
@@ -553,11 +482,11 @@ public class MaudeListener extends ListenerAdapter {
 				received.action = label;
 				received.session = sessionName;
 				
-				popSum(tstate,received);
-				setCurrentPrefix(tstate,received);		//set the current prefix
+				tstate.popSum(received);
+				tstate.setCurrentPrefix(received);		//set the current prefix
 			}
 			
-			printInfo(tstate);
+			tstate.printInfo();
 		}
 		else if (
 				exitedMethod.getName().equals("run") &&
@@ -567,29 +496,15 @@ public class MaudeListener extends ListenerAdapter {
 			 * the process is finished
 			 */
 			log.info("");
-			printInfo(tstate);
+			tstate.printInfo();
 			log.info("--RUN ENV PROCESS-- (method exited) -> "+ci.getSimpleName());
 			
-			boolean pendingSum = !tstate.co2ProcessesStack.peek().sumStack.isEmpty();
-			boolean pendingIfElse = !tstate.co2ProcessesStack.peek().ifElseStack.isEmpty();
-			
-			if (pendingSum || pendingIfElse) {
-				
-				if (pendingSum)
-					log.info("there are some pending sum, not removing from stack");
-				
-				if (pendingIfElse)
-					log.info("there are some pending if then else, not removing from stack");
-			}
-			else {
-				log.info("removing process from stack");
-				tstate.co2ProcessesStack.pop();
-			}
+			tstate.tryToPopFrame();
 			
 			//next flag prevent from re-build the process at each invocation
 			envProcesses.get(ci.getSimpleName()).alreadyBuilt = true;
 			
-			printInfo(tstate);
+			tstate.printInfo();
 		}
 	}
 	
@@ -602,7 +517,7 @@ public class MaudeListener extends ListenerAdapter {
 		if (enteredMethod == participantWaitForSession) {
 
 			log.info("");
-			printInfo(tstate);
+			tstate.printInfo();
 			log.info("--WAIT FOR SESSION-- (entered method)");
 			
 			Integer timeout = getArgumentInteger(currentThread, 1);
@@ -620,20 +535,20 @@ public class MaudeListener extends ListenerAdapter {
 				sum.prefixes.add(new TauDS());
 			}
 			
-			setCurrentProcess(tstate,sum);		//set the current process
+			tstate.setCurrentProcess(sum);		//set the current process
 
 			/*
 			 * the co2CurrentPrefix is set in methodExited
 			 */
 			log.info("pushing the sum onto the stack");
-			pushSum(tstate,sum);
+			tstate.pushSum(sum);
 			
-			printInfo(tstate);
+			tstate.printInfo();
 		}
 		else if (enteredMethod == sessionWaitForReceive) {
 
 			log.info("");
-			printInfo(tstate);
+			tstate.printInfo();
 			log.info("--SUM OF RECEIVE-- (entered method)");
 			
 			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
@@ -668,20 +583,20 @@ public class MaudeListener extends ListenerAdapter {
 				sum.prefixes.add(new TauDS());
 			}
 			
-			setCurrentProcess(tstate,sum);		//set the current process
+			tstate.setCurrentProcess(sum);		//set the current process
 
 			/*
 			 * the co2CurrentPrefix is set in methodExited
 			 */
 			log.info("pushing the sum onto the stack");
-			pushSum(tstate,sum);
+			tstate.pushSum(sum);
 			
-			printInfo(tstate);
+			tstate.printInfo();
 		}
 		else if (enteredMethod==sessionSend || enteredMethod==sessionSendInt || enteredMethod==sessionSendString) {
 
 			log.info("");
-			printInfo(tstate);
+			tstate.printInfo();
 			log.info("--SEND-- (entered method)");
 			
 			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
@@ -700,71 +615,14 @@ public class MaudeListener extends ListenerAdapter {
 			SumDS sum = new SumDS();
 			sum.prefixes.add(send);
 			
-			setCurrentProcess(tstate,sum);		//set the current process
-			setCurrentPrefix(tstate,send);		//set the current prefix
+			tstate.setCurrentProcess(sum);		//set the current process
+			tstate.setCurrentPrefix(send);		//set the current prefix
 
-			printInfo(tstate);
+			tstate.printInfo();
 		}
-//		else if (
-//				enteredMethod.getName().equals("<init>") &&
-//				ci.isInstanceOf(CO2Process.class.getName()) &&
-//				!ci.getName().equals(Participant.class.getName()) &&	//ignore super construction
-//				!ci.getName().equals(CO2Process.class.getName()) &&		//ignore super construction
-//				!ci.getName().equals(processUnderTestClass.getName())
-//				) {
-//			
-//			/*
-//			 * the main process has created a new process
-//			 */
-//			log.info("");
-//			log.info("--INIT-- (method entered) -> "+ci.getSimpleName());
-//			
-//			String className = ci.getName();
-//			
-//			if (envProcesses.containsKey(className)) {
-//				log.info("envProcess "+className+" already exists");
-//			}
-//			else {
-//				/*
-//				 * instantiate a new env process
-//				 */
-//				ProcessDefinitionDS proc = new ProcessDefinitionDS();
-//				proc.name = ci.getSimpleName();
-//				proc.firstPrefix = new PrefixPlaceholderDS();
-//				proc.process = new SumDS(proc.firstPrefix);
-//				
-//				List<ElementInfo> args = getAllArgumentsAsElementInfo(currentThread);
-//				
-//				if (args.size()==0) {
-//					//add at least one argument to make the process valid
-//					proc.freeNames.add("exp");
-//				}
-//				
-//				for (ElementInfo ei : args) {
-//					if (ei.getClassInfo().getName().equals(Session2.class.getName())) {
-//						String sessionName = ei.getStringField("sessionName");
-//						proc.freeNames.add("\""+sessionName+"\"");
-//						log.info("ctor arg: Session2 ("+sessionName+")");
-//					}
-//					else if (ei.getClassInfo().isInstanceOf(Number.class.getName())) {
-//						proc.freeNames.add("exp");
-//						log.info("ctor arg: Number");
-//					}
-//					else if (ei.getClassInfo().isInstanceOf(String.class.getName())) {
-//						proc.freeNames.add("exp");
-//						log.info("ctor arg: String");
-//					}
-//				}
-//				
-//				// store the process for future retrieve (when another one1 call it)
-//				log.info("saving envProcess "+className);
-//				envProcesses.put(className, proc);
-//				envProcessesList.add(proc);
-//			}
-//		}
 		else if (enteredMethod==parallel) {
 			log.info("");
-			log.info("--PARALLEL-- (method entered) -> ID:"+tstate.threadInfo.getId());
+			log.info("--PARALLEL-- (method entered) -> ID:"+tstate.getId());
 			
 			ParallelProcessesDS parallel = new ParallelProcessesDS();
 			
@@ -779,8 +637,8 @@ public class MaudeListener extends ListenerAdapter {
 			parallel.processA = sumA;
 			parallel.processB = sumB;
 			
-			setCurrentProcess(tstate, parallel);
-			setCurrentPrefix(tstate, tauB);
+			tstate.setCurrentProcess( parallel);
+			tstate.setCurrentPrefix( tauB);
 			
 			threadCurrentProcess = sumA;
 			threadCurrentPrefix = tauA;
@@ -857,8 +715,8 @@ public class MaudeListener extends ListenerAdapter {
 				}
 			}
 			
-			setCurrentProcess(tstate,pCall);
-			setCurrentPrefix(tstate,null);
+			tstate.setCurrentProcess(pCall);
+			tstate.setCurrentPrefix(null);
 		}
 		else if (	enteredMethod.getName().equals("run") &&
 					envProcesses.containsKey(ci.getSimpleName())
@@ -867,7 +725,7 @@ public class MaudeListener extends ListenerAdapter {
 			 * the process is finished
 			 */
 			log.info("");
-			printInfo(tstate);
+			tstate.printInfo();
 			log.info("--RUN ENV PROCESS-- (method entered) -> "+ci.getSimpleName());
 			
 			/*
@@ -875,7 +733,7 @@ public class MaudeListener extends ListenerAdapter {
 			 */
 			ProcessDefinitionDS proc = envProcesses.get(ci.getSimpleName());
 
-			boolean recursiveCall = checkForRecursion(tstate,proc);
+			boolean recursiveCall = tstate.checkForRecursion(proc);
 			
 			if (recursiveCall || proc.alreadyBuilt) {
 				
@@ -890,33 +748,15 @@ public class MaudeListener extends ListenerAdapter {
 					log.info("process already built: "+proc.toString());
 				}
 				
-				//FIXME
-				CO2StackFrame frame = new CO2StackFrame();
-				frame.prefix = proc.firstPrefix;
-				frame.process = proc;
-				
-				log.info("adding processCall onto the stack");
-				tstate.co2ProcessesStack.push(frame);
-				
-				log.info(proc.toString());
-				printInfo(tstate);
 				methodsToSkip.add(enteredMethod);
 			}
 			else {
 				log.info("NOT recursive call AND NOT already built");
-				
-				//FIXME
-				CO2StackFrame frame = new CO2StackFrame();
-				frame.prefix = proc.firstPrefix;
-				frame.process = proc;
-				
-				log.info("adding processCall onto the stack");
-				tstate.co2ProcessesStack.push(frame);
-				
-				log.info(proc.toString());
-				printInfo(tstate);
 			}
 			
+			log.info("adding a new process onto the stack: "+proc.toString());
+			tstate.pushNewFrame(proc);
+			tstate.printInfo();
 		}
 	}
 	
@@ -954,8 +794,7 @@ public class MaudeListener extends ListenerAdapter {
 		log.info("thread ID: "+search.getVM().getCurrentThread().getId());
 		
 		ThreadInfo tInfo = search.getVM().getCurrentThread();
-		ThreadState tState = new ThreadState();
-		tState.threadInfo = tInfo;
+		ThreadState tState = new ThreadState(tInfo);
 		
 		threadStates.put(tInfo, tState);
 		
@@ -967,7 +806,6 @@ public class MaudeListener extends ListenerAdapter {
 	public void searchFinished(Search search) {
 		log.info("");
 		log.info("vvvvvvvvvvvvvvvvv SEARCH FINISHED vvvvvvvvvvvvvvvvv");
-//		printInfo();
 		
 		log.info("contracts:");
 		for (Entry<String, ContractDefinition> entry : contracts.entrySet()) {
@@ -988,77 +826,17 @@ public class MaudeListener extends ListenerAdapter {
 		log.info("===================== THREAD STARTED =====================");
 		log.info("thread ID: "+startedThread.getId());
 		
-		ThreadState tState = new ThreadState();
-		tState.threadInfo = startedThread;
+		ThreadState tState = new ThreadState(startedThread);
 		
 		assert threadCurrentProcess!=null;
 		assert threadCurrentPrefix!=null;
 		
-		setCurrentProcess(tState, threadCurrentProcess);
-		setCurrentPrefix(tState, threadCurrentPrefix);
+		tState.setCurrentProcess(threadCurrentProcess);
+		tState.setCurrentPrefix(threadCurrentPrefix);
 		
 		threadStates.put(startedThread, tState);
 	}
 	
-	//--------------------------------- UTILS -------------------------------
-	
-	private boolean checkForRecursion(ThreadState tstate, ProcessDefinitionDS process) {
-		
-		for (CO2StackFrame frame : tstate.co2ProcessesStack) {
-			if (
-					frame.process instanceof ProcessDefinitionDS &&
-					process.name.equals( ((ProcessDefinitionDS) frame.process).name )
-					) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	private void setCurrentProcess(ThreadState tstate, ProcessDS p) {
-
-		if (tstate.co2ProcessesStack.isEmpty()) {	// you are the first process
-			
-			CO2StackFrame frame = new CO2StackFrame();
-			frame.process = p;
-			tstate.co2ProcessesStack.push(frame);
-		}
-		else {
-			assert tstate.co2ProcessesStack.size()>0;
-			
-			tstate.co2ProcessesStack.peek().prefix.next=p;
-		}
-	}
-	
-	private void setCurrentPrefix(ThreadState tstate, PrefixDS p) {
-		
-		assert tstate.co2ProcessesStack.size()>0;
-		
-		tstate.co2ProcessesStack.peek().prefix = p;
-	}
-	
-//	private ProcessDTO getCurrentProcess() {
-//		return co2ProcessesStack.peek().process;
-//	}
-//	
-//	private PrefixDTO getCurrentPrefix() {
-//		return co2ProcessesStack.peek().prefix;
-//	}
-	
-	private void printInfo(ThreadState tstate) {
-		
-		int thID = tstate.threadInfo.getId();
-		
-		log.info("[T-ID: "+thID+"] stackSize: "+tstate.co2ProcessesStack.size());
-		
-		if (tstate.co2ProcessesStack.size()>0) {
-			CO2StackFrame frame = tstate.co2ProcessesStack.peek();
-			log.info("[T-ID: "+thID+"] top-process --> "+frame.process.toString());
-			log.info("[T-ID: "+thID+"] top-currentPrefix --> "+(frame.prefix!=null? frame.prefix.toString():"null"));
-		}
-		
-	}
 
 	@SuppressWarnings("unused")
 	private String insnToString(Instruction insn) {
@@ -1073,10 +851,6 @@ public class MaudeListener extends ListenerAdapter {
 	private Object[] getArguments(ThreadInfo currentThread) {
 		return currentThread.getTopFrame().getArgumentValues(currentThread);
 	}
-	
-//	private ElementInfo getArgument(ThreadInfo currentThread, int position) {
-//		return (ElementInfo) getArguments(currentThread)[position];
-//	}
 	
 	private String getArgumentString(ThreadInfo currentThread, int position) {
 		ElementInfo eiArgument = (ElementInfo) getArguments(currentThread)[position];
@@ -1116,7 +890,7 @@ public class MaudeListener extends ListenerAdapter {
 		return strings;
 	}
 	
-	
+	@SuppressWarnings("unused")
 	private List<ElementInfo> getAllArgumentsAsElementInfo(ThreadInfo currentThread) {
 		List<ElementInfo> args = new ArrayList<ElementInfo>();
 		
@@ -1131,83 +905,8 @@ public class MaudeListener extends ListenerAdapter {
 	
 	
 	
-	private void pushSum(ThreadState tstate, SumDS sum) {
-		
-		Set<String> toReceive = new HashSet<>();
-		
-		for (PrefixDS p : sum.prefixes) {
-			
-			if (p instanceof TauDS) {
-				if(!toReceive.add("t"))
-					throw new IllegalStateException("the set already contain a tau");
-			}
-			else if (p instanceof TellDS) {
-				if(!toReceive.add("tell"))
-					throw new IllegalStateException("the set already contain a tell");
-			}
-			else if (p instanceof AskDS) {
-				if(!toReceive.add("ask"))
-					throw new IllegalStateException("the set already contain an ask");
-			}
-			else if (p instanceof DoReceiveDS) {
-				toReceive.add(((DoReceiveDS) p).action);
-			}
-		}
-		
-		SumStackFrame frame = new SumStackFrame();
-		frame.sum = sum;
-		frame.toReceive = toReceive;
-		
-		tstate.co2ProcessesStack.peek().sumStack.push(frame);
-	}
 	
-	private void popSum(ThreadState tstate, TauDS prefix) {
-		popSum(tstate,"t");
-	}
 	
-	private void popSum(ThreadState tstate, AskDS prefix) {
-		popSum(tstate,"ask");
-	}
-	
-	private void popSum(ThreadState tstate, DoReceiveDS prefix) {
-		popSum(tstate,prefix.action);
-	}
-
-	private void popSum(ThreadState tstate, String prefix) {
-		
-		Set<String> prefixToReceive = tstate.co2ProcessesStack.peek().sumStack.peek().toReceive;
-	
-		assert prefixToReceive.contains(prefix);
-		
-		prefixToReceive.remove(prefix);
-		
-		if (prefixToReceive.isEmpty())
-			tstate.co2ProcessesStack.peek().sumStack.pop();
-	}
-	
-	private void pushIfElse(ThreadState tstate, IfThenElseDS ifThenElse) {
-		
-		IfThenElseStackFrame frame = new IfThenElseStackFrame();
-		frame.ifThenElse = ifThenElse;
-		frame.thenStarted = false;
-		frame.elseStarted = false;
-		
-		tstate.co2ProcessesStack.peek().ifElseStack.push(frame);
-	}
-	
-	private void setPeekThen(ThreadState tstate) {
-		tstate.co2ProcessesStack.peek().ifElseStack.peek().thenStarted = true;
-	}
-	
-	private void setPeekElse(ThreadState tstate) {
-		tstate.co2ProcessesStack.peek().ifElseStack.peek().elseStarted = true;
-	}
-
-	private void popIfElse(ThreadState tstate) {
-		if (tstate.co2ProcessesStack.peek().ifElseStack.peek().thenStarted && tstate.co2ProcessesStack.peek().ifElseStack.peek().elseStarted) {
-			tstate.co2ProcessesStack.peek().ifElseStack.pop();
-		}
-	}
 	
 	//--------------------------------- GETTERS and SETTERS -------------------------------
 	public Class<? extends Participant> getProcessUnderTestClass() {
@@ -1215,7 +914,7 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	public ProcessDS getCo2Process() {
-		return threadStates.get(mainThread).co2ProcessesStack.firstElement().process;
+		return threadStates.get(mainThread).getFirstProcess();
 	}
 	
 	public Map<String, ContractDefinition> getContracts() {
@@ -1241,77 +940,5 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 	
-	//--------------------------------- UTILS CLASSES -------------------------------
-
-	private static class CO2StackFrame {
-		ProcessDS process;		// the current process that you are building up
-		PrefixDS prefix;		// the current prefix (owned by the above process) where you append incoming events
-		Stack<SumStackFrame> sumStack = new Stack<>(); 
-		Stack<IfThenElseStackFrame> ifElseStack = new Stack<>();
-	}
-	
-	private static class ChoiceStackFrame {}
-	
-	private static class SumStackFrame extends ChoiceStackFrame{
-		SumDS sum;
-		Set<String> toReceive;
-	}
-	
-	private static class IfThenElseStackFrame extends ChoiceStackFrame{
-		IfThenElseDS ifThenElse;
-		boolean thenStarted;
-		boolean elseStarted;
-	}
-	
-	
-	/**
-	 * this class gather CO2 'execution informations' of a thread
-	 */
-	private static class ThreadState {
-		
-		ThreadInfo threadInfo;
-		
-		/*
-		 * we use a stack to trace the call between different process
-		 * 
-		 * <top-frame>.process			the process you are currently building up
-		 * <top-frame>.prefix.next		where you append the next process
-		 * 
-		 */
-		Stack<CO2StackFrame> co2ProcessesStack = new Stack<CO2StackFrame>();
-		
-		/*
-		 * if the ifInstruction is into this interval, skip it (means that is related to switch-statement)
-		 */
-		int startIfExcluded = -1;
-		int endIfExcluded = -1;
-		MethodInfo methodInfoIfExcluded;
-		
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((threadInfo == null) ? 0 : threadInfo.hashCode());
-			return result;
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			ThreadState other = (ThreadState) obj;
-			if (threadInfo == null) {
-				if (other.threadInfo != null)
-					return false;
-			}
-			else if (!threadInfo.equals(other.threadInfo))
-				return false;
-			return true;
-		}
-	}
 	
 }
