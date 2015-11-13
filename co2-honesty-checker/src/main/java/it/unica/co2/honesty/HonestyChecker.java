@@ -3,8 +3,12 @@ package it.unica.co2.honesty;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,7 +28,7 @@ public class HonestyChecker {
 	
 	public static Statistics stats;
 	
-	synchronized public static <T extends Participant> HonestyResult isHonest(Class<T> participantClass) {
+	synchronized public static <T extends Participant> HonestyResult isHonest(Class<T> participantClass, Object... args) {
 		
 		stats = new Statistics();
 		stats.update(Event.HONESTY_START);
@@ -32,11 +36,26 @@ public class HonestyChecker {
 		System.out.println("================================================== HONESTY CHECKER ");
 		System.out.println("checking the honesty of "+participantClass.getName());
 		
-		Participant participant;
-		try {
-			participant = participantClass.newInstance();
+		
+		// get all arguments types
+		List<Class<?>> types = new ArrayList<>();
+		for (Object arg : args) {
+			types.add(arg.getClass());
 		}
-		catch (SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException e) {
+		
+		// convert to array
+		Class<?>[] typesArray = types.toArray(new Class<?>[]{});
+		
+		Participant participant;
+		Constructor<? extends Participant> ctor;
+
+		try {
+			ctor = participantClass.getDeclaredConstructor(typesArray);	// get the constructor with the corresponding types
+			ctor.setAccessible(true);
+			participant = ctor.newInstance(args);				// create a new instance passing the given args
+		}
+		catch (	SecurityException | IllegalArgumentException | NoSuchMethodException | 
+				InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException("error instantiating the class "+participantClass, e);
 		}
 		
