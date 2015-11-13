@@ -13,25 +13,6 @@ import it.unica.co2.api.process.Participant;
 
 public class ProcessComposition2Example {
 
-	public static class ProcessA extends CO2Process {
-
-		private static final long serialVersionUID = 1L;
-
-		private final Session2<TST> session;
-		
-		protected ProcessA(Session2<TST> session) {
-			super("ProcessA");
-			this.session = session;
-		}
-
-		@Override
-		public void run() {
-			session.waitForReceive("a", "b");
-			
-			new ProcessA(session).run();
-		}
-	}
-	
 	public static class Composed2Process extends Participant {
 
 		private static final long serialVersionUID = 1L;
@@ -66,12 +47,32 @@ public class ProcessComposition2Example {
 				n=0;
 			}
 			
-			new ProcessA(session).run();
-				
+			processCall(ProcessA.class, session);
+			
 //			session.send("end");		//JPF fails
 			
 		}
 
+	}
+
+	
+	public static class ProcessA extends CO2Process {
+
+		private static final long serialVersionUID = 1L;
+
+		private final Session2<TST> session;
+		
+		protected ProcessA(Session2<TST> session) {
+			super("ProcessA");
+			this.session = session;
+		}
+
+		@Override
+		public void run() {
+			session.waitForReceive("a", "b");
+			
+			processCall(ProcessA.class, session);
+		}
 	}
 	
 	

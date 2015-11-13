@@ -97,8 +97,8 @@ public class CO2DataStructures {
 	public static class PrefixPlaceholderDS extends PrefixDS { }
 
 	public static class ProcessCallDS extends ProcessDS {
-
-		public ProcessDefinitionDS ref;
+		public String name;
+		public List<String> params = new ArrayList<String>();
 	}
 
 	public static class ProcessDefinitionDS extends ProcessDS {

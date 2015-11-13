@@ -59,7 +59,7 @@ public class Dealer extends Participant {
 		
 		try {
 			sessionP = waitForSession(pblP, 10000);
-			new Pplay(sessionP, sessionD, 0).run();
+			processCall(Pplay.class, sessionP, sessionD, 0);
 		}
 		catch (TimeExpiredException e) {
 			sessionD.send("abort");
@@ -104,12 +104,12 @@ public class Dealer extends Participant {
 				case "hit":
 					logger.log("hit received");
 					sessionD.send("next");
-					new Pdeck(sessionP, sessionD, nP).run();
+					processCall(Pdeck.class, sessionP, sessionD, nP);
 					break;
 					
 				case "stand":
 					logger.log("stand received");
-					new Qstand(sessionP, sessionD, nP, 0).run();
+					processCall(Qstand.class, sessionP, sessionD, nP, 0);
 					break;
 				}
 			}
@@ -152,7 +152,7 @@ public class Dealer extends Participant {
 					Integer n = Integer.parseInt(msg.getStringValue());
 					
 					logger.log("received card "+n);
-					new Pcard(sessionP, sessionD, nP+n, n).run();
+					processCall(Pcard.class, sessionP, sessionD, nP+n, n);
 				}
 				catch (NumberFormatException | ContractException e) {
 					throw new RuntimeException(e);
@@ -191,7 +191,7 @@ public class Dealer extends Participant {
 			
 			if (nP<=21) {
 				sessionD.send("next");
-				new Qdeck(sessionP, sessionD, nP, nD).run();
+				processCall(Qdeck.class, sessionP, sessionD, nP, nD);
 			}
 			else {
 				sessionP.send("win");
@@ -224,7 +224,7 @@ public class Dealer extends Participant {
 			
 			if (nP<=21) {
 				sessionP.send("card", n);
-				new Pplay(sessionP, sessionD, nP).run();
+				processCall(Pplay.class, sessionP, sessionD, nP);
 			}
 			else {
 				sessionP.send("lose");
@@ -263,7 +263,7 @@ public class Dealer extends Participant {
 					n = Integer.parseInt(msg.getStringValue());
 
 					logger.log("received card "+n);
-					new Qcard(sessionP, sessionD, nP, nD+n).run();
+					processCall(Qcard.class, sessionP, sessionD, nP, nD+n);
 				}
 				catch (NumberFormatException | ContractException e) {
 					throw new RuntimeException(e);
@@ -302,7 +302,7 @@ public class Dealer extends Participant {
 		public void run() {
 			
 			if (nD<nP) {
-				new Qstand(sessionP, sessionD, nP, nD).run();
+				processCall(Qstand.class, sessionP, sessionD, nP, nD);
 			}
 			else {
 				sessionP.send("lose");

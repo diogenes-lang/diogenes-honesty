@@ -52,7 +52,7 @@ public class VoucherSeller extends Participant {
 			
 			try {
 				Session2<TST> sessionV = waitForSession(pblV, 10000);
-				new Q(sessionB, sessionV).run();
+				processCall(Q.class,sessionB, sessionV);
 			}
 			catch (TimeExpiredException e) {
 				

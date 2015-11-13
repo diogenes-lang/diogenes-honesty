@@ -5,7 +5,6 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import co2api.TST;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
-import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 
 
@@ -48,46 +47,6 @@ public class ParallelProcessExample {
 			});
 		}
 
-	}
-	
-	private static class ProcessA extends CO2Process {
-		
-		private static final long serialVersionUID = 1L;
-		private final Session2<TST> session;
-		private final Runnable rbl;
-		
-		protected ProcessA(Session2<TST> session, Runnable rbl) {
-			super("ProcessA");
-			this.session = session;
-			this.rbl = rbl;
-		}
-
-		@Override
-		public void run() {
-			session.send("a");
-			rbl.run();
-		}
-		
-	}
-	
-	private static class ProcessB extends CO2Process {
-		
-		private static final long serialVersionUID = 1L;
-		private final Session2<TST> session;
-		private final Runnable rbl;
-		
-		protected ProcessB(Session2<TST> session, Runnable rbl) {
-			super("ProcessB");
-			this.session = session;
-			this.rbl = rbl;
-		}
-
-		@Override
-		public void run() {
-			session.send("b");
-			rbl.run();
-		}
-		
 	}
 	
 	public static void main(String[] args) {

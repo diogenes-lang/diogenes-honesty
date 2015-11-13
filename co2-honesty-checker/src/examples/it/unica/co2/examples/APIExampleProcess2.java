@@ -3,14 +3,11 @@ package it.unica.co2.examples;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
-import co2api.Message;
-import co2api.Public;
 import co2api.TST;
-import co2api.TimeExpiredException;
 import it.unica.co2.api.Session2;
-import it.unica.co2.api.contract.Contract;
-import it.unica.co2.api.process.CO2Process;
+import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.honesty.HonestyChecker;
 
 public class APIExampleProcess2 extends Participant {
 
@@ -24,92 +21,76 @@ public class APIExampleProcess2 extends Participant {
 	}
 
 	public static void main(String[] args) throws ContractException {
-		new APIExampleProcess2().run();
+//		new APIExampleProcess2().run();
+		HonestyChecker.isHonest(APIExampleProcess2.class);
 	}
 	
 	@Override
 	public void run() {
-		try {
 			
-			Contract A = 
+			ContractDefinition A = def("A").setContract(
 					internalSum()
 					.add("a")
-					.add("b", externalSum().add("a").add("b").add("c"))
+					.add("b", externalSum().add("a").add("b").add("c")))
 			;
 			
 			logger.log("tell");
 			
-			Public<TST> pbl = tell(A);
 			
-			try {
-				
-				Session2<TST> session = waitForSession(pbl, 10000);
-				
-				logger.log("sending b!");
-				session.send("b");
-				
-				logger.log("receiving message");
-				Message msg = session.waitForReceive("a","b","c");
-				
-				logger.log("received message: "+msg.getLabel()+" "+msg.getStringValue());
-				
-				switch (msg.getLabel()) {
-				
-				case "a": 
-					logger.log("received a?");
-					session.send("a.ok");
-					break;
-					
-				case "b":
-					logger.log("received b?");
-					session.send("b.ok");
-					break;
-				}
-				
-				new ProcessA(session).run();
-
-				logger.log("FINE");
-			}
-			catch (TimeExpiredException e) {
-				Session2<TST> session = waitForSession(pbl);
-				session.send("a");
-			}
+			Session2<TST> s1 = tellAndWait(A);
+			Session2<TST> s2 = tellAndWait(A);
+			Session2<TST> s3 = tellAndWait(A);
 			
+			processCall(abortAll.class, s1, s2, s3);
+	}
+	
+	public static class abortAll extends Participant {
 		
+		private static final long serialVersionUID = 1L;
+		private Session2<TST> x;
+		private Session2<TST> y;
+		private Session2<TST> z;
+		
+		public abortAll(Session2<TST> x, Session2<TST> y, Session2<TST> z) {
+			super(username, password);
+			this.x=x;
+			this.y=y;
+			this.z=z;
 		}
-		catch (ContractException e) {
-			e.printStackTrace();
+		
+		@Override
+		public void run() {
+			parallel(()->{
+				x.send("pippo");
+				processCall(abort.class, x);
+			});
+	
+			parallel(()->{
+				y.send("pippo");
+				processCall(abort.class, y);
+			});
+			
+			parallel(()->{
+				z.send("pippo");
+				processCall(abort.class, z);
+			});
 		}
 	}
 	
-	private static class ProcessA extends CO2Process {
+	public static class abort extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private final Session2<TST> session;
+		private Session2<TST> u;
 		
-		protected ProcessA(Session2<TST> session) {
-			super("ProcessA");
-			this.session = session;
+		public abort(Session2<TST> u) {
+			super(username, password);
+			this.u=u;
 		}
-
+		
 		@Override
 		public void run() {
-			session.send("a");
-			
-			parallel(() -> {
-				session.send("a1");
-			});
-			
-			parallel(() -> {
-				session.send("a2");
-			});
-
-			parallel(() -> {
-				session.send("a3");
-			});
-			
-			session.send("b");
+			logger.log("ABORT - entered on run method");
+			u.send("abort");
 		}
-		
 	}
 }

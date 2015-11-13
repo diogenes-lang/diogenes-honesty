@@ -43,10 +43,10 @@ public class InsuredSeller extends Participant {
 			Integer n = Integer.parseInt(msg.getStringValue());
 			
 			if (n<50) {
-				new HandlePayment(session, n).run();
+				processCall(HandlePayment.class, session, n);
 			}
 			else {
-				new Insurance(session, n, this).run();
+				processCall(HandleInsurance.class, session, n);
 			}
 		}
 		catch (Exception | ContractException e) {
@@ -98,18 +98,16 @@ public class InsuredSeller extends Participant {
 	}
 	
 	
-	private static class Insurance extends Participant {
+	private static class HandleInsurance extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		private final Session2<TST> session;
 		private final Integer amount;
-//		private final Participant p;
 		
-		protected Insurance(Session2<TST> session, Integer amount, Participant p) {
+		protected HandleInsurance(Session2<TST> session, Integer amount) {
 			super(username, password);
 			this.session = session;
 			this.amount = amount;
-//			this.p = p;
 		}
 
 		@Override
@@ -132,7 +130,7 @@ public class InsuredSeller extends Participant {
 					switch (msg.getLabel()) {
 					
 					case "oki":
-						new HandlePayment(session, amount).run();
+						processCall(HandlePayment.class, session, amount);
 						break;
 						
 					case "aborti":

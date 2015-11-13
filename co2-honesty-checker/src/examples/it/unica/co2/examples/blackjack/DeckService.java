@@ -22,19 +22,9 @@ public class DeckService extends Participant {
 	private static final String username = "bob@test.com";
 	private static final String password = "bob";
 	
-	private List<Integer> deck = new ArrayList<>();
 	
 	public DeckService() {
 		super(username, password);
-		
-		Integer[] cards = new Integer[]{1,2,3,4,5,6,7,8,9,10,10,10,10};
-		
-		deck.addAll(Arrays.asList(cards));
-		deck.addAll(Arrays.asList(cards));
-		deck.addAll(Arrays.asList(cards));
-		deck.addAll(Arrays.asList(cards));
-		
-		assert deck.size()==52;
 	}
 	
 	@Override
@@ -46,18 +36,28 @@ public class DeckService extends Participant {
 		logger.log("tell and wait");
 		Session2<TST> session = tellAndWait(contract);
 		
-		new Deck(session).run();
+		processCall(Deck.class, session);
 	}
 	
-	private class Deck extends CO2Process {
+	private static class Deck extends CO2Process {
 
 		private static final long serialVersionUID = 1L;
 		
 		private final Session2<TST> session;
+		private List<Integer> deck = new ArrayList<>();
 		
 		protected Deck(Session2<TST> session) {
 			super("Deck");
 			this.session = session;
+			
+			Integer[] cards = new Integer[]{1,2,3,4,5,6,7,8,9,10,10,10,10};
+			
+			deck.addAll(Arrays.asList(cards));
+			deck.addAll(Arrays.asList(cards));
+			deck.addAll(Arrays.asList(cards));
+			deck.addAll(Arrays.asList(cards));
+			
+			assert deck.size()==52;
 		}
 
 		@Override
@@ -68,7 +68,7 @@ public class DeckService extends Participant {
 			switch(msg.getLabel()) {
 			case "next":
 				session.send("card", getNextCard());
-				new Deck(session).run();
+				processCall(Deck.class, session);
 				break;
 				
 			case "abort":
@@ -76,25 +76,26 @@ public class DeckService extends Participant {
 			}
 			
 		}
+
+		private int getNextCard() {
+			
+			int size = deck.size();
+			
+			assert size>0: "your deck is ended";
+			
+			int choice = new Random().nextInt(size);
+			int card = deck.remove(choice);
+			
+			logger.log("extracted card "+card);
+			
+			assert deck.size()==size-1;
+			
+			return card;
+		}
 	}
 	
 	
 	
-	private int getNextCard() {
-		
-		int size = deck.size();
-		
-		assert size>0: "your deck is ended";
-		
-		int choice = new Random().nextInt(size);
-		int card = deck.remove(choice);
-		
-		logger.log("extracted card "+card);
-		
-		assert deck.size()==size-1;
-		
-		return card;
-	}
 	
 	public static void main(String args[]) {
 		new DeckService().run();

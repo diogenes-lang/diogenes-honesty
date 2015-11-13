@@ -143,7 +143,7 @@ public class DishonestSeller extends Participant {
 					sessionB.send("abort");		//this action make you honest in sessionB
 					
 					//and now, if the distributor sent you something? you are culpable in sessionD!
-					new AbortSessionD2(sessionD).run();
+					processCall(AbortSessionD2.class, sessionD);
 					//you are honest
 					
 					logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());

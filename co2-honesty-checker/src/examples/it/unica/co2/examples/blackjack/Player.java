@@ -34,7 +34,7 @@ public class Player extends Participant {
 	
 		Session2<TST> session = tellAndWait(contract);
 		
-		new Play(session, 0).run();
+		processCall(Play.class, session, 0);
 	}
 
 	private static class Play extends CO2Process {
@@ -65,7 +65,7 @@ public class Player extends Participant {
 					logger.log("card received");
 					try {
 						Integer n = Integer.parseInt(msg.getStringValue());
-						new Play(session, this.n+n).run();
+						processCall(Play.class, session, this.n+n);
 					}
 					catch (NumberFormatException | ContractException e) {
 						throw new RuntimeException(e);

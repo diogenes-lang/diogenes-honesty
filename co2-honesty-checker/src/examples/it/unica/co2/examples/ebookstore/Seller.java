@@ -140,7 +140,7 @@ public class Seller extends Participant {
 						sessionB.send("abort");		//this action make you honest in sessionB
 						
 						//and now, if the distributor sent you something? you are culpable in sessionD!
-						new AbortSessionD2(sessionD).run();
+						processCall(AbortSessionD2.class, sessionD);
 						//you are honest
 						
 						logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
@@ -161,7 +161,7 @@ public class Seller extends Participant {
 					Session2<TST> sessionD = waitForSession(pbl);	//blocking
 					
 					//and now, if the distributor sent you something? you are culpable in sessionD!
-					new AbortSessionD1(sessionD).run();
+					processCall(AbortSessionD1.class, sessionD);
 					//you are honest
 					
 					logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
@@ -217,7 +217,7 @@ public class Seller extends Participant {
 			
 			sessionD.send("bookdistrib");
 			
-			new AbortSessionD2(sessionD).run();
+			processCall(AbortSessionD2.class, sessionD);
 		}
 	}
 

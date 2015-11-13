@@ -30,7 +30,7 @@ public class ProcessCompositionExample {
 		public void run() {
 			session.send("a");
 			
-			new ProcessA(session).run();
+			processCall(ProcessA.class, session);
 		}
 	}
 	
@@ -81,9 +81,9 @@ public class ProcessCompositionExample {
 			}
 			
 			if (n>=0)
-				new ProcessA(session).run();
+				processCall(ProcessA.class, session);
 			else
-				new ProcessB(session).run();
+				processCall(ProcessB.class, session);
 				
 //			session.send("end");		//JPF fails
 			
