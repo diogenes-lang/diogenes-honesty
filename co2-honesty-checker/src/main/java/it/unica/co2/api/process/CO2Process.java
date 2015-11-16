@@ -14,8 +14,12 @@ public abstract class CO2Process implements Runnable, Serializable {
 	private static final long serialVersionUID = 1L;
 	protected transient Logger logger;
 	
-	protected CO2Process(String loggerName) {
-		logger = Logger.getInstance(loggerName, System.out, this.getClass().getSimpleName());
+	protected CO2Process() {
+		this(null);
+	}
+	
+	protected CO2Process(String username) {
+		logger = Logger.getInstance(username, System.out, this.getClass().getSimpleName());
 	}
 	
 	synchronized public long parallel(Runnable process) {

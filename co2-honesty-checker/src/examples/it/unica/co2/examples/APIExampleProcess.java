@@ -19,13 +19,13 @@ public class APIExampleProcess extends Participant {
 	private static String username = "alice@test.com";
 	private static String password = "alice";
 
-	public APIExampleProcess() {
+	public APIExampleProcess(String str) {
 		super(username, password);
 	}
 
 	public static void main(String[] args) throws ContractException {
-		HonestyChecker.isHonest(APIExampleProcess.class);
-//		new APIExampleProcess().run();
+		HonestyChecker.isHonest(APIExampleProcess.class, "");
+//		new APIExampleProcess("").run();
 	}
 	
 	@Override

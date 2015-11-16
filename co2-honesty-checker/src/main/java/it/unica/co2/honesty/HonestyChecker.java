@@ -185,6 +185,7 @@ public class HonestyChecker {
 		
 		Participant p = ObjectUtils.deserializeObjectFromStringQuietly(serializedParticipant[0], Participant.class);
 		p.run();
+		
 	}
 	
 	
