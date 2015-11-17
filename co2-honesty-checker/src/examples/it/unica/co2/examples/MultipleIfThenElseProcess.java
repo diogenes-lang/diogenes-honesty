@@ -52,20 +52,25 @@ public class MultipleIfThenElseProcess extends Participant {
 			Integer x = new Integer(10);
 			Integer y = 10;
 			
-			if (x>5) {
-				session.send("then");
-				
-				if (y>5) {
-					session.send("then_1");
+			ifThenElse(
+				() -> x>5,
+				() -> {
+					session.send("then");
+					
+					ifThenElse(
+						() -> y>5,
+						() -> {
+							session.send("then_1");
+						},
+						() -> {
+							session.send("else_1");
+						}
+					);
+				},
+				() -> {
+					session.send("else");
 				}
-				else {
-					session.send("else_1");
-				}
-				
-			}
-			else {
-				session.send("else");
-			}
+			);
 			
 			session.send("end");
 			

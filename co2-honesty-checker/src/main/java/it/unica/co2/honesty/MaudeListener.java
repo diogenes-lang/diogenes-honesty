@@ -112,6 +112,7 @@ public class MaudeListener extends ListenerAdapter {
 	private MethodInfo sessionSendInt;
 	private MethodInfo parallel;
 	private MethodInfo processCall;
+	private MethodInfo ifThenElse;
 
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private HashSet<MethodInfo> methodsToSkip = new HashSet<>();
@@ -138,6 +139,10 @@ public class MaudeListener extends ListenerAdapter {
 			
 			if (processCall == null) {
 				processCall = ci.getMethod("processCall", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Object;)V", false);
+			}
+			
+			if (ifThenElse == null) {
+				ifThenElse = ci.getMethod("ifThenElse", "(Ljava/util/function/Supplier;Ljava/lang/Runnable;Ljava/lang/Runnable;)V", false);
 			}
 		}
 		
@@ -189,8 +194,9 @@ public class MaudeListener extends ListenerAdapter {
 			tstate.setSwitchInsn(switchInsn);
 		}
 		else if (	
-				insn instanceof IfInstruction && 
-				tstate.considerIfInstruction((IfInstruction) insn)
+				insn instanceof IfInstruction &&
+				insn.getMethodInfo() == ifThenElse
+//				tstate.considerIfInstruction((IfInstruction) insn)
 				) {
 			
 			IfInstruction ifInsn = (IfInstruction) insn;

@@ -113,6 +113,7 @@ class ThreadState {
 	 * See {@link ThreadState#considerIfInstruction(IfInstruction)}.
 	 * @param switchInsn
 	 */
+	@Deprecated
 	public void setSwitchInsn(SwitchInstruction switchInsn) {
 		this.switchInsn = switchInsn;
 	}
@@ -121,6 +122,7 @@ class ThreadState {
 	 * @param ifInsn
 	 * @return true if the given <code>IfInstruction</code> has to generate a new boolean choice generator.
 	 */
+	@Deprecated
 	public boolean considerIfInstruction(IfInstruction ifInsn) {
 
 		MethodInfo mi = ifInsn.getMethodInfo();

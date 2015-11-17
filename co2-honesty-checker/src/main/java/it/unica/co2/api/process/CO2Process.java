@@ -1,12 +1,13 @@
 package it.unica.co2.api.process;
 
-import it.unica.co2.util.Logger;
-
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
+
+import it.unica.co2.util.Logger;
 
 
 public abstract class CO2Process implements Runnable, Serializable {
@@ -22,7 +23,7 @@ public abstract class CO2Process implements Runnable, Serializable {
 		logger = Logger.getInstance(username, System.out, this.getClass().getSimpleName());
 	}
 	
-	synchronized public long parallel(Runnable process) {
+	synchronized protected long parallel(Runnable process) {
 		logger.log("starting parallel process");
 		Thread t = new Thread(process);
 		t.start();
@@ -30,7 +31,7 @@ public abstract class CO2Process implements Runnable, Serializable {
 	}
 	
 	
-	public void processCall(Class<? extends CO2Process> pClass, Object... args) {
+	protected void processCall(Class<? extends CO2Process> pClass, Object... args) {
 		this.processCall(pClass, pClass.getSimpleName(), args);
 	}
 	
@@ -60,4 +61,18 @@ public abstract class CO2Process implements Runnable, Serializable {
 			throw new RuntimeException("error instantiating the class "+pClass, e);
 		}
 	}
+	
+	
+	protected void ifThenElse(Supplier<Boolean> predicate, Runnable thenStmt) {
+		ifThenElse(predicate, thenStmt, ()->{});
+	}
+	
+	protected void ifThenElse(Supplier<Boolean> predicate, Runnable thenStmt, Runnable elseStmt) {
+		if (predicate.get())
+			thenStmt.run();
+		else 
+			elseStmt.run();
+	}
+	
+	
 }
