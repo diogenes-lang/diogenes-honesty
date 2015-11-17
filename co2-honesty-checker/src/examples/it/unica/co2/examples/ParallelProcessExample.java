@@ -31,7 +31,7 @@ public class ParallelProcessExample {
 			parallel(()-> {
 				Session2<TST> session = tellAndWait(C1);
 				session.send("a");
-				session.waitForReceive("a");
+				session.waitForReceive("a","b");
 			});
 			
 			parallel(()-> {

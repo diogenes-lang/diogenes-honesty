@@ -56,6 +56,10 @@ class ThreadState {
 	}
 	
 	
+	public boolean isCurrentProcessCompleted() {
+		return co2ProcessesStack.peek().process != null &&
+				co2ProcessesStack.peek().prefix == null;
+	}
 	
 	
 	/**
@@ -175,7 +179,11 @@ class ThreadState {
 		else {
 			assert co2ProcessesStack.size()>0;
 			
-			co2ProcessesStack.peek().prefix.next=process;
+			//FIXME: the next code is a workaround (no good)
+			if (co2ProcessesStack.peek().prefix!=null)
+				co2ProcessesStack.peek().prefix.next=process;
+			else
+				logger.warning("the current prefix is 'null'. This is a known bug and should be resolved in the future.");
 		}
 	}
 	

@@ -115,6 +115,7 @@ public class MaudeListener extends ListenerAdapter {
 
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private HashSet<MethodInfo> methodsToSkip = new HashSet<>();
+	private HashSet<MethodInfo> visitedMethods = new HashSet<>();
 	
 	@Override
 	public void classLoaded(VM vm, ClassInfo ci) {
@@ -645,6 +646,7 @@ public class MaudeListener extends ListenerAdapter {
 		}
 		else if (enteredMethod==processCall) {
 			log.info("");
+			tstate.printInfo();
 			log.info("--PROCESS CALL-- (method entered) -> "+ci.getSimpleName());
 			
 			String className = getArgumentString(currentThread, 1);			// the classname of the process that we want to invoke
