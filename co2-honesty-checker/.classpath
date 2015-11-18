@@ -14,5 +14,6 @@
 	<classpathentry kind="lib" path="lib/co2apiHL-fake-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/bcel-5.2.jar"/>
 	<classpathentry kind="lib" path="lib/jpf-nhandler.jar" sourcepath="/jpf-nhandler"/>
+	<classpathentry kind="lib" path="lib/automaton.jar" sourcepath="lib/automaton-1.11"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
