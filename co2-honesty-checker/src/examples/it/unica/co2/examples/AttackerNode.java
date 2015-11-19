@@ -12,15 +12,16 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
 
-import co2api.ContractException;
-import co2api.Message;
+import co2api.ContractExpiredException;
+import co2api.Public;
 import co2api.TST;
+import co2api.TimeExpiredException;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
-import it.unica.co2.api.contract.InputPatterns;
 import it.unica.co2.api.contract.Sort;
+import it.unica.co2.api.contract.Sort.StringSort;
 import it.unica.co2.api.process.Participant;
-import it.unica.co2.util.Xeger;
+import it.unica.co2.honesty.HonestyChecker;
 
 public class AttackerNode extends Participant{
 
@@ -33,65 +34,66 @@ public class AttackerNode extends Participant{
 	@Override
 	public void run() {
 
-		@InputPatterns(value={
-			"pair="+InputPatterns.base64+","+InputPatterns.base64,
-			"range="+InputPatterns.intNumber+"-"+InputPatterns.intNumber
-		})
 		ContractDefinition c = def("c").setContract(
-				externalSum().add("pair", Sort.STRING,
-						externalSum().add("range", Sort.STRING,
+				externalSum().add("pair", Sort.string(StringSort.integerPattern+"-"+StringSort.integerPattern),
+						externalSum().add("range", Sort.string(StringSort.base64Pattern+","+StringSort.base64Pattern),
 								internalSum()
 								.add("result", Sort.STRING))
 								.add("abort")));
 		
-		Session2<TST> u = tellAndWait(c);
-		
+		Public<TST> pbl = tell(c);
+		Session2<TST> y = waitForSession(pbl);
+
 		try {
+			y.waitForReceive("a");
+		}
+		catch (ContractExpiredException e) {
+			Session2<TST> x = waitForSession(pbl);
+			x.send("pippo");
+		}
 		
-			Message msg = u.waitForReceive("pair");
-			String pairString = msg.getStringValue();
-
-			msg = u.waitForReceive("range");
-			String rangeString = msg.getStringValue();
-			
-			if (isInputOk(pairString, rangeString)) {	// concretely evaluated by JPF
-				
-				String[] pair = pairString.split(",");
-				String plaintext = pair[0];
-				String ciphertext = pair[1];
-				
-				
-				String[] range = rangeString.split("-");
-				int min = Integer.valueOf(range[0]);
-				int max = Integer.valueOf(range[1]);
-			
-				ifThenElse(
-					() -> !isFeasible(max-min),
-					() -> {
-						u.send("abort");
-					},
-					() -> {
-						String result = getAllPairs(plaintext, ciphertext, min, max);
-						u.send("result", result);				
-					}
-				);
-			}
-			else {
-				u.send("abort");
-			}
-
-			
-		}
-		catch (ContractException e) {
+//		String[] result = test();
+//		System.out.println("result is "+Arrays.toString(result));
+//		
+//		String[] result2 = test();
+//		System.out.println("result "+ Arrays.toString(result) +" / result2 "+Arrays.toString(result2));
+		
+//		try {
+//		
+//			Message msg = u.waitForReceive("pair");
+//			String pairString = msg.getStringValue();
+//
+//			msg = u.waitForReceive("range");
+//			String rangeString = msg.getStringValue();
 //			
-//			parallel(()->{
+//			if (isInputOk(pairString, rangeString)) {	// concretely evaluated by JPF
+//				
+//				String[] pair = pairString.split(",");
+//				String plaintext = pair[0];
+//				String ciphertext = pair[1];
+//				
+//				
+//				String[] range = rangeString.split("-");
+//				int min = Integer.valueOf(range[0]);
+//				int max = Integer.valueOf(range[1]);
+//			
+//				ifThenElse(
+//					() -> !isFeasible(max-min),
+//					() -> {
+//						u.send("abort");
+//					},
+//					() -> {
+//						String result = getAllPairs(plaintext, ciphertext, min, max);
+//						u.send("result", result);				
+//					}
+//				);
+//			}
+//			else {
 //				u.send("abort");
-//			});
-//			
-//			parallel(()->{
-//				u.send("result");
-//			});
-		}
+//			}
+//		}
+//		catch (ContractException e) {
+//		}
 
 	}
 	
@@ -130,14 +132,9 @@ public class AttackerNode extends Participant{
 	}
 	
 	public static void main(String[] args) {
-		String pattern = "[a-z0-9A-Z]{22}==-[0-9A-Za-z]{22}==";
-		
-		System.out.println(Xeger.generate(pattern));
 		
 //		HonestyChecker.isHonest(AttackerNode.class, "", "");
-		System.out.println(AESUtils.encrypt(AESUtils.getKey(0), "1"));
-		System.out.println(AESUtils.encrypt(AESUtils.getKey(0), "0"));
-		System.out.println(AESUtils.encrypt(AESUtils.getKey(0), "a"));
+		System.out.println(System.getProperty("java.io.tmpdir"));
 	}
 }
 

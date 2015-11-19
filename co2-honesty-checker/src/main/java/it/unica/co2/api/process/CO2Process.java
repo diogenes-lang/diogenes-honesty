@@ -74,5 +74,7 @@ public abstract class CO2Process implements Runnable, Serializable {
 			elseStmt.run();
 	}
 	
-	
+	protected String[] test() {
+		return new String[]{"pippo!", "pippo2!"};
+	}
 }

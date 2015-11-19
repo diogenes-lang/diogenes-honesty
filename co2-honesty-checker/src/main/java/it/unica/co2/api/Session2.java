@@ -17,23 +17,9 @@ import co2api.TimeExpiredException;
 
 public class Session2<T extends ContractModel> extends Session<T>{
 
-	private static int count = 0;
-	
-	private final String sessionName;
-	
 	public Session2(CO2ServerConnection conn, Public<T> publ) {
 		super(conn, publ);
-		sessionName = "x_"+count++;
 	}
-	
-	public String getSessionName() {
-		return sessionName;
-	}
-	
-	public static String getNextSessionName() {
-		return "x_"+count;
-	}
-	
 	
 	@Override
 	public Boolean send(String action) {
@@ -95,10 +81,10 @@ public class Session2<T extends ContractModel> extends Session<T>{
 			
 			actionsField.setAccessible(true);
 			actionsField.set(null, actionsSet);
+			System.out.println("(dummy implementation)");
 		}
 		catch (NoSuchFieldException e) {
 			// you are using the real implementation, this is not an error
-			System.out.println("(real implementation)");
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -280,22 +279,20 @@ public class HonestyChecker {
 	
 	private static void configureNhandler(Config conf) {
 		
-		try {
-			File nHandlerTmpDir = Files.createTempDirectory("co2-nhandler").toFile();
-			new File(nHandlerTmpDir, "onthefly").mkdir();
-			
-			conf.setProperty("jpf-nhandler", nHandlerTmpDir.getAbsolutePath());
-			conf.setProperty("jpf-nhandler.native_classpath", null);
-			conf.setProperty("jpf-nhandler.classpath", null);
-			conf.setProperty("jpf-nhandler.test_classpath", null);
-			conf.setProperty("jpf-nhandler.sourcepath", null);
-			
-			conf.setProperty("nhandler.spec.delegate", "it.unica.co2.api.contract.Contract.toTST");
-		}
-		catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		File nHandlerTmpDir = new File(System.getProperty("java.io.tmpdir"), "co2-nhandler");
+		nHandlerTmpDir.mkdir();
+		new File(nHandlerTmpDir, "onthefly").mkdir();
 		
+		conf.setProperty("jpf-nhandler", nHandlerTmpDir.getAbsolutePath());
+		conf.setProperty("jpf-nhandler.native_classpath", null);
+		conf.setProperty("jpf-nhandler.classpath", null);
+		conf.setProperty("jpf-nhandler.test_classpath", null);
+		conf.setProperty("jpf-nhandler.sourcepath", null);
+		
+		conf.setProperty("nhandler.spec.delegate", "it.unica.co2.api.contract.Contract.toTST");
+		conf.setProperty("nhandler.spec.delegate", "co2api.ContractXML.*");
+		
+		conf.setProperty("nhandler.spec.skip", "co2api.CO2ServerConnection.*");
 	}
 
 	private static void setTarget(Config conf, String processSerialized) {

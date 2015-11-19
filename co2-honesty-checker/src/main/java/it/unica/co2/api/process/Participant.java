@@ -2,7 +2,6 @@ package it.unica.co2.api.process;
 
 import co2api.CO2ServerConnection;
 import co2api.ContractException;
-import co2api.ContractExpiredException;
 import co2api.Private;
 import co2api.Public;
 import co2api.Session;
@@ -55,7 +54,6 @@ public abstract class Participant extends CO2Process {
 	 * JPF-fields
 	 */
 	@SuppressWarnings("unused") private String serializedContract;
-	@SuppressWarnings("unused") private String sessionName;
 	
 	
 	public Session2<TST> tellAndWait(Contract c) {
@@ -92,14 +90,14 @@ public abstract class Participant extends CO2Process {
 		return tell(cDef, 0);
 	}
 	
-	public Public<TST> tell (ContractDefinition cDef, Integer delay) throws ContractExpiredException {
+	public Public<TST> tell (ContractDefinition cDef, Integer delay) {
 		
 		if (connection==null)
 			setConnection();
 
 		try {
 			serializedContract=ObjectUtils.serializeObjectToStringQuietly(cDef);
-			sessionName = Session2.getNextSessionName();
+//			sessionName = Session2.getNextSessionName();
 			
 			TST tst = new TST(cDef.getContract().toTST());
 			Private<TST> pvt = tst.toPrivate(connection);
@@ -126,7 +124,7 @@ public abstract class Participant extends CO2Process {
 	public Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) throws TimeExpiredException {
 		try {
 			logger.log("waiting for a session");
-			sessionName = Session2.getNextSessionName();
+//			sessionName = Session2.getNextSessionName();
 			
 			Session<TST> session = null;
 			if (timeout==-1) {

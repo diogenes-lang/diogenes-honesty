@@ -12,10 +12,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import co2api.ContractExpiredException;
+import co2api.Message;
+import co2api.Private;
+import co2api.Public;
+import co2api.Session;
 import co2api.TimeExpiredException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
+import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.jvm.bytecode.SwitchInstruction;
 import gov.nasa.jpf.search.Search;
@@ -25,11 +30,13 @@ import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.ExceptionInfo;
+import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
+import gov.nasa.jpf.vm.choice.IntChoiceFromList;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
@@ -114,56 +121,87 @@ public class MaudeListener extends ListenerAdapter {
 	private MethodInfo processCall;
 	private MethodInfo ifThenElse;
 
+	private MethodInfo test;
+	private MethodInfo privateTell;
+	private MethodInfo waitForSession;
+	private MethodInfo waitForSessionT;
+	private MethodInfo waitForReceive;
+	private MethodInfo messageGetStringValue;
+	
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private HashSet<MethodInfo> methodsToSkip = new HashSet<>();
-	private HashSet<MethodInfo> visitedMethods = new HashSet<>();
+	
+	
+	private Map<String, Boolean> contractsDelay = new HashMap<>();
+	private Map<String, Integer> contractsCount = new HashMap<>();
+	private Map<String, String> publicSessionName = new HashMap<>();
+	private int sessionCount = 0;
 	
 	@Override
 	public void classLoaded(VM vm, ClassInfo ci) {
 
 		if (ci.getName().equals(Participant.class.getName())) {
-			
-			if (participantTell == null) {
+			if (participantTell == null)
 				participantTell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/ContractDefinition;Ljava/lang/Integer;)Lco2api/Public;", false); 
-			}
 			
-			if (participantWaitForSession == null) {
+			if (participantWaitForSession == null)
 				participantWaitForSession = ci.getMethod("waitForSession", "(Lco2api/Public;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;", false); 
-			}
 		}
 		
 		if (ci.getName().equals(CO2Process.class.getName())) {
-			if (parallel == null) {
+			if (parallel == null)
 				parallel = ci.getMethod("parallel", "(Ljava/lang/Runnable;)J", false); 
-			}
 			
-			if (processCall == null) {
+			if (processCall == null)
 				processCall = ci.getMethod("processCall", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Object;)V", false);
-			}
 			
-			if (ifThenElse == null) {
+			if (ifThenElse == null)
 				ifThenElse = ci.getMethod("ifThenElse", "(Ljava/util/function/Supplier;Ljava/lang/Runnable;Ljava/lang/Runnable;)V", false);
-			}
+			
+			if (test == null)
+				test = ci.getMethod("test", "()[Ljava/lang/String;", false);
 		}
 		
 		if (ci.getName().equals(Session2.class.getName())) {
-			if (sessionWaitForReceive==null) {
+			if (sessionWaitForReceive==null)
 				sessionWaitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
-			}
 			
-			if (sessionSend==null) {
+			if (sessionSend==null)
 				sessionSend = ci.getMethod("send", "(Ljava/lang/String;)Ljava/lang/Boolean;", false);
-			}
 			
-			if (sessionSendString==null) {
+			if (sessionSendString==null)
 				sessionSendString = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;", false);
-			}
 			
-			if (sessionSendInt==null) {
+			if (sessionSendInt==null)
 				sessionSendInt = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
-			}
 		}
 		
+		if (ci.getName().equals(Private.class.getName())) {
+			
+			if (privateTell==null)
+				privateTell = ci.getMethod("tell", "(Ljava/lang/Integer;)Lco2api/Public;", false);
+		}
+		
+		if (ci.getName().equals(Public.class.getName())) {
+			
+			if (waitForSession==null)
+				waitForSession = ci.getMethod("waitForSession", "()Lco2api/Session;", false);
+			
+			if (waitForSessionT==null)
+				waitForSessionT = ci.getMethod("waitForSession", "(Ljava/lang/Integer;)Lco2api/Session;", false);
+		}
+
+		if (ci.getName().equals(Session2.class.getName())) {
+			
+			if (waitForReceive==null)
+				waitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
+		}
+		
+		if (ci.getName().equals(Message.class.getName())) {
+			
+			if (messageGetStringValue==null)
+				messageGetStringValue = ci.getMethod("getStringValue", "()Ljava/lang/String;", false);
+		}
 	}
 	
 	
@@ -173,12 +211,73 @@ public class MaudeListener extends ListenerAdapter {
 		ClassInfo ci = ti.getExecutingClassInfo();
 		ThreadState tstate = threadStates.get(ti);
 
+		if(privateTell!=null && insn==privateTell.getFirstInsn()) {
+			handleTell(ti, insn);
+		}
+		
+		if(waitForSession!=null && insn==waitForSession.getFirstInsn()) {
+			handleWaitForSession(ti, insn, false);
+		}
+		
+		if(waitForSessionT!=null && insn==waitForSessionT.getFirstInsn()) {
+			handleWaitForSession(ti, insn, true);
+		}
+		
+		if(waitForReceive!=null && insn==waitForReceive.getFirstInsn()) {
+			handleWaitForReceive(ti, insn);
+		}
+		
+		if(messageGetStringValue!=null && insn==messageGetStringValue.getFirstInsn()) {
+			handleMessageGetStringValue(ti, insn);
+		}
+		
+//		if (test!=null && insn==test.getFirstInsn()) {
+//			
+//			if (!ti.isFirstStepInsn()) {
+//				log.info("");
+//				log.info("TEST (top-half)");
+//				log.info("insn: "+insnToString(test.getFirstInsn()));
+//				
+//				IntChoiceFromList cg = new IntChoiceFromList(insn.getMethodInfo().getFullName(), 1, 42);
+//				vm.setNextChoiceGenerator(cg);
+//				ti.skipInstruction(insn);
+//			}
+//			else {
+//				log.info("");
+//				
+//				// get the choice generator
+//				IntChoiceFromList cg = vm.getSystemState().getCurrentChoiceGenerator(insn.getMethodInfo().getFullName(), IntChoiceFromList.class);
+//				
+//				// take a choice
+//				
+//				ElementInfo newResult = ti.getHeap().newArray("Ljava/lang/String;", 2, ti);
+//				ElementInfo fstElement = ti.getHeap().newString("Hello", ti);
+//				ElementInfo sndElement = ti.getHeap().newString("world!", ti);
+//				newResult.setReferenceElement(0, fstElement.getObjectRef());
+//				newResult.setReferenceElement(1, sndElement.getObjectRef());
+//				
+//				int ref = newResult.getObjectRef();
+//				
+//				
+//				StackFrame frame = ti.getTopFrame();
+//				frame.setReferenceResult(ref, null);
+//				
+//				Instruction nextInsn = new ARETURN();
+//				nextInsn.setMethodInfo(test);
+//				
+//				log.info(insnToString(nextInsn));
+//				
+//				ti.skipInstruction(nextInsn);				
+//			}
+//		}
+		
 		if (
 				methodsToSkip.contains(insn.getMethodInfo()) &&
 				insn == insn.getMethodInfo().getFirstInsn()
 				) {
 			log.info("");
 			log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
+			log.info("jumping to last insn: "+insnToString(insn.getMethodInfo().getLastInsn()));
 			ti.skipInstruction(insn.getMethodInfo().getLastInsn());
 		}
 		else if (
@@ -282,12 +381,262 @@ public class MaudeListener extends ListenerAdapter {
 
 	}
 	
+	
+	private void handleMessageGetStringValue(ThreadInfo ti, Instruction insn) {
+		//bypass the type check of the message
+		
+		ElementInfo message = ti.getThisElementInfo();
+		
+		//set the return value
+		StackFrame frame = ti.getTopFrame();
+		frame.setReferenceResult(message.getReferenceField("stringVal"), null);
+		
+		Instruction nextInsn = new ARETURN();
+		nextInsn.setMethodInfo(insn.getMethodInfo());
+		
+		ti.skipInstruction(nextInsn);
+	}
+
+
+	private void handleWaitForReceive(ThreadInfo ti, Instruction insn) {
+		
+		log.info("");
+		log.info("HANDLE -> WAIT FOR RECEIVE");
+		
+		//object Session2
+		ElementInfo session2 = ti.getThisElementInfo();
+		
+		//parameters
+		boolean hasTimeout = getArgumentInteger(ti, 0)>0;
+		List<String> actions = getArgumentStringArray(ti, 1);
+		
+		assert actions.size()>=1 : "you must pass at least one action";
+		
+		log.info("timeout: "+hasTimeout);
+		log.info("actions: "+actions);
+		
+		if (hasTimeout || actions.size()>1) {
+			log.info("considering multiple choices");
+			
+			List<Integer> choiceSet = new ArrayList<>();
+
+			actions.stream().forEach((x)-> {choiceSet.add(actions.indexOf(x));});
+			if (hasTimeout) choiceSet.add(actions.size());
+
+			assert choiceSet.size()>1;
+			
+			if (!ti.isFirstStepInsn()) {
+				IntChoiceFromList cg = new IntChoiceFromList(insn.getMethodInfo().getFullName(), choiceSet.stream().mapToInt(i -> i).toArray());
+				ti.getVM().setNextChoiceGenerator(cg);
+				ti.skipInstruction(insn);
+				return;
+			}
+			else {
+				// get the choice generator
+				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(insn.getMethodInfo().getFullName(), IntChoiceFromList.class);
+				
+				// take a choice
+				
+				int choice = cg.getNextChoice();
+				
+				if (choice==actions.size()) {
+					log.info("timeout expired, throwing a TimeExpiredException");
+					ti.createAndThrowException(TimeExpiredException.class.getName(), "JPF listener");
+					return;
+				}
+				else {
+					String action = actions.get(choice);
+					String value = "10";
+					
+					log.info("returning message: ["+action+":"+value+"]");
+					
+					ElementInfo message = getMessage(ti, action, value);
+					
+					StackFrame frame = ti.getTopFrame();
+					frame.setReferenceResult(message.getObjectRef(), null);
+					
+					Instruction nextInsn = new ARETURN();
+					nextInsn.setMethodInfo(insn.getMethodInfo());
+					
+					ti.skipInstruction(nextInsn);
+					return;
+				}
+			}
+		}
+		else {
+			log.info("single choice");
+			
+			log.info("returning a new Message");
+			
+			//build the return value
+			ElementInfo messageEI = getMessage(ti, actions.get(0), "1");
+			
+			//set the return value
+			StackFrame frame = ti.getTopFrame();
+			frame.setReferenceResult(messageEI.getObjectRef(), null);
+			
+			Instruction nextInsn = new ARETURN();
+			nextInsn.setMethodInfo(insn.getMethodInfo());
+			
+			ti.skipInstruction(nextInsn);
+		}
+		
+		
+	}
+
+	private ElementInfo getMessage(ThreadInfo ti, String label, String value) {
+		
+		ClassInfo messageCI = ClassInfo.getInitializedClassInfo(Message.class.getName(), ti);
+		ElementInfo messageEI = ti.getHeap().newObject(messageCI, ti);
+		
+		messageEI.setReferenceField("label", ti.getHeap().newString(label, ti).getObjectRef());
+		messageEI.setReferenceField("stringVal", ti.getHeap().newString(value, ti).getObjectRef());
+		
+		return messageEI;
+	}
+
+	private void handleWaitForSession(ThreadInfo ti, Instruction insn, boolean hasTimeout) {
+		log.info("");
+		log.info("HANDLE -> WAIT FOR SESSION");
+		
+		//object Public
+		ElementInfo pbl = ti.getThisElementInfo();
+		
+		String contractID = pbl.getStringField("uniqueID");
+		log.info("contractID: "+contractID);
+		
+		boolean hasDelay = contractsDelay.get(contractID);
+		
+		List<Integer> choiceSet = new ArrayList<>();
+		choiceSet.add(0);
+		
+		if (hasDelay) choiceSet.add(1);
+		if (hasTimeout) choiceSet.add(2);
+		
+		if (choiceSet.size()>1) {
+			log.info("considering multiple choices");
+			
+			if (!ti.isFirstStepInsn()) {
+				IntChoiceFromList cg = new IntChoiceFromList(insn.getMethodInfo().getFullName(), choiceSet.stream().mapToInt(i -> i).toArray());
+				ti.getVM().setNextChoiceGenerator(cg);
+				ti.skipInstruction(insn);
+				return;
+			}
+			else {
+				// get the choice generator
+				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(insn.getMethodInfo().getFullName(), IntChoiceFromList.class);
+				
+				// take a choice
+				switch (cg.getNextChoice()) {
+				case 0:
+					//do nothing, the return value is set at the end of the method
+					break;
+
+				case 1:
+					log.info("delay expired, throwing a ContractExpiredException");
+					ti.createAndThrowException(ContractExpiredException.class.getName(), "JPF listener");
+					return;
+
+				case 2:
+					log.info("timeout expired, throwing a TimeExpiredException");
+					ti.createAndThrowException(TimeExpiredException.class.getName(), "JPF listener");
+					return;
+
+				}
+			}
+		}
+		else {
+			log.info("single choice");
+		}
+
+		log.info("returning a new Session");
+		
+		//build the return value
+		ClassInfo sessionCI = ClassInfo.getInitializedClassInfo(Session.class.getName(), ti);
+		ElementInfo sessionEI = ti.getHeap().newObject(sessionCI, ti);
+		
+		sessionEI.setReferenceField("connection", pbl.getReferenceField("connection"));
+		sessionEI.setReferenceField("contract", pbl.getObjectRef());
+		
+		//set the return value
+		StackFrame frame = ti.getTopFrame();
+		frame.setReferenceResult(sessionEI.getObjectRef(), null);
+		
+		Instruction nextInsn = new ARETURN();
+		nextInsn.setMethodInfo(insn.getMethodInfo());
+		
+		ti.skipInstruction(nextInsn);
+	}
+
+	private void handleTell(ThreadInfo ti, Instruction insn) {
+		
+		log.info("");
+		log.info("HANDLE -> TELL");
+		
+		//object Private
+		ElementInfo pvt = ti.getThisElementInfo();
+		
+		log.info("object");
+		log.info("\tpvt: "+pvt);
+
+		//fields
+		ElementInfo connection = ti.getElementInfo(pvt.getReferenceField("connection"));
+		ElementInfo contract = ti.getElementInfo(pvt.getReferenceField("contract"));
+		
+		log.info("object's fields");
+		log.info("\tcontract: "+contract);
+		log.info("\tconnection: "+connection);
+
+		//parameters
+		int delay = getArgumentInteger(ti, 0);
+		
+		log.info("parameters");
+		log.info("\tdelay: "+delay);
+				
+		String contractID = String.valueOf(contract.hashCode());
+
+		Integer contractCount = contractsCount.get(contractID);
+		contractCount = contractCount==null? 0 : contractCount+1;
+		
+		contractsCount.put(contractID, contractCount);
+		contractID = "n:"+contractCount+contractID;
+		contractsDelay.put(contractID, delay>0);
+		
+		
+		//build the return value
+		ClassInfo pblCI = ClassInfo.getInitializedClassInfo(Public.class.getName(), ti);
+		ElementInfo pblEI = ti.getHeap().newObject(pblCI, ti);
+		
+		pblEI.setReferenceField("connection", connection.getObjectRef());
+		pblEI.setReferenceField("contract", contract.getObjectRef());
+		pblEI.setReferenceField("uniqueID", ti.getHeap().newString(contractID, ti).getObjectRef());
+		
+		//set the return value
+		StackFrame frame = ti.getTopFrame();
+		frame.setReferenceResult(pblEI.getObjectRef(), null);
+		
+		Instruction nextInsn = new ARETURN();
+		nextInsn.setMethodInfo(insn.getMethodInfo());
+		
+		ti.skipInstruction(nextInsn);
+		
+		log.info("storing <"+pblEI.toString()+","+"x"+sessionCount);
+		if (!publicSessionName.containsKey(pblEI.toString()))
+			publicSessionName.put(pblEI.toString(), "x"+sessionCount++);
+	}
+
+
 	@Override
 	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo exitedMethod) {
 		
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		ThreadState tstate = threadStates.get(vm.getCurrentThread());
 
+		if (exitedMethod==test) {
+			log.info("");
+			log.info("--TEST-- (method exited)");
+		}
+		
 		if (exitedMethod == participantTell) {
 			log.info("");
 			tstate.printInfo();
@@ -298,7 +647,17 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ElementInfo ei = currentThread.getThisElementInfo();
 			
-			String sessionName = ei.getStringField("sessionName");
+			/*
+			 * get the returned value
+			 */
+			StackFrame f = currentThread.getTopFrame();
+			
+			int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
+			f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
+			
+			ElementInfo pbl = currentThread.getElementInfo(ref);
+
+			String sessionName = publicSessionName.get(pbl.toString());
 			
 			ContractDefinition cDef = ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), ContractDefinition.class);
 			contracts.put(cDef.getName(), cDef);
@@ -362,8 +721,19 @@ public class MaudeListener extends ListenerAdapter {
 					
 					// the exception can be thrown by any waitForSession() (timeout or not)
 					
-					ElementInfo participantObj = currentThread.getThisElementInfo();
-					String sessionName = participantObj.getStringField("sessionName");
+					/*
+					 * get the returned value
+					 */
+					StackFrame f = currentThread.getTopFrame();
+					
+					int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
+					f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
+					
+					ElementInfo session2 = currentThread.getElementInfo(ref);
+					
+					ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
+					assert pbl!=null;
+					String sessionName = publicSessionName.get(pbl.toString());
 					
 					RetractDS retract = new RetractDS();
 					retract.session = sessionName;
@@ -389,7 +759,9 @@ public class MaudeListener extends ListenerAdapter {
 				
 				ElementInfo session2 = currentThread.getElementInfo(ref);
 				
-				String sessionName = session2.getStringField("sessionName");
+				ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
+				assert pbl!=null;
+				String sessionName = publicSessionName.get(pbl.toString());
 				
 				log.info("session: "+sessionName);
 				
@@ -463,7 +835,10 @@ public class MaudeListener extends ListenerAdapter {
 				ElementInfo messageReceived = currentThread.getElementInfo(ref);
 				
 				String label = messageReceived.getStringField("label");
-				String sessionName = session2.getStringField("sessionName");
+				
+				ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
+				assert pbl!=null;
+				String sessionName = publicSessionName.get(pbl.toString());
 				
 				log.info("label: "+label);
 				
@@ -560,8 +935,9 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
 			
-			String sessionName = session2.getStringField("sessionName");
-			
+			ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
+			assert pbl!=null;
+			String sessionName = publicSessionName.get(pbl.toString());
 			
 			Integer timeout = getArgumentInteger(currentThread, 0);
 			List<String> actions = getArgumentStringArray(currentThread, 1);
@@ -608,7 +984,9 @@ public class MaudeListener extends ListenerAdapter {
 			
 			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
 			
-			String sessionName = session2.getStringField("sessionName");
+			ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
+			assert pbl!=null;
+			String sessionName = publicSessionName.get(pbl.toString());
 			String action = getArgumentString(currentThread, 0);
 			
 			DoSendDS send = new DoSendDS();
@@ -679,7 +1057,10 @@ public class MaudeListener extends ListenerAdapter {
 				
 				for (ElementInfo ei : args) {
 					if (ei.getClassInfo().getName().equals(Session2.class.getName())) {
-						String sessionName = ei.getStringField("sessionName");
+						ElementInfo pbl = currentThread.getElementInfo(ei.getReferenceField("contract"));
+						assert pbl!=null;
+						String sessionName = publicSessionName.get(pbl.toString());
+						
 						proc.freeNames.add("\""+sessionName+"\"");
 						log.info("ctor arg: Session2 ("+sessionName+")");
 					}
@@ -709,7 +1090,10 @@ public class MaudeListener extends ListenerAdapter {
 			for (ElementInfo ei : getArgumentArray(currentThread, 2)) {
 				
 				if (ei.getClassInfo().getName().equals(Session2.class.getName())) {
-					String sessionName = ei.getStringField("sessionName");
+					ElementInfo pbl = currentThread.getElementInfo(ei.getReferenceField("contract"));
+					assert pbl!=null;
+					String sessionName = publicSessionName.get(pbl.toString());
+					
 					pCall.params.add("\""+sessionName+"\"");
 					log.info("param: Session2 ("+sessionName+")");
 				}

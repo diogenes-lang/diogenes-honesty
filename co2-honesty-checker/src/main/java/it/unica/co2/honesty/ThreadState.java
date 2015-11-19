@@ -47,8 +47,7 @@ class ThreadState {
 	 * if the ifInstruction is to switch-statement, not consider it
 	 */
 	private SwitchInstruction switchInsn;
-	
-	
+
 	
 	
 	public ThreadState(ThreadInfo threadInfo) {
@@ -67,6 +66,10 @@ class ThreadState {
 	 */
 	public int getId() {
 		return threadInfo.getId();
+	}
+	
+	public ThreadInfo getThreadInfo() {
+		return threadInfo;
 	}
 	
 	/**
@@ -327,6 +330,8 @@ class ThreadState {
 			co2ProcessesStack.pop();
 		}
 	}
+	
+	
 	
 	
 	@Override
