@@ -11,17 +11,21 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import co2api.CO2ServerConnection;
 import co2api.ContractExpiredException;
 import co2api.Message;
 import co2api.Private;
 import co2api.Public;
 import co2api.Session;
+import co2api.TST;
 import co2api.TimeExpiredException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
+import gov.nasa.jpf.jvm.bytecode.ATHROW;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
+import gov.nasa.jpf.jvm.bytecode.RETURN;
 import gov.nasa.jpf.jvm.bytecode.SwitchInstruction;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.ArrayFields;
@@ -29,12 +33,11 @@ import gov.nasa.jpf.vm.BooleanChoiceGenerator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
-import gov.nasa.jpf.vm.ExceptionInfo;
-import gov.nasa.jpf.vm.FieldInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
+import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.choice.IntChoiceFromList;
 import it.unica.co2.api.Session2;
@@ -49,7 +52,6 @@ import it.unica.co2.honesty.dto.CO2DataStructures.DoReceiveDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.IfThenElseDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ParallelProcessesDS;
-import it.unica.co2.honesty.dto.CO2DataStructures.PrefixDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
@@ -74,6 +76,8 @@ public class MaudeListener extends ListenerAdapter {
 			log.setLevel(Level.OFF);
 			ThreadState.logger.setLevel(Level.OFF);
 		}
+		
+		log.setLevel(Level.ALL);
 		
 		this.processUnderTestClass = processClass;
 	}
@@ -111,22 +115,19 @@ public class MaudeListener extends ListenerAdapter {
 	private PrefixPlaceholderDS threadCurrentPrefix;
 	
 	/* using these fields is more efficient on dispatching */
-	private MethodInfo participantTell;
-	private MethodInfo participantWaitForSession;
-	private MethodInfo sessionWaitForReceive;
-	private MethodInfo sessionSend;
-	private MethodInfo sessionSendString;
-	private MethodInfo sessionSendInt;
-	private MethodInfo parallel;
-	private MethodInfo processCall;
-	private MethodInfo ifThenElse;
-
-	private MethodInfo test;
-	private MethodInfo privateTell;
-	private MethodInfo waitForSession;
-	private MethodInfo waitForSessionT;
-	private MethodInfo waitForReceive;
-	private MethodInfo messageGetStringValue;
+	private MethodInfo Participant_tell;
+	private MethodInfo Participant_setConnection;
+	private MethodInfo CO2Process_parallel;
+	private MethodInfo CO2Process_processCall;
+	private MethodInfo Private_tell;
+	private MethodInfo Public_waitForSession;
+	private MethodInfo Public_waitForSessionT;
+	private MethodInfo Session2_waitForReceive;
+	private MethodInfo Session2_send;
+	private MethodInfo Session2_sendString;
+	private MethodInfo Session2_sendInt;
+	private MethodInfo Message_getStringValue;
+	private MethodInfo TST_setFromString;
 	
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private HashSet<MethodInfo> methodsToSkip = new HashSet<>();
@@ -141,247 +142,299 @@ public class MaudeListener extends ListenerAdapter {
 	public void classLoaded(VM vm, ClassInfo ci) {
 
 		if (ci.getName().equals(Participant.class.getName())) {
-			if (participantTell == null)
-				participantTell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/ContractDefinition;Ljava/lang/Integer;)Lco2api/Public;", false); 
+			if (Participant_tell == null)
+				Participant_tell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/ContractDefinition;Ljava/lang/Integer;)Lco2api/Public;", false); 
 			
-			if (participantWaitForSession == null)
-				participantWaitForSession = ci.getMethod("waitForSession", "(Lco2api/Public;Ljava/lang/Integer;)Lit/unica/co2/api/Session2;", false); 
+			if (Participant_setConnection==null)
+				Participant_setConnection = ci.getMethod("setConnection", "()V", false);
 		}
 		
 		if (ci.getName().equals(CO2Process.class.getName())) {
-			if (parallel == null)
-				parallel = ci.getMethod("parallel", "(Ljava/lang/Runnable;)J", false); 
+			if (CO2Process_parallel == null)
+				CO2Process_parallel = ci.getMethod("parallel", "(Ljava/lang/Runnable;)J", false); 
 			
-			if (processCall == null)
-				processCall = ci.getMethod("processCall", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Object;)V", false);
-			
-			if (ifThenElse == null)
-				ifThenElse = ci.getMethod("ifThenElse", "(Ljava/util/function/Supplier;Ljava/lang/Runnable;Ljava/lang/Runnable;)V", false);
-			
-			if (test == null)
-				test = ci.getMethod("test", "()[Ljava/lang/String;", false);
-		}
-		
-		if (ci.getName().equals(Session2.class.getName())) {
-			if (sessionWaitForReceive==null)
-				sessionWaitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
-			
-			if (sessionSend==null)
-				sessionSend = ci.getMethod("send", "(Ljava/lang/String;)Ljava/lang/Boolean;", false);
-			
-			if (sessionSendString==null)
-				sessionSendString = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;", false);
-			
-			if (sessionSendInt==null)
-				sessionSendInt = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
+			if (CO2Process_processCall == null)
+				CO2Process_processCall = ci.getMethod("processCall", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Object;)V", false);
 		}
 		
 		if (ci.getName().equals(Private.class.getName())) {
 			
-			if (privateTell==null)
-				privateTell = ci.getMethod("tell", "(Ljava/lang/Integer;)Lco2api/Public;", false);
+			if (Private_tell==null)
+				Private_tell = ci.getMethod("tell", "(Ljava/lang/Integer;)Lco2api/Public;", false);
 		}
 		
 		if (ci.getName().equals(Public.class.getName())) {
 			
-			if (waitForSession==null)
-				waitForSession = ci.getMethod("waitForSession", "()Lco2api/Session;", false);
+			if (Public_waitForSession==null)
+				Public_waitForSession = ci.getMethod("waitForSession", "()Lco2api/Session;", false);
 			
-			if (waitForSessionT==null)
-				waitForSessionT = ci.getMethod("waitForSession", "(Ljava/lang/Integer;)Lco2api/Session;", false);
+			if (Public_waitForSessionT==null)
+				Public_waitForSessionT = ci.getMethod("waitForSession", "(Ljava/lang/Integer;)Lco2api/Session;", false);
 		}
 
 		if (ci.getName().equals(Session2.class.getName())) {
 			
-			if (waitForReceive==null)
-				waitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
+			if (Session2_waitForReceive==null)
+				Session2_waitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
+			
+			if (Session2_send==null)
+				Session2_send = ci.getMethod("send", "(Ljava/lang/String;)Ljava/lang/Boolean;", false);
+			
+			if (Session2_sendString==null)
+				Session2_sendString = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;", false);
+			
+			if (Session2_sendInt==null)
+				Session2_sendInt = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
 		}
 		
 		if (ci.getName().equals(Message.class.getName())) {
 			
-			if (messageGetStringValue==null)
-				messageGetStringValue = ci.getMethod("getStringValue", "()Ljava/lang/String;", false);
+			if (Message_getStringValue==null)
+				Message_getStringValue = ci.getMethod("getStringValue", "()Ljava/lang/String;", false);
+		}
+		
+		if (ci.getName().equals(TST.class.getName())) {
+			
+			if (TST_setFromString==null)
+				methodsToSkip.add(ci.getMethod("setFromString", "(Ljava/lang/String;)V", false));
 		}
 	}
 	
+	@Override
+	public void instructionExecuted (VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn) {
+	
+	}
 	
 	@Override
 	public void executeInstruction(VM vm, ThreadInfo ti, Instruction insn) {
 
-		ClassInfo ci = ti.getExecutingClassInfo();
 		ThreadState tstate = threadStates.get(ti);
 
-		if(privateTell!=null && insn==privateTell.getFirstInsn()) {
-			handleTell(ti, insn);
-		}
-		
-		if(waitForSession!=null && insn==waitForSession.getFirstInsn()) {
-			handleWaitForSession(ti, insn, false);
-		}
-		
-		if(waitForSessionT!=null && insn==waitForSessionT.getFirstInsn()) {
-			handleWaitForSession(ti, insn, true);
-		}
-		
-		if(waitForReceive!=null && insn==waitForReceive.getFirstInsn()) {
-			handleWaitForReceive(ti, insn);
-		}
-		
-		if(messageGetStringValue!=null && insn==messageGetStringValue.getFirstInsn()) {
-			handleMessageGetStringValue(ti, insn);
-		}
-		
-//		if (test!=null && insn==test.getFirstInsn()) {
-//			
-//			if (!ti.isFirstStepInsn()) {
-//				log.info("");
-//				log.info("TEST (top-half)");
-//				log.info("insn: "+insnToString(test.getFirstInsn()));
-//				
-//				IntChoiceFromList cg = new IntChoiceFromList(insn.getMethodInfo().getFullName(), 1, 42);
-//				vm.setNextChoiceGenerator(cg);
-//				ti.skipInstruction(insn);
-//			}
-//			else {
-//				log.info("");
-//				
-//				// get the choice generator
-//				IntChoiceFromList cg = vm.getSystemState().getCurrentChoiceGenerator(insn.getMethodInfo().getFullName(), IntChoiceFromList.class);
-//				
-//				// take a choice
-//				
-//				ElementInfo newResult = ti.getHeap().newArray("Ljava/lang/String;", 2, ti);
-//				ElementInfo fstElement = ti.getHeap().newString("Hello", ti);
-//				ElementInfo sndElement = ti.getHeap().newString("world!", ti);
-//				newResult.setReferenceElement(0, fstElement.getObjectRef());
-//				newResult.setReferenceElement(1, sndElement.getObjectRef());
-//				
-//				int ref = newResult.getObjectRef();
-//				
-//				
-//				StackFrame frame = ti.getTopFrame();
-//				frame.setReferenceResult(ref, null);
-//				
-//				Instruction nextInsn = new ARETURN();
-//				nextInsn.setMethodInfo(test);
-//				
-//				log.info(insnToString(nextInsn));
-//				
-//				ti.skipInstruction(nextInsn);				
-//			}
+//		ClassInfo ci = ti.getExecutingClassInfo();
+//		if (ci.getName().equals(processUnderTestClass.getName())) {
+//			log.info("*** "+insnToString(insn));
 //		}
 		
-		if (
-				methodsToSkip.contains(insn.getMethodInfo()) &&
-				insn == insn.getMethodInfo().getFirstInsn()
-				) {
-			log.info("");
-			log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
-			log.info("jumping to last insn: "+insnToString(insn.getMethodInfo().getLastInsn()));
-			ti.skipInstruction(insn.getMethodInfo().getLastInsn());
+		if(Private_tell!=null && insn==Private_tell.getFirstInsn()) {
+			handleTell(ti, insn);
+		}
+		else if(Public_waitForSession!=null && insn==Public_waitForSession.getFirstInsn()) {
+			handleWaitForSession(tstate, ti, insn, false);
+		}
+		else if(Public_waitForSessionT!=null && insn==Public_waitForSessionT.getFirstInsn()) {
+			handleWaitForSession(tstate, ti, insn, true);
+		}
+		else if(Session2_waitForReceive!=null && insn==Session2_waitForReceive.getFirstInsn()) {
+			handleWaitForReceive(tstate, ti, insn);
+		}
+		else if(Message_getStringValue!=null && insn==Message_getStringValue.getFirstInsn()) {
+			handleMessageGetStringValue(ti, insn);
+		}
+		else if (methodsToSkip.contains(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
+			handleSkipRunMethod(ti, insn);
+		}
+		else if (insn instanceof SwitchInstruction && tstate.considerSwitchInstruction((SwitchInstruction) insn)) {
+			tstate.setSwitchInsn((SwitchInstruction) insn);
+		}
+		else if (insn instanceof IfInstruction && tstate.considerIfInstruction((IfInstruction) insn)) {
+			handleIfThenElse(tstate, ti, insn);
 		}
 		else if (
-				insn instanceof SwitchInstruction && 
-				ci.isInstanceOf(CO2Process.class.getName())
+				(Session2_send!=null && insn==Session2_send.getFirstInsn()) ||
+				(Session2_sendInt!=null && insn==Session2_sendInt.getFirstInsn()) ||
+				(Session2_sendString!=null && insn==Session2_sendString.getFirstInsn())
 				) {
-			SwitchInstruction switchInsn = (SwitchInstruction) insn;
-			/*
-			 * switch statements use if-instructions that must be not considered for branch exploration
-			 */
-			log.finer("");
-			log.finer("SWITCH : setting start="+switchInsn.getPosition()+" , end="+switchInsn.getTarget());
-			tstate.setSwitchInsn(switchInsn);
+			handleSession2Send(tstate, ti, insn);
 		}
-		else if (	
-				insn instanceof IfInstruction &&
-				insn.getMethodInfo() == ifThenElse
-//				tstate.considerIfInstruction((IfInstruction) insn)
-				) {
-			
-			IfInstruction ifInsn = (IfInstruction) insn;
-			
-			if (!ti.isFirstStepInsn()) { // top half - first execution
-
-				log.finer("TOP HALF");
-				
-				log.finer("");
-				tstate.printInfo();
-				log.finer("--IF_THEN_ELSE--");
-				
-				IfThenElseDS ifThenElse = new IfThenElseDS();
-				ifThenElse.thenStmt = new PrefixPlaceholderDS();
-				ifThenElse.elseStmt = new PrefixPlaceholderDS();
-				
-				
-				tstate.setCurrentProcess(ifThenElse);		//set the current process
-				tstate.pushIfElse(ifThenElse);
-
-				BooleanChoiceGenerator cg = new BooleanChoiceGenerator(tstate.getBooleanChoiceGeneratorName(), false);
-
-				vm.getSystemState().setNextChoiceGenerator(cg);
-				ti.skipInstruction(insn);
-				
-			}
-			else {
-
-				log.finer("BOTTOM HALF");
-				
-				// bottom half - reexecution at the beginning of the next
-				// transition
-				BooleanChoiceGenerator cg = vm.getSystemState().getCurrentChoiceGenerator(tstate.getBooleanChoiceGeneratorName(), BooleanChoiceGenerator.class);
-
-				assert cg != null : "no 'ifThenElseCG' BooleanChoiceGenerator found";
-				
-				
-				ifInsn.popConditionValue(ti.getModifiableTopFrame());		//remove operands from the stack
-				
-				Boolean myChoice = cg.getNextChoice();
-				
-				
-				PrefixPlaceholderDS thenTau = tstate.getThenPlaceholder();
-				PrefixPlaceholderDS elseTau = tstate.getElsePlaceholder();
-				
-				log.finer("thenTau: "+thenTau);
-				log.finer("elseTau: "+elseTau);
-				
-				
-				if (myChoice){
-					/*
-					 * then branch
-					 */
-					log.finer("THEN branch, setting tau, choice: "+myChoice);
-					log.finer("next insn: "+ifInsn.getNext().getPosition());
-					
-					tstate.setCurrentPrefix(thenTau);		//set the current prefix
-
-					ti.skipInstruction(ifInsn.getNext());
-					
-					tstate.setPeekThen();
-					tstate.popIfElse();
-				}
-				else {
-					/*
-					 * else branch
-					 */
-					log.finer("ELSE branch, setting tau, choice: "+myChoice);
-					log.finer("next insn: "+ifInsn.getTarget().getPosition());
-
-					tstate.setCurrentPrefix(elseTau);		//set the current prefix
-					
-					ti.skipInstruction(ifInsn.getTarget());
-					
-					tstate.setPeekElse();
-					tstate.popIfElse();
-				}
-				
-				tstate.printInfo(Level.FINER);
-			}
-
+		else if(Participant_setConnection!=null && insn==Participant_setConnection.getFirstInsn()) {
+			handleParticipantSetConnection(ti, insn);
 		}
+	}
+	
 
+	private void handleParticipantSetConnection(ThreadInfo ti, Instruction insn) {
+		
+		log.info("");
+		log.info("HANDLE -> PARTICIPANT SET CONNECTION");
+		
+		//object Participant
+		ElementInfo participant = ti.getThisElementInfo();
+		
+		ClassInfo connectionCI = ClassInfo.getInitializedClassInfo(CO2ServerConnection.class.getName(), ti);
+		ElementInfo connectionEI = ti.getHeap().newObject(connectionCI, ti);
+		
+		participant.setReferenceField("connection", connectionEI.getObjectRef());
+		
+		//set the return value
+		StackFrame frame = ti.getTopFrame();
+		frame.setReferenceResult(connectionEI.getObjectRef(), null);
+		
+		Instruction nextInsn = new RETURN();
+		nextInsn.setMethodInfo(insn.getMethodInfo());
+		
+		ti.skipInstruction(nextInsn);
+	}
+
+
+	private void handleSession2Send(ThreadState tstate, ThreadInfo ti, Instruction insn) {
+		
+		log.info("");
+		log.info("-- SEND --");
+		
+		/*
+		 * collect the co2 process
+		 */
+		ElementInfo session2 = ti.getThisElementInfo();	//the class that call waitForReceive(String...)
+		
+		String sessionName = getSessionName(ti, session2.getReferenceField("contract"));
+		String action = getArgumentString(ti, 0);
+		
+		DoSendDS send = new DoSendDS();
+		send.session = sessionName;
+		send.action = action;
+		
+		if (insn.getMethodInfo()==Session2_send) send.sort = Sort.UNIT;
+		if (insn.getMethodInfo()==Session2_sendInt) send.sort = Sort.INT;
+		if (insn.getMethodInfo()==Session2_sendString) send.sort = Sort.STRING;
+		
+		SumDS sum = new SumDS();
+		sum.prefixes.add(send);
+		
+		log.info("setting current process: "+sum);
+		
+		tstate.setCurrentProcess(sum);		//set the current process
+		tstate.setCurrentPrefix(send);		//set the current prefix
+
+		/*
+		 * handle return value
+		 */
+		ClassInfo booleanCI = ClassInfo.getInitializedClassInfo(Boolean.class.getName(), ti);
+		ElementInfo booleanEI = ti.getHeap().newObject(booleanCI, ti);
+		
+		booleanEI.setBooleanField("value", true);
+		
+		//set the return value
+		StackFrame frame = ti.getTopFrame();
+		frame.setReferenceResult(booleanEI.getObjectRef(), null);
+		
+		Instruction nextInsn = new ARETURN();
+		nextInsn.setMethodInfo(insn.getMethodInfo());
+		
+		ti.skipInstruction(nextInsn);
 	}
 	
 	
+	private String getSessionName(ThreadInfo ti, int objReference) {
+		ElementInfo pbl = ti.getElementInfo(objReference);
+		assert pbl!=null;
+		
+		String sessionName = publicSessionName.get(pbl.toString());
+		assert sessionName!=null;
+		
+		return sessionName;
+	}
+	
+	
+	private void handleIfThenElse(ThreadState tstate, ThreadInfo ti, Instruction insn) {
+
+		IfInstruction ifInsn = (IfInstruction) insn;
+		
+		if (!ti.isFirstStepInsn()) { // top half - first execution
+
+			log.finer("TOP HALF");
+			
+			log.finer("");
+			tstate.printInfo();
+			log.finer("--IF_THEN_ELSE--");
+			
+			IfThenElseDS ifThenElse = new IfThenElseDS();
+			ifThenElse.thenStmt = new PrefixPlaceholderDS();
+			ifThenElse.elseStmt = new PrefixPlaceholderDS();
+			
+			
+			tstate.setCurrentProcess(ifThenElse);		//set the current process
+			tstate.pushIfElse(ifThenElse);
+
+			BooleanChoiceGenerator cg = new BooleanChoiceGenerator(tstate.getBooleanChoiceGeneratorName(), false);
+
+			boolean cgSetOk = ti.getVM().getSystemState().setNextChoiceGenerator(cg);
+			
+			assert cgSetOk : "error setting the choice generator";
+			
+			ti.skipInstruction(insn);
+			log.finer("re-executing: "+insnToString(insn));
+		}
+		else {
+
+			log.finer("BOTTOM HALF");
+			
+			// bottom half - reexecution at the beginning of the next
+			// transition
+			BooleanChoiceGenerator cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(tstate.getBooleanChoiceGeneratorName(), BooleanChoiceGenerator.class);
+
+			assert cg != null : "no 'ifThenElseCG' BooleanChoiceGenerator found";
+			
+			
+			ifInsn.popConditionValue(ti.getModifiableTopFrame());		//remove operands from the stack
+			
+			Boolean myChoice = cg.getNextChoice();
+			
+			
+			PrefixPlaceholderDS thenTau = tstate.getThenPlaceholder();
+			PrefixPlaceholderDS elseTau = tstate.getElsePlaceholder();
+			
+			log.finer("thenTau: "+thenTau);
+			log.finer("elseTau: "+elseTau);
+			
+			
+			if (myChoice){
+				/*
+				 * then branch
+				 */
+				log.finer("THEN branch, setting tau, choice: "+myChoice);
+				log.finer("next insn: "+ifInsn.getNext().getPosition());
+				
+				tstate.setCurrentPrefix(thenTau);		//set the current prefix
+
+				ti.skipInstruction(ifInsn.getNext());
+				
+				tstate.setPeekThen();
+				tstate.popIfElse();
+			}
+			else {
+				/*
+				 * else branch
+				 */
+				log.finer("ELSE branch, setting tau, choice: "+myChoice);
+				log.finer("next insn: "+ifInsn.getTarget().getPosition());
+
+				tstate.setCurrentPrefix(elseTau);		//set the current prefix
+				
+				ti.skipInstruction(ifInsn.getTarget());
+				
+				tstate.setPeekElse();
+				tstate.popIfElse();
+			}
+			
+			tstate.printInfo(Level.FINER);
+		}
+	}
+
+
+	private void handleSkipRunMethod(ThreadInfo ti, Instruction insn) {
+		log.info("");
+		log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
+		
+		// it works only for methods that return VOID
+		assert insn.getMethodInfo().getReturnTypeCode()==Types.T_VOID;
+		
+		Instruction nextInsn = new RETURN();
+		nextInsn.setMethodInfo(insn.getMethodInfo());
+		
+		ti.skipInstruction(nextInsn);
+	}
+
+
 	private void handleMessageGetStringValue(ThreadInfo ti, Instruction insn) {
 		//bypass the type check of the message
 		
@@ -398,50 +451,94 @@ public class MaudeListener extends ListenerAdapter {
 	}
 
 
-	private void handleWaitForReceive(ThreadInfo ti, Instruction insn) {
+	private void handleWaitForReceive(ThreadState ts, ThreadInfo ti, Instruction insn) {
 		
 		log.info("");
-		log.info("HANDLE -> WAIT FOR RECEIVE");
+		log.info("-- WAIT FOR RECEIVE --");
 		
-		//object Session2
-		ElementInfo session2 = ti.getThisElementInfo();
+		ElementInfo session2 = ti.getThisElementInfo();	//the class that call waitForReceive(String...)
+		
+		String sessionName = getSessionName(ti, session2.getReferenceField("contract"));
 		
 		//parameters
-		boolean hasTimeout = getArgumentInteger(ti, 0)>0;
+		boolean timeout = getArgumentInteger(ti, 0)>0;
 		List<String> actions = getArgumentStringArray(ti, 1);
 		
 		assert actions.size()>=1 : "you must pass at least one action";
 		
-		log.info("timeout: "+hasTimeout);
+		log.info("timeout: "+timeout);
 		log.info("actions: "+actions);
 		
-		if (hasTimeout || actions.size()>1) {
+		if (timeout || actions.size()>1) {
 			log.info("considering multiple choices");
 			
-			List<Integer> choiceSet = new ArrayList<>();
-
-			actions.stream().forEach((x)-> {choiceSet.add(actions.indexOf(x));});
-			if (hasTimeout) choiceSet.add(actions.size());
-
-			assert choiceSet.size()>1;
 			
 			if (!ti.isFirstStepInsn()) {
-				IntChoiceFromList cg = new IntChoiceFromList(insn.getMethodInfo().getFullName(), choiceSet.stream().mapToInt(i -> i).toArray());
+				
+				log.info("TOP-HALF");
+				
+				SumDS sum = new SumDS();
+				
+				log.info("pushing the sum: "+sum);
+				
+				if (timeout) {
+					String[] arr = new String[actions.size()+1];
+					arr[0] = "t";
+					actions.stream().forEach((x)->{arr[actions.indexOf(x)+1]=x;});
+					ts.pushSum(sum, arr);		//set the current process
+				}
+				else
+					ts.pushSum(sum, actions.toArray(new String[]{}));
+					
+				ts.setCurrentProcess(sum);
+				
+				List<Integer> choiceSet = new ArrayList<>();
+				
+				actions.stream().forEach((x)-> {choiceSet.add(actions.indexOf(x));});
+				if (timeout) choiceSet.add(actions.size());
+				
+				assert choiceSet.size()>1;
+
+				IntChoiceFromList cg = new IntChoiceFromList(ts.getWaitForReceiveChoiceGeneratorName(), choiceSet.stream().mapToInt(i -> i).toArray());
 				ti.getVM().setNextChoiceGenerator(cg);
 				ti.skipInstruction(insn);
 				return;
 			}
 			else {
+				
+				log.info("BOTTOM-HALF");
+				
+				SumDS sum = ts.getSum();
+				
 				// get the choice generator
-				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(insn.getMethodInfo().getFullName(), IntChoiceFromList.class);
+				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(ts.getWaitForReceiveChoiceGeneratorName(), IntChoiceFromList.class);
 				
 				// take a choice
 				
 				int choice = cg.getNextChoice();
 				
 				if (choice==actions.size()) {
+					
+					log.info("timeout expired");
+					
+					TauDS tau = new TauDS();
+					sum.prefixes.add(tau);
+					
+					log.info("setting current prefix: "+tau);
+					ts.popSum(tau);
+					ts.setCurrentPrefix(tau);
+					
 					log.info("timeout expired, throwing a TimeExpiredException");
-					ti.createAndThrowException(TimeExpiredException.class.getName(), "JPF listener");
+					
+					// get the exception ClassInfo
+					ClassInfo ci = ClassInfo.getInitializedClassInfo(TimeExpiredException.class.getName(), ti);
+					
+					// create the new exception and push on the top stack
+					ti.getModifiableTopFrame().push(ti.getHeap().newObject(ci, ti).getObjectRef());
+					ATHROW athrow = new ATHROW();
+					
+					//schedule the next instruction
+					ti.skipInstruction(athrow);
 					return;
 				}
 				else {
@@ -449,6 +546,16 @@ public class MaudeListener extends ListenerAdapter {
 					String value = "10";
 					
 					log.info("returning message: ["+action+":"+value+"]");
+					
+					DoReceiveDS p = new DoReceiveDS(); 
+					p.session = sessionName;
+					p.action = action;
+					
+					sum.prefixes.add(p);
+					
+					log.info("setting current prefix: "+p);
+					ts.popSum(p);
+					ts.setCurrentPrefix(p);
 					
 					ElementInfo message = getMessage(ti, action, value);
 					
@@ -466,10 +573,25 @@ public class MaudeListener extends ListenerAdapter {
 		else {
 			log.info("single choice");
 			
+			String action = actions.get(0);
+			
+			DoReceiveDS p = new DoReceiveDS(); 
+			p.session = sessionName;
+			p.action = action;
+			
+			SumDS sum = new SumDS();
+			sum.prefixes.add(p);
+			
+			log.info("setting current process: "+sum);
+			log.info("setting current prefix: "+p);
+			ts.setCurrentProcess(sum);		//set the current process
+			ts.setCurrentPrefix(p);
+			
+			
 			log.info("returning a new Message");
 			
 			//build the return value
-			ElementInfo messageEI = getMessage(ti, actions.get(0), "1");
+			ElementInfo messageEI = getMessage(ti, action, "1");
 			
 			//set the return value
 			StackFrame frame = ti.getTopFrame();
@@ -484,6 +606,7 @@ public class MaudeListener extends ListenerAdapter {
 		
 	}
 
+	
 	private ElementInfo getMessage(ThreadInfo ti, String label, String value) {
 		
 		ClassInfo messageCI = ClassInfo.getInitializedClassInfo(Message.class.getName(), ti);
@@ -495,12 +618,15 @@ public class MaudeListener extends ListenerAdapter {
 		return messageEI;
 	}
 
-	private void handleWaitForSession(ThreadInfo ti, Instruction insn, boolean hasTimeout) {
+	
+	private void handleWaitForSession(ThreadState tstate, ThreadInfo ti, Instruction insn, boolean hasTimeout) {
 		log.info("");
-		log.info("HANDLE -> WAIT FOR SESSION");
+		log.info("-- WAIT FOR SESSION --");
 		
 		//object Public
 		ElementInfo pbl = ti.getThisElementInfo();
+		
+		String sessionName = getSessionName(ti, pbl.getObjectRef());
 		
 		String contractID = pbl.getStringField("uniqueID");
 		log.info("contractID: "+contractID);
@@ -517,57 +643,165 @@ public class MaudeListener extends ListenerAdapter {
 			log.info("considering multiple choices");
 			
 			if (!ti.isFirstStepInsn()) {
+				
+				log.info("TOP-HALF");
+				
+				SumDS sum = new SumDS();
+				
+				tstate.setCurrentProcess(sum);		//set the current process
+
+				/*
+				 * the co2CurrentPrefix is set in methodExited
+				 */
+				log.info("pushing the sum onto the stack");
+				
+				if (hasTimeout && hasDelay) {
+					log.info("timeout and delay");
+					tstate.pushSum(sum, "ask", "t", "retract");
+				}
+				else if (hasTimeout) {
+					log.info("timeout");
+					tstate.pushSum(sum, "ask", "t");
+				}
+				else if (hasDelay) {
+					log.info("delay");
+					tstate.pushSum(sum, "ask", "retract");
+				}
+				else {
+					throw new IllegalStateException();
+				}
+				
+				
+				
 				IntChoiceFromList cg = new IntChoiceFromList(insn.getMethodInfo().getFullName(), choiceSet.stream().mapToInt(i -> i).toArray());
 				ti.getVM().setNextChoiceGenerator(cg);
 				ti.skipInstruction(insn);
 				return;
 			}
 			else {
+				log.info("BOTTOM-HALF");
+				SumDS sum = tstate.getSum();
+				
 				// get the choice generator
 				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(insn.getMethodInfo().getFullName(), IntChoiceFromList.class);
 				
 				// take a choice
 				switch (cg.getNextChoice()) {
 				case 0:
-					//do nothing, the return value is set at the end of the method
-					break;
+					
+					log.info("returning a new Session");
+					
+					AskDS ask = new AskDS();
+					ask.session = sessionName;
+					sum.prefixes.add(ask);
+					
+					log.info("setting current prefix: "+ask);
+					tstate.setCurrentPrefix(ask);
+					tstate.popSum(ask);
+
+					//build the return value
+					ClassInfo sessionCI = ClassInfo.getInitializedClassInfo(Session.class.getName(), ti);
+					ElementInfo sessionEI = ti.getHeap().newObject(sessionCI, ti);
+					
+					sessionEI.setReferenceField("connection", pbl.getReferenceField("connection"));
+					sessionEI.setReferenceField("contract", pbl.getObjectRef());
+					
+					//set the return value
+					StackFrame frame = ti.getTopFrame();
+					frame.setReferenceResult(sessionEI.getObjectRef(), null);
+					
+					Instruction nextInsn = new ARETURN();
+					nextInsn.setMethodInfo(insn.getMethodInfo());
+					
+					ti.skipInstruction(nextInsn);
+					
+					return;
 
 				case 1:
+					log.info("delay expired");
+					
+					RetractDS retract = new RetractDS();
+					retract.session = sessionName;
+					sum.prefixes.add(retract);
+					
+					log.info("setting current prefix: "+retract);
+					tstate.setCurrentPrefix(retract);
+					tstate.popSum(retract);
+					
 					log.info("delay expired, throwing a ContractExpiredException");
-					ti.createAndThrowException(ContractExpiredException.class.getName(), "JPF listener");
+					
+					// get the exception ClassInfo
+					ClassInfo ci = ClassInfo.getInitializedClassInfo(ContractExpiredException.class.getName(), ti);
+					
+					// create the new exception and push on the top stack
+					ti.getModifiableTopFrame().push(ti.getHeap().newObject(ci, ti).getObjectRef());
+					ATHROW athrow = new ATHROW();
+					
+					//schedule the next instruction
+					ti.skipInstruction(athrow);
 					return;
 
 				case 2:
+					log.info("timeout expired");
+					
+					TauDS tau = new TauDS(); 
+					sum.prefixes.add(tau);
+					
+					log.info("setting current prefix: "+tau);
+					tstate.setCurrentPrefix(tau);
+					tstate.popSum(tau);
+					
 					log.info("timeout expired, throwing a TimeExpiredException");
-					ti.createAndThrowException(TimeExpiredException.class.getName(), "JPF listener");
+					
+					// get the exception ClassInfo
+					ClassInfo ci2 = ClassInfo.getInitializedClassInfo(TimeExpiredException.class.getName(), ti);
+					
+					// create the new exception and push on the top stack
+					ti.getModifiableTopFrame().push(ti.getHeap().newObject(ci2, ti).getObjectRef());
+					ATHROW athrow2 = new ATHROW();
+					
+					//schedule the next instruction
+					ti.skipInstruction(athrow2);
 					return;
-
 				}
 			}
 		}
 		else {
 			log.info("single choice");
-		}
 
-		log.info("returning a new Session");
+			AskDS ask = new AskDS();
+			ask.session = sessionName;
+			
+			SumDS sum = new SumDS();
+			sum.prefixes.add(ask);
+			
+			log.info("setting current process: "+sum);
+			log.info("setting current prefix: "+ask);
+			tstate.setCurrentProcess(sum);		//set the current process
+			tstate.setCurrentPrefix(ask);
+			
+			log.info("returning a new Session");
+			
+			//build the return value
+			ClassInfo sessionCI = ClassInfo.getInitializedClassInfo(Session.class.getName(), ti);
+			ElementInfo sessionEI = ti.getHeap().newObject(sessionCI, ti);
+			
+			sessionEI.setReferenceField("connection", pbl.getReferenceField("connection"));
+			sessionEI.setReferenceField("contract", pbl.getObjectRef());
+			
+			//set the return value
+			StackFrame frame = ti.getTopFrame();
+			frame.setReferenceResult(sessionEI.getObjectRef(), null);
+			
+			Instruction nextInsn = new ARETURN();
+			nextInsn.setMethodInfo(insn.getMethodInfo());
+			
+			ti.skipInstruction(nextInsn);
+		}
 		
-		//build the return value
-		ClassInfo sessionCI = ClassInfo.getInitializedClassInfo(Session.class.getName(), ti);
-		ElementInfo sessionEI = ti.getHeap().newObject(sessionCI, ti);
-		
-		sessionEI.setReferenceField("connection", pbl.getReferenceField("connection"));
-		sessionEI.setReferenceField("contract", pbl.getObjectRef());
-		
-		//set the return value
-		StackFrame frame = ti.getTopFrame();
-		frame.setReferenceResult(sessionEI.getObjectRef(), null);
-		
-		Instruction nextInsn = new ARETURN();
-		nextInsn.setMethodInfo(insn.getMethodInfo());
-		
-		ti.skipInstruction(nextInsn);
 	}
 
+	
 	private void handleTell(ThreadInfo ti, Instruction insn) {
 		
 		log.info("");
@@ -620,7 +854,7 @@ public class MaudeListener extends ListenerAdapter {
 		
 		ti.skipInstruction(nextInsn);
 		
-		log.info("storing <"+pblEI.toString()+","+"x"+sessionCount);
+		log.info("storing <"+pblEI.toString()+","+"x"+sessionCount+">");
 		if (!publicSessionName.containsKey(pblEI.toString()))
 			publicSessionName.put(pblEI.toString(), "x"+sessionCount++);
 	}
@@ -632,12 +866,7 @@ public class MaudeListener extends ListenerAdapter {
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		ThreadState tstate = threadStates.get(vm.getCurrentThread());
 
-		if (exitedMethod==test) {
-			log.info("");
-			log.info("--TEST-- (method exited)");
-		}
-		
-		if (exitedMethod == participantTell) {
+		if (exitedMethod == Participant_tell) {
 			log.info("");
 			tstate.printInfo();
 			log.info("--TELL-- (method exited)");
@@ -681,195 +910,6 @@ public class MaudeListener extends ListenerAdapter {
 
 			tstate.printInfo();
 		}
-		else if (exitedMethod == participantWaitForSession) {
-
-			log.info("");
-			tstate.printInfo();
-			log.info("--WAIT FOR SESSION-- (method exited)");
-			
-			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
-			
-			SumDS sum = tstate.getSum();									//the sum of possible choice (set by entered-method)
-			
-			log.info("sumStack.peek(): "+sum.toString());
-			
-			if (ex!=null) {
-				/* 
-				 * if you were here, you invoke waitForSession() with a timeout
-				 */
-
-				if (ex.getExceptionClassname().equals(TimeExpiredException.class.getName())) {
-
-					log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
-					
-					assert sum.prefixes.size()==2 || sum.prefixes.size()==3;		// t . (...) + ask "" (True) . (...)
-					
-					//get the tau prefix
-					TauDS tau = null;
-					
-					if (sum.prefixes.get(0) instanceof TauDS)
-						tau=(TauDS) sum.prefixes.get(0);
-					else
-						tau=(TauDS) sum.prefixes.get(1);
-					
-					tstate.popSum(tau);
-					tstate.setCurrentPrefix(tau);
-				}
-				else  if (ex.getExceptionClassname().equals(ContractExpiredException.class.getName())) {
-					
-					log.info("CONTRACT_EXPIRED: "+ex.getExceptionClassname());
-					
-					// the exception can be thrown by any waitForSession() (timeout or not)
-					
-					/*
-					 * get the returned value
-					 */
-					StackFrame f = currentThread.getTopFrame();
-					
-					int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
-					f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
-					
-					ElementInfo session2 = currentThread.getElementInfo(ref);
-					
-					ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
-					assert pbl!=null;
-					String sessionName = publicSessionName.get(pbl.toString());
-					
-					RetractDS retract = new RetractDS();
-					retract.session = sessionName;
-					
-					sum.prefixes.add(retract);
-					tstate.setCurrentPrefix( retract);
-				}
-				else {
-					throw new IllegalStateException("unexpected exception: "+ex.getExceptionClassname());
-				}
-				
-			}
-			else {
-				
-				log.info("normal behaviour");
-				/*
-				 * get the returned value
-				 */
-				StackFrame f = currentThread.getTopFrame();
-				
-				int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
-				f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
-				
-				ElementInfo session2 = currentThread.getElementInfo(ref);
-				
-				ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
-				assert pbl!=null;
-				String sessionName = publicSessionName.get(pbl.toString());
-				
-				log.info("session: "+sessionName);
-				
-				assert sum.prefixes.size()==1 || sum.prefixes.size()==2 || sum.prefixes.size()==3;		// the t prefix can not be present when waitForSession is invoked without timeout
-				
-				AskDS ask = null;
-
-				if (sum.prefixes.size()==1) {
-					ask = (AskDS) sum.prefixes.get(0);
-				}
-				else if (sum.prefixes.get(0) instanceof AskDS) {
-					//sum.prefixes.size()==2
-					ask = (AskDS) sum.prefixes.get(0);
-				}
-				else {
-					//sum.prefixes.size()==2
-					ask = (AskDS) sum.prefixes.get(1);
-				}
-				
-				if (ask==null)
-					throw new IllegalStateException("ask cannot be null");
-				
-				
-				ask.session = sessionName;
-				
-				tstate.popSum(ask);
-				tstate.setCurrentPrefix(ask);		//set the current prefix
-			}
-			
-			tstate.printInfo();
-		}
-		else if (exitedMethod == sessionWaitForReceive) {
-
-			log.info("");
-			tstate.printInfo();
-			log.info("--SUM OF RECEIVE-- (method exited)");
-			
-			
-			ExceptionInfo ex = currentThread.getPendingException();			//get the (possible) pending exception
-			
-			SumDS sum = tstate.getSum();									//the sum of possible choice (set by entered-method)
-			log.info("sumStack.peek(): "+sum.toString());
-			
-			if (ex!=null) {
-				/* 
-				 * if you were here, you have call waitForReceive(Integer,String...) with a timeout
-				 * a prefix tau must be present at this time
-				 */
-				log.info("TIME_EXPIRED: "+ex.getExceptionClassname());
-				
-				assert sum.prefixes.size()>0;
-				assert sum.prefixes.get(sum.prefixes.size()-1) instanceof TauDS;
-				
-				TauDS p = (TauDS) sum.prefixes.get(sum.prefixes.size()-1);
-				
-				tstate.popSum(p);
-				tstate.setCurrentPrefix(p);
-			}
-			else {
-				
-				ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
-
-				/*
-				 * get the returned value
-				 */
-				StackFrame f = currentThread.getTopFrame();
-				
-				int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
-				f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
-				
-				ElementInfo messageReceived = currentThread.getElementInfo(ref);
-				
-				String label = messageReceived.getStringField("label");
-				
-				ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
-				assert pbl!=null;
-				String sessionName = publicSessionName.get(pbl.toString());
-				
-				log.info("label: "+label);
-				
-				DoReceiveDS received = null;
-				
-				for (int i=0; i<sum.prefixes.size(); i++) {
-					
-					PrefixDS p = sum.prefixes.get(i);
-					
-					if (
-							(p instanceof DoReceiveDS) && 
-							((DoReceiveDS) p).action.equals(label)
-							) {
-						received = ((DoReceiveDS) sum.prefixes.get(i));
-						break;
-					}
-					
-				}
-				
-				if (received==null)
-					throw new IllegalStateException("received cannot be null");
-				
-				received.action = label;
-				received.session = sessionName;
-				
-				tstate.popSum(received);
-				tstate.setCurrentPrefix(received);		//set the current prefix
-			}
-			
-			tstate.printInfo();
-		}
 		else if (
 				exitedMethod.getName().equals("run") &&
 				envProcesses.containsKey(ci.getSimpleName())
@@ -896,116 +936,7 @@ public class MaudeListener extends ListenerAdapter {
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		ThreadState tstate = threadStates.get(vm.getCurrentThread());
 		
-		if (enteredMethod == participantWaitForSession) {
-
-			log.info("");
-			tstate.printInfo();
-			log.info("--WAIT FOR SESSION-- (entered method)");
-			
-			Integer timeout = getArgumentInteger(currentThread, 1);
-			
-			log.info("timeout: "+timeout);
-
-			SumDS sum = new SumDS();
-			sum.prefixes.add(new AskDS());
-			
-			if (timeout==-1) {
-				/* nothing to do */
-			}
-			else {
-				/* add tau prefix, used if TimeExpiredException */
-				sum.prefixes.add(new TauDS());
-			}
-			
-			tstate.setCurrentProcess(sum);		//set the current process
-
-			/*
-			 * the co2CurrentPrefix is set in methodExited
-			 */
-			log.info("pushing the sum onto the stack");
-			tstate.pushSum(sum);
-			
-			tstate.printInfo();
-		}
-		else if (enteredMethod == sessionWaitForReceive) {
-
-			log.info("");
-			tstate.printInfo();
-			log.info("--SUM OF RECEIVE-- (entered method)");
-			
-			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
-			
-			ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
-			assert pbl!=null;
-			String sessionName = publicSessionName.get(pbl.toString());
-			
-			Integer timeout = getArgumentInteger(currentThread, 0);
-			List<String> actions = getArgumentStringArray(currentThread, 1);
-			
-			
-			SumDS sum = new SumDS();
-			
-			for (String l : actions) {
-				
-				DoReceiveDS p = new DoReceiveDS(); 
-				p.session = sessionName;
-				p.action = l;
-				
-				sum.prefixes.add(p);
-			}
-			
-			
-			log.info("timeout: "+timeout);
-			log.info("actions: "+actions);
-			
-			if (timeout==-1) {
-				/* nothing to do */
-			}
-			else {
-				/* add tau prefix, used if TimeExpiredException */
-				sum.prefixes.add(new TauDS());
-			}
-			
-			tstate.setCurrentProcess(sum);		//set the current process
-
-			/*
-			 * the co2CurrentPrefix is set in methodExited
-			 */
-			log.info("pushing the sum onto the stack");
-			tstate.pushSum(sum);
-			
-			tstate.printInfo();
-		}
-		else if (enteredMethod==sessionSend || enteredMethod==sessionSendInt || enteredMethod==sessionSendString) {
-
-			log.info("");
-			tstate.printInfo();
-			log.info("--SEND-- (entered method)");
-			
-			ElementInfo session2 = currentThread.getThisElementInfo();	//the class that call waitForReceive(String...)
-			
-			ElementInfo pbl = currentThread.getElementInfo(session2.getReferenceField("contract"));
-			assert pbl!=null;
-			String sessionName = publicSessionName.get(pbl.toString());
-			String action = getArgumentString(currentThread, 0);
-			
-			DoSendDS send = new DoSendDS();
-			send.session = sessionName;
-			send.action = action;
-			
-			if (enteredMethod==sessionSend) send.sort = Sort.UNIT;
-			if (enteredMethod==sessionSendInt) send.sort = Sort.INT;
-			if (enteredMethod==sessionSendString) send.sort = Sort.STRING;
-			
-			SumDS sum = new SumDS();
-			sum.prefixes.add(send);
-			
-			tstate.setCurrentProcess(sum);		//set the current process
-			tstate.setCurrentPrefix(send);		//set the current prefix
-
-			tstate.printInfo();
-		}
-		else if (enteredMethod==parallel) {
+		if (enteredMethod==CO2Process_parallel) {
 			log.info("");
 			log.info("--PARALLEL-- (method entered) -> ID:"+tstate.getId());
 			
@@ -1028,7 +959,7 @@ public class MaudeListener extends ListenerAdapter {
 			threadCurrentProcess = sumA;
 			threadCurrentPrefix = tauA;
 		}
-		else if (enteredMethod==processCall) {
+		else if (enteredMethod==CO2Process_processCall) {
 			log.info("");
 			tstate.printInfo();
 			log.info("--PROCESS CALL-- (method entered) -> "+ci.getSimpleName());
@@ -1230,9 +1161,9 @@ public class MaudeListener extends ListenerAdapter {
 	}
 	
 
-	@SuppressWarnings("unused")
+//	@SuppressWarnings("unused")
 	private String insnToString(Instruction insn) {
-		return insn.getPosition() + " - " + insn.getMnemonic() + " ("+insn.getClass()+")";
+		return insn.getPosition() + " - " + insn.getMnemonic() + " ("+insn.getMethodInfo().getFullName()+")";
 	}
 	
 	/**

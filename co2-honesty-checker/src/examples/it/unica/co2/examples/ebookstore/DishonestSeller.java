@@ -68,8 +68,6 @@ public class DishonestSeller extends Participant {
 					break;
 				}
 				
-				logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
-				logger.log("I'm culpable (sessionB): "+sessionB.amICulpable());
 			}
 			else { // handled with the distributor
 				
@@ -128,12 +126,6 @@ public class DishonestSeller extends Participant {
 						}
 					}
 					
-					logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
-					logger.log("I'm culpable (sessionB): "+sessionB.amICulpable());
-					
-					logger.log("I'm on duty (sessionD): "+sessionD.amIOnDuty());
-					logger.log("I'm culpable (sessionD): "+sessionD.amICulpable());
-					
 				}
 				catch (TimeExpiredException e){
 					
@@ -146,11 +138,6 @@ public class DishonestSeller extends Participant {
 					processCall(AbortSessionD2.class, sessionD);
 					//you are honest
 					
-					logger.log("I'm on duty (sessionB): "+sessionB.amIOnDuty());
-					logger.log("I'm culpable (sessionB): "+sessionB.amICulpable());
-					
-					logger.log("I'm on duty (sessionD): "+sessionD.amIOnDuty());
-					logger.log("I'm culpable (sessionD): "+sessionD.amICulpable());
 				}
 			}
 			

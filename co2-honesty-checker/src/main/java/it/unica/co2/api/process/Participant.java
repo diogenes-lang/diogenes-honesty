@@ -97,7 +97,6 @@ public abstract class Participant extends CO2Process {
 
 		try {
 			serializedContract=ObjectUtils.serializeObjectToStringQuietly(cDef);
-//			sessionName = Session2.getNextSessionName();
 			
 			TST tst = new TST(cDef.getContract().toTST());
 			Private<TST> pvt = tst.toPrivate(connection);

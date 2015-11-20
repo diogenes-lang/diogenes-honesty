@@ -12,14 +12,14 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
 
-import co2api.ContractExpiredException;
+import co2api.Message;
 import co2api.Public;
 import co2api.TST;
-import co2api.TimeExpiredException;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.contract.Sort.StringSort;
+import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
 
@@ -44,14 +44,28 @@ public class AttackerNode extends Participant{
 		Public<TST> pbl = tell(c);
 		Session2<TST> y = waitForSession(pbl);
 
-		try {
-			y.waitForReceive("a");
+		
+		if (isFeasible(0)) {
+			y.send("then_branch");
 		}
-		catch (ContractExpiredException e) {
-			Session2<TST> x = waitForSession(pbl);
-			x.send("pippo");
+		else {
+			y.send("else_branch");
 		}
 		
+		Message msg = y.waitForReceive("a", "b");
+		
+		switch(msg.getLabel()) {
+		
+		case "a":	
+			y.waitForReceive("c", "d");
+			y.send("a_r");
+			break;
+		
+		case "b":	y.send("b_r");
+			break;
+		}
+		
+		y.send("END");
 //		String[] result = test();
 //		System.out.println("result is "+Arrays.toString(result));
 //		
@@ -98,6 +112,26 @@ public class AttackerNode extends Participant{
 	}
 	
 	
+private static class ProcessA extends CO2Process {
+		
+		private static final long serialVersionUID = 1L;
+		private final Session2<TST> session;
+		
+		protected ProcessA(Session2<TST> session) {
+			super("ProcessA");
+			this.session = session;
+		}
+
+		@Override
+		public void run() {
+			session.send("a");
+			
+			processCall(ProcessA.class, session);
+		}
+		
+	}
+	
+	
 	
 	private boolean isInputOk(String pair, String range) {
 		return pair.contains(",") && range.contains("-");
@@ -133,8 +167,8 @@ public class AttackerNode extends Participant{
 	
 	public static void main(String[] args) {
 		
-//		HonestyChecker.isHonest(AttackerNode.class, "", "");
-		System.out.println(System.getProperty("java.io.tmpdir"));
+		HonestyChecker.isHonest(AttackerNode.class, "", "");
+//		System.out.println(System.getProperty("java.io.tmpdir"));
 	}
 }
 

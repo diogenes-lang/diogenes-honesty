@@ -64,8 +64,6 @@ public class Buyer extends Participant {
 			logger.log("exception: "+e.getMessage());
 		}
 		
-		logger.log("I'm on duty: "+session.amIOnDuty());
-		logger.log("I'm culpable: "+session.amICulpable());
 	}
 	
 	public static void main(String args[]) throws ContractException {

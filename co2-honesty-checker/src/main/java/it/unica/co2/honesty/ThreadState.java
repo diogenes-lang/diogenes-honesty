@@ -1,5 +1,6 @@
 package it.unica.co2.honesty;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
@@ -21,6 +22,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.PrefixDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
+import it.unica.co2.honesty.dto.CO2DataStructures.RetractDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
@@ -81,6 +83,10 @@ class ThreadState {
 		return "ifThenElseCG_"+this.co2ProcessesStack.peek().ifElseStack.size();
 	}
 	
+	public String getWaitForReceiveChoiceGeneratorName () {
+		return "waitForReceive_"+this.co2ProcessesStack.peek().sumStack.size();
+	}
+	
 	/**
 	 * 
 	 * @return
@@ -116,16 +122,21 @@ class ThreadState {
 	 * See {@link ThreadState#considerIfInstruction(IfInstruction)}.
 	 * @param switchInsn
 	 */
-	@Deprecated
 	public void setSwitchInsn(SwitchInstruction switchInsn) {
+		logger.finer("");
+		logger.finer("SWITCH : setting start="+switchInsn.getPosition()+" , end="+switchInsn.getTarget());
 		this.switchInsn = switchInsn;
+	}
+	
+	public boolean considerSwitchInstruction(SwitchInstruction switchInsn) {
+		ClassInfo ci = switchInsn.getMethodInfo().getClassInfo();
+		return ci.isInstanceOf(CO2Process.class.getName());
 	}
 	
 	/**
 	 * @param ifInsn
 	 * @return true if the given <code>IfInstruction</code> has to generate a new boolean choice generator.
 	 */
-	@Deprecated
 	public boolean considerIfInstruction(IfInstruction ifInsn) {
 
 		MethodInfo mi = ifInsn.getMethodInfo();
@@ -225,7 +236,7 @@ class ThreadState {
 	
 	
 	
-	public void pushSum(SumDS sum) {
+	public void pushSum(SumDS sum, String... prefixes ) {
 		
 		Set<String> toReceive = new HashSet<>();
 		
@@ -248,6 +259,8 @@ class ThreadState {
 			}
 		}
 		
+		toReceive.addAll(Arrays.asList(prefixes));
+		
 		SumStackFrame frame = new SumStackFrame();
 		frame.sum = sum;
 		frame.toReceive = toReceive;
@@ -261,6 +274,10 @@ class ThreadState {
 	
 	public void popSum(AskDS prefix) {
 		popSum("ask");
+	}
+	
+	public void popSum(RetractDS prefix) {
+		popSum("retract");
 	}
 	
 	public void popSum(DoReceiveDS prefix) {
