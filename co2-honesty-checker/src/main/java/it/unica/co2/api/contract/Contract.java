@@ -32,8 +32,7 @@ public abstract class Contract implements Serializable {
 		Bekic instance = Bekic.getInstance(this);
 		Contract c = instance.defToRec();
 		
-		return new TSTContractGenerator(
-				c
-				).generate();
+		return new TSTContractGenerator(c).generate();
 	}
+
 }

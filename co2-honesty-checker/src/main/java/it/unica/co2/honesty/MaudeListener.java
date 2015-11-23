@@ -14,7 +14,6 @@ import java.util.logging.Logger;
 import co2api.CO2ServerConnection;
 import co2api.ContractExpiredException;
 import co2api.Message;
-import co2api.Private;
 import co2api.Public;
 import co2api.Session;
 import co2api.TST;
@@ -69,15 +68,14 @@ public class MaudeListener extends ListenerAdapter {
 	public MaudeListener(Config conf, Class<? extends Participant> processClass) {
 		
 		if (conf.getBoolean("honesty.listener.log", false)) {
-			log.setLevel(Level.INFO);
-			ThreadState.logger.setLevel(Level.INFO);
+			log.setLevel(Level.ALL);
+			ThreadState.logger.setLevel(Level.ALL);
 		}
 		else {
 			log.setLevel(Level.OFF);
 			ThreadState.logger.setLevel(Level.OFF);
 		}
 		
-		log.setLevel(Level.ALL);
 		
 		this.processUnderTestClass = processClass;
 	}
@@ -119,7 +117,6 @@ public class MaudeListener extends ListenerAdapter {
 	private MethodInfo Participant_setConnection;
 	private MethodInfo CO2Process_parallel;
 	private MethodInfo CO2Process_processCall;
-	private MethodInfo Private_tell;
 	private MethodInfo Public_waitForSession;
 	private MethodInfo Public_waitForSessionT;
 	private MethodInfo Session2_waitForReceive;
@@ -143,7 +140,7 @@ public class MaudeListener extends ListenerAdapter {
 
 		if (ci.getName().equals(Participant.class.getName())) {
 			if (Participant_tell == null)
-				Participant_tell = ci.getMethod("tell", "(Lit/unica/co2/api/contract/ContractDefinition;Ljava/lang/Integer;)Lco2api/Public;", false); 
+				Participant_tell = ci.getMethod("_tell", "(Lit/unica/co2/api/contract/ContractDefinition;Ljava/lang/String;Lco2api/Private;Ljava/lang/Integer;)Lco2api/Public;", false); 
 			
 			if (Participant_setConnection==null)
 				Participant_setConnection = ci.getMethod("setConnection", "()V", false);
@@ -155,12 +152,6 @@ public class MaudeListener extends ListenerAdapter {
 			
 			if (CO2Process_processCall == null)
 				CO2Process_processCall = ci.getMethod("processCall", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Object;)V", false);
-		}
-		
-		if (ci.getName().equals(Private.class.getName())) {
-			
-			if (Private_tell==null)
-				Private_tell = ci.getMethod("tell", "(Ljava/lang/Integer;)Lco2api/Public;", false);
 		}
 		
 		if (ci.getName().equals(Public.class.getName())) {
@@ -215,8 +206,8 @@ public class MaudeListener extends ListenerAdapter {
 //			log.info("*** "+insnToString(insn));
 //		}
 		
-		if(Private_tell!=null && insn==Private_tell.getFirstInsn()) {
-			handleTell(ti, insn);
+		if(Participant_tell!=null && insn==Participant_tell.getFirstInsn()) {
+			handleTell(tstate, ti, insn);
 		}
 		else if(Public_waitForSession!=null && insn==Public_waitForSession.getFirstInsn()) {
 			handleWaitForSession(tstate, ti, insn, false);
@@ -355,7 +346,7 @@ public class MaudeListener extends ListenerAdapter {
 			tstate.setCurrentProcess(ifThenElse);		//set the current process
 			tstate.pushIfElse(ifThenElse);
 
-			BooleanChoiceGenerator cg = new BooleanChoiceGenerator(tstate.getBooleanChoiceGeneratorName(), false);
+			BooleanChoiceGenerator cg = new BooleanChoiceGenerator(tstate.getIfThenElseChoiceGeneratorName(), false);
 
 			boolean cgSetOk = ti.getVM().getSystemState().setNextChoiceGenerator(cg);
 			
@@ -370,7 +361,7 @@ public class MaudeListener extends ListenerAdapter {
 			
 			// bottom half - reexecution at the beginning of the next
 			// transition
-			BooleanChoiceGenerator cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(tstate.getBooleanChoiceGeneratorName(), BooleanChoiceGenerator.class);
+			BooleanChoiceGenerator cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(tstate.getIfThenElseChoiceGeneratorName(), BooleanChoiceGenerator.class);
 
 			assert cg != null : "no 'ifThenElseCG' BooleanChoiceGenerator found";
 			
@@ -673,17 +664,27 @@ public class MaudeListener extends ListenerAdapter {
 				
 				
 				
-				IntChoiceFromList cg = new IntChoiceFromList(insn.getMethodInfo().getFullName(), choiceSet.stream().mapToInt(i -> i).toArray());
+				IntChoiceFromList cg = new IntChoiceFromList(tstate.getWaitForSessionChoiceGeneratorName(), choiceSet.stream().mapToInt(i -> i).toArray());
+				cg.setAttr(sum);
+				
 				ti.getVM().setNextChoiceGenerator(cg);
 				ti.skipInstruction(insn);
 				return;
 			}
 			else {
 				log.info("BOTTOM-HALF");
-				SumDS sum = tstate.getSum();
 				
 				// get the choice generator
-				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(insn.getMethodInfo().getFullName(), IntChoiceFromList.class);
+				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(tstate.getWaitForSessionChoiceGeneratorName(), IntChoiceFromList.class);
+
+				if (!cg.hasMoreChoices()) {
+					// this is the last choice, we can pop the sum pushed on top-half
+				}
+				
+				
+				SumDS sum = (SumDS) cg.getAttr();
+				
+				
 				
 				// take a choice
 				switch (cg.getNextChoice()) {
@@ -802,38 +803,30 @@ public class MaudeListener extends ListenerAdapter {
 	}
 
 	
-	private void handleTell(ThreadInfo ti, Instruction insn) {
+	private void handleTell(ThreadState tstate, ThreadInfo ti, Instruction insn) {
 		
 		log.info("");
 		log.info("HANDLE -> TELL");
-		
-		//object Private
-		ElementInfo pvt = ti.getThisElementInfo();
-		
-		log.info("object");
-		log.info("\tpvt: "+pvt);
 
-		//fields
+		//parameters
+		String cserial = getArgumentString(ti, 1);
+		ElementInfo pvt = getArgumentElementInfo(ti, 2);
+		int delay = getArgumentInteger(ti, 3);
+		
+		log.info("delay: "+delay);
+		
+		//get private fields (in order to build the public object)
 		ElementInfo connection = ti.getElementInfo(pvt.getReferenceField("connection"));
 		ElementInfo contract = ti.getElementInfo(pvt.getReferenceField("contract"));
 		
-		log.info("object's fields");
-		log.info("\tcontract: "+contract);
-		log.info("\tconnection: "+connection);
-
-		//parameters
-		int delay = getArgumentInteger(ti, 0);
-		
-		log.info("parameters");
-		log.info("\tdelay: "+delay);
-				
-		String contractID = String.valueOf(contract.hashCode());
+		//build a unique ID for the contract (in order to handle delays appropriately when waitForSession is invoked)
+		String contractID = cserial;
 
 		Integer contractCount = contractsCount.get(contractID);
 		contractCount = contractCount==null? 0 : contractCount+1;
 		
 		contractsCount.put(contractID, contractCount);
-		contractID = "n:"+contractCount+contractID;
+		contractID = "n"+contractCount+"_"+contractID;
 		contractsDelay.put(contractID, delay>0);
 		
 		
@@ -854,9 +847,40 @@ public class MaudeListener extends ListenerAdapter {
 		
 		ti.skipInstruction(nextInsn);
 		
-		log.info("storing <"+pblEI.toString()+","+"x"+sessionCount+">");
+		String sessionName = "x"+sessionCount;
+		sessionCount++;
+		
+		log.info("storing <"+pblEI.toString()+","+sessionName+">");
 		if (!publicSessionName.containsKey(pblEI.toString()))
-			publicSessionName.put(pblEI.toString(), "x"+sessionCount++);
+			publicSessionName.put(pblEI.toString(), sessionName);
+		
+		
+		
+		
+		TellDS tell = new TellDS();
+		SumDS sum = new SumDS(tell);
+		
+		ContractDefinition cDef = ObjectUtils.deserializeObjectFromStringQuietly(cserial, ContractDefinition.class);
+		contracts.put(cDef.getName(), cDef);
+		
+		ContractExplorer.findAll(
+				cDef.getContract(), 
+				ContractReference.class,
+				(x)->(x.getReference()!=cDef),
+				(x)->{
+					contracts.put(x.getReference().getName(), x.getReference());
+				}
+			);
+		
+		sessions.add(sessionName);
+		
+		tell.contractName = cDef.getName();
+		tell.session = sessionName;
+		
+		tstate.setCurrentProcess(sum);		//set the current process
+		tstate.setCurrentPrefix(tell);
+
+		tstate.printInfo();
 	}
 
 
@@ -866,51 +890,7 @@ public class MaudeListener extends ListenerAdapter {
 		ClassInfo ci = currentThread.getExecutingClassInfo();
 		ThreadState tstate = threadStates.get(vm.getCurrentThread());
 
-		if (exitedMethod == Participant_tell) {
-			log.info("");
-			tstate.printInfo();
-			log.info("--TELL-- (method exited)");
-			
-			TellDS tell = new TellDS();
-			SumDS sum = new SumDS(tell);
-			
-			ElementInfo ei = currentThread.getThisElementInfo();
-			
-			/*
-			 * get the returned value
-			 */
-			StackFrame f = currentThread.getTopFrame();
-			
-			int ref = f.getReferenceResult();	// apparently this remove the reference to the stackframe
-			f.setReferenceResult(ref, null);	// re-put the reference on the stackframe
-			
-			ElementInfo pbl = currentThread.getElementInfo(ref);
-
-			String sessionName = publicSessionName.get(pbl.toString());
-			
-			ContractDefinition cDef = ObjectUtils.deserializeObjectFromStringQuietly(ei.getStringField("serializedContract"), ContractDefinition.class);
-			contracts.put(cDef.getName(), cDef);
-			
-			ContractExplorer.findAll(
-					cDef.getContract(), 
-					ContractReference.class,
-					(x)->(x.getReference()!=cDef),
-					(x)->{
-						contracts.put(x.getReference().getName(), x.getReference());
-					}
-				);
-			
-			sessions.add(sessionName);
-			
-			tell.contractName = cDef.getName();
-			tell.session = sessionName;
-			
-			tstate.setCurrentProcess(sum);		//set the current process
-			tstate.setCurrentPrefix(tell);
-
-			tstate.printInfo();
-		}
-		else if (
+		if (
 				exitedMethod.getName().equals("run") &&
 				envProcesses.containsKey(ci.getSimpleName())
 				) {
@@ -1175,21 +1155,23 @@ public class MaudeListener extends ListenerAdapter {
 		return currentThread.getTopFrame().getArgumentValues(currentThread);
 	}
 	
-	private String getArgumentString(ThreadInfo currentThread, int position) {
+	private ElementInfo getArgumentElementInfo(ThreadInfo currentThread, int position) {
 		ElementInfo eiArgument = (ElementInfo) getArguments(currentThread)[position];
-		return eiArgument.asString();
+		return eiArgument;
+	}
+	
+	private String getArgumentString(ThreadInfo currentThread, int position) {
+		return getArgumentElementInfo(currentThread, position).asString();
 	}
 	
 	private Integer getArgumentInteger(ThreadInfo currentThread, int position) {
-		ElementInfo eiArgument = (ElementInfo) getArguments(currentThread)[position];
-		return (Integer) eiArgument.asBoxObject();
+		return (Integer) getArgumentElementInfo(currentThread, position).asBoxObject();
 	}
 	
 	private List<ElementInfo> getArgumentArray(ThreadInfo currentThread, int position) {
 		List<ElementInfo> elms = new ArrayList<>();
 		
-		ElementInfo eiArgument = (ElementInfo) getArguments(currentThread)[position];
-		ArrayFields af = eiArgument.getArrayFields();
+		ArrayFields af = getArgumentElementInfo(currentThread, position).getArrayFields();
 		
 		//iterate and collect the elements
 		for (int i=0; i<af.arrayLength(); i++) {

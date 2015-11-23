@@ -13,7 +13,7 @@ public class APIExampleProcess2 extends Participant {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static String username = "alice@test.com";
+	private static String username = "alice@nicola.com";
 	private static String password = "alice";
 
 	public APIExampleProcess2() {

@@ -50,10 +50,10 @@ public abstract class Participant extends CO2Process {
 	
 	
 	
-	/*
-	 * JPF-fields
-	 */
-	@SuppressWarnings("unused") private String serializedContract;
+//	/*
+//	 * JPF-fields
+//	 */
+//	@SuppressWarnings("unused") private String serializedContract;
 	
 	
 	public Session2<TST> tellAndWait(Contract c) {
@@ -91,19 +91,26 @@ public abstract class Participant extends CO2Process {
 	}
 	
 	public Public<TST> tell (ContractDefinition cDef, Integer delay) {
-		
 		if (connection==null)
 			setConnection();
 
+		String cserial = ObjectUtils.serializeObjectToStringQuietly(cDef);
+		
 		try {
-			serializedContract=ObjectUtils.serializeObjectToStringQuietly(cDef);
-			
 			TST tst = new TST(cDef.getContract().toTST());
 			Private<TST> pvt = tst.toPrivate(connection);
-			
+			return _tell(cDef, cserial, pvt, delay);
+		}
+		catch (ContractException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private Public<TST> _tell (ContractDefinition cDef, String cserial, Private<TST> pvt, Integer delay) {
+		
+		try {
 			logger.log("telling contract <"+cDef.getContract().toTST()+">");
 			return pvt.tell(delay);
-
 		}
 		catch (ContractException e) {
 			throw new RuntimeException(e);
@@ -123,7 +130,6 @@ public abstract class Participant extends CO2Process {
 	public Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) throws TimeExpiredException {
 		try {
 			logger.log("waiting for a session");
-//			sessionName = Session2.getNextSessionName();
 			
 			Session<TST> session = null;
 			if (timeout==-1) {

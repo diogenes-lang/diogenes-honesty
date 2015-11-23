@@ -79,12 +79,16 @@ class ThreadState {
 	 * The freshness is necessary on nested if-then-else statements.
 	 * @return a fresh name for a boolean choice generator.
 	 */
-	public String getBooleanChoiceGeneratorName () {
+	public String getIfThenElseChoiceGeneratorName () {
 		return "ifThenElseCG_"+this.co2ProcessesStack.peek().ifElseStack.size();
 	}
 	
 	public String getWaitForReceiveChoiceGeneratorName () {
 		return "waitForReceive_"+this.co2ProcessesStack.peek().sumStack.size();
+	}
+	
+	public String getWaitForSessionChoiceGeneratorName () {
+		return "waitForSession_"+this.co2ProcessesStack.peek().sumStack.size();
 	}
 	
 	/**
