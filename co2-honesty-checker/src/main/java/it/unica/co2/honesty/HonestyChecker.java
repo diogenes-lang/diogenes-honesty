@@ -1,14 +1,13 @@
 package it.unica.co2.honesty;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.Random;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -103,7 +102,7 @@ public class HonestyChecker {
 		loadResourceProperties(conf);		// load configuration from resource files
 		configureClasspath(conf);			// configure the classpath of JPF
 		configureScheduler(conf);			// configure scheduler to state generation when creating a new thread
-		configureNhandler(conf);			// configure JPF-nhandler
+//		configureNhandler(conf);			// configure JPF-nhandler
 		setTarget(conf, processSerialized);	// configure the SUT (system under test) 
 		handleCustomProperties(conf);		// handle custom properties (set other JPF properties)
 		
@@ -243,26 +242,7 @@ public class HonestyChecker {
 		conf.setProperty("jpf-core.classpath", null);
 		conf.setProperty("jpf-core.native_classpath", null);
 		
-		/*
-		 * reorder the classpath entries so that co2apiHL-fake-<version>.jar appear first
-		 */
-		Stream<String> classpathEntries = Arrays.stream(System.getProperty("java.class.path").split(":"));
-		
-		String classpath = classpathEntries
-			.sorted(
-					(a,b) -> {
-						if (a.equals("co2apiHL.jar")) {
-			                return (b.equals("co2apiHL.jar")) ? 0 : 1;
-			            } 
-						else if (b.contains("co2apiHL.jar")) {
-			                return -1;
-			            } 
-						else {
-			                return 0;
-			            }
-					}
-				)
-			.collect(Collectors.joining(":"));
+		String classpath = System.getProperty("java.class.path");
 		
 		// set the classpath
 		System.out.println("using classpath: "+classpath);
@@ -276,22 +256,23 @@ public class HonestyChecker {
 		conf.setProperty("vm.scheduler.sharedness.class", "it.unica.co2.honesty.CO2SharednessPolicy");
 	}
 	
+	@SuppressWarnings("unused")
 	private static void configureNhandler(Config conf) {
 		
-//		File nHandlerTmpDir = new File(System.getProperty("java.io.tmpdir"), "co2-nhandler"+new Random().nextLong());
-//		nHandlerTmpDir.mkdir();
-//		new File(nHandlerTmpDir, "onthefly").mkdir();
-//		
-//		conf.setProperty("jpf-nhandler", nHandlerTmpDir.getAbsolutePath());
-//		conf.setProperty("jpf-nhandler.native_classpath", null);
-//		conf.setProperty("jpf-nhandler.classpath", null);
-//		conf.setProperty("jpf-nhandler.test_classpath", null);
-//		conf.setProperty("jpf-nhandler.sourcepath", null);
-//		
-//		conf.setProperty("nhandler.spec.delegate", "it.unica.co2.api.contract.Contract.toTST");
-//		conf.setProperty("nhandler.spec.delegate", "co2api.ContractXML.*");
-//		
-//		conf.setProperty("nhandler.spec.skip", "co2api.CO2ServerConnection.*");
+		File nHandlerTmpDir = new File(System.getProperty("java.io.tmpdir"), "co2-nhandler"+new Random().nextLong());
+		nHandlerTmpDir.mkdir();
+		new File(nHandlerTmpDir, "onthefly").mkdir();
+		
+		conf.setProperty("jpf-nhandler", nHandlerTmpDir.getAbsolutePath());
+		conf.setProperty("jpf-nhandler.native_classpath", null);
+		conf.setProperty("jpf-nhandler.classpath", null);
+		conf.setProperty("jpf-nhandler.test_classpath", null);
+		conf.setProperty("jpf-nhandler.sourcepath", null);
+		
+		conf.setProperty("nhandler.spec.delegate", "it.unica.co2.api.contract.Contract.toTST");
+		conf.setProperty("nhandler.spec.delegate", "co2api.ContractXML.*");
+		
+		conf.setProperty("nhandler.spec.skip", "co2api.CO2ServerConnection.*");
 	}
 
 	private static void setTarget(Config conf, String processSerialized) {
