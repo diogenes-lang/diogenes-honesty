@@ -21,7 +21,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 public class MaudeTemplate {
 
 	
-	public static String getMaudeProcess(MaudeListener maudeListener) {
+	public static String getMaudeProcess(Co2Listener maudeListener) {
 		
 		System.out.println("--------------------------------------------------");
 		System.out.println("generating the maude process from basic template");

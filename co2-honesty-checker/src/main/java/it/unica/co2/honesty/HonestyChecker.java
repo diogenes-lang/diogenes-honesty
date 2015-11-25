@@ -110,7 +110,7 @@ public class HonestyChecker {
 
 		JPF jpf = new JPF(conf);
 		
-		MaudeListener maudeListener = new MaudeListener(conf, participant.getClass());
+		Co2Listener maudeListener = new Co2Listener(conf, participant.getClass());
 		jpf.addListener(maudeListener);
 		
 		try {

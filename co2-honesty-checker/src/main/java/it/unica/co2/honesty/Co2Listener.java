@@ -61,11 +61,11 @@ import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
 import it.unica.co2.util.ObjectUtils;
 
-public class MaudeListener extends ListenerAdapter {
+public class Co2Listener extends ListenerAdapter {
 	
-	private static Logger log = JPF.getLogger(MaudeListener.class.getName());
+	private static Logger log = JPF.getLogger(Co2Listener.class.getName());
 	
-	public MaudeListener(Config conf, Class<? extends Participant> processClass) {
+	public Co2Listener(Config conf, Class<? extends Participant> processClass) {
 		
 		if (conf.getBoolean("honesty.listener.log", false)) {
 			log.setLevel(Level.ALL);
