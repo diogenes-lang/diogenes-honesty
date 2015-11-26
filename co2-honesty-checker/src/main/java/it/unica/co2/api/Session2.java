@@ -1,9 +1,6 @@
 package it.unica.co2.api;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import co2api.CO2ServerConnection;
 import co2api.ContractException;
@@ -71,26 +68,6 @@ public class Session2<T extends ContractModel> extends Session<T>{
 	public Message waitForReceive(Integer msec, String... labels) throws TimeExpiredException {
 		System.out.println("*** listening for "+ Arrays.toString(labels));
 		
-		try {
-			/*
-			 * instruct the dummy CO2ServerConnection to return this labels
-			 */
-			Field actionsField = CO2ServerConnection.class.getDeclaredField("actions");
-			
-			Set<String> actionsSet = new HashSet<String>(Arrays.asList(labels));
-			
-			actionsField.setAccessible(true);
-			actionsField.set(null, actionsSet);
-			System.out.println("(dummy implementation)");
-		}
-		catch (NoSuchFieldException e) {
-			// you are using the real implementation, this is not an error
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-			
-		
 		while(true) {
 			// the super.waitForReceive is blocking, delay is not necessary
 			// skip all msg with unexpected labels
@@ -123,30 +100,6 @@ public class Session2<T extends ContractModel> extends Session<T>{
 			System.out.println("<<< received unexpected "+ msg.getLabel()+"? (unhandled)");
 		}
 	}
-	
-	
-	@Override
-	public Boolean amICulpable() {
-		
-		try {
-			return super.amICulpable();
-		}
-		catch (ContractException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	@Override
-	public Boolean amIOnDuty() {
-		
-		try {
-			return super.amIOnDuty();
-		}
-		catch (ContractException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	
 	
 }

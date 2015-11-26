@@ -50,12 +50,6 @@ public abstract class Participant extends CO2Process {
 	
 	
 	
-//	/*
-//	 * JPF-fields
-//	 */
-//	@SuppressWarnings("unused") private String serializedContract;
-	
-	
 	public Session2<TST> tellAndWait(Contract c) {
 		return tellAndWait(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c));
 	}
