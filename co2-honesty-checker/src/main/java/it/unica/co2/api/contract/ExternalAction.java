@@ -9,7 +9,7 @@ public class ExternalAction extends Action {
 		super(a);
 	}
 	
-	public ExternalAction( String name, Sort sort, Contract next) {
+	public ExternalAction( String name, Sort<?> sort, Contract next) {
 		super(name, sort, ActionType.EXTERNAL, next);
 	}
 

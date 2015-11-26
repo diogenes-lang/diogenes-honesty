@@ -7,7 +7,7 @@ public abstract class Action implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	protected final String name;
-	protected final Sort sort;
+	protected final Sort<?> sort;
 	protected final ActionType actionType;
 	protected Contract next;
 	
@@ -20,7 +20,7 @@ public abstract class Action implements Serializable {
 			next.setPreceeding(this);
 	}
 	
-	public Action(String name, Sort sort, ActionType actionType, Contract next) {
+	public Action(String name, Sort<?> sort, ActionType actionType, Contract next) {
 		this.name = name;
 		this.sort = sort;
 		this.actionType = actionType;
@@ -33,7 +33,7 @@ public abstract class Action implements Serializable {
 		return name;
 	}
 
-	public Sort getSort() {
+	public Sort<?> getSort() {
 		return sort;
 	}
 
@@ -50,7 +50,7 @@ public abstract class Action implements Serializable {
 
 	@Override
 	public String toString() {
-		return name + (this instanceof InternalAction?"!":"?") + (sort!=Sort.UNIT? ":"+sort: "") + (next!=null? " . "+next.toString(): "") ;
+		return name + (this instanceof InternalAction?"!":"?") + (sort!=Sort.unit()? ":"+sort: "") + (next!=null? " . "+next.toString(): "") ;
 	}
 
 	@Override

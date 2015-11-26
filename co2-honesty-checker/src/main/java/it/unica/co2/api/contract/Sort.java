@@ -2,13 +2,19 @@ package it.unica.co2.api.contract;
 
 import java.io.Serializable;
 
-public abstract class Sort implements Serializable {
+public abstract class Sort<T> implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public static UnitSort UNIT = new UnitSort();
-	public static IntegerSort INT = new IntegerSort();
-	public static StringSort STRING = new StringSort();
+	private static UnitSort UNIT = new UnitSort();
+	private static IntegerSort INT = new IntegerSort();
+	private static StringSort STRING = new StringSort();
+	
+	protected T validValue;
+	
+	public T getValidValue() {
+		return validValue;
+	}
 	
 	public static UnitSort unit() {
 		return UNIT;
@@ -26,38 +32,34 @@ public abstract class Sort implements Serializable {
 		return new StringSort(pattern);
 	}
 	
-	public static class UnitSort extends Sort {
+	public static class UnitSort extends Sort<Void> {
 		private static final long serialVersionUID = 1L;
 
 		private UnitSort() {}
 	}
 	
-	public static class IntegerSort extends Sort {
+	public static class IntegerSort extends Sort<Integer> {
 		private static final long serialVersionUID = 1L;
 
-		private IntegerSort() {}
+		private IntegerSort() {
+			this.validValue=0;
+		}
+		
+		private IntegerSort(Integer validValue) {
+			this.validValue=validValue;
+		}
 	}
 	
-	public static class StringSort extends Sort {
+	public static class StringSort extends Sort<String> {
 		
 		private static final long serialVersionUID = 1L;
-		public static final String base64Pattern =  "[a-z0-9A-Z]{22}==";
-		public static final String integerPattern = "[0-9]{1,9}";
-		public static final String longPattern = "[0-9]{10,18}";
-		
-		private final String pattern;
 		
 		private StringSort() {
-			this(".*");
+			this.validValue="a string";
 		}
 		
-		private StringSort(String pattern) {
-			this.pattern=pattern;
+		private StringSort(String validValue) {
+			this.validValue=validValue;
 		}
-
-		public String getPattern() {
-			return pattern;
-		}
-		
 	}
 }

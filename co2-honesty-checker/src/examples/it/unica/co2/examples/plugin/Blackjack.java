@@ -38,9 +38,9 @@ public class Blackjack {
 	 */
 	static {
 		Cp.setContract(rec_Cp_Z_0);
-		rec_Cp_Z_0.setContract(externalSum().add("hit", Sort.UNIT, internalSum().add("card", Sort.INT, rec_Cp_Z_0).add("lose", Sort.UNIT).add("abort", Sort.UNIT)).add("stand", Sort.UNIT, internalSum().add("win", Sort.UNIT).add("lose", Sort.UNIT).add("abort", Sort.UNIT)));
+		rec_Cp_Z_0.setContract(externalSum().add("hit", Sort.unit(), internalSum().add("card", Sort.integer(), rec_Cp_Z_0).add("lose", Sort.unit()).add("abort", Sort.unit())).add("stand", Sort.unit(), internalSum().add("win", Sort.unit()).add("lose", Sort.unit()).add("abort", Sort.unit())));
 		Cd.setContract(rec_Cd_Z_0);
-		rec_Cd_Z_0.setContract(internalSum().add("next", Sort.UNIT, externalSum().add("card", Sort.INT, rec_Cd_Z_0)).add("abort", Sort.UNIT));
+		rec_Cd_Z_0.setContract(internalSum().add("next", Sort.unit(), externalSum().add("card", Sort.integer(), rec_Cd_Z_0)).add("abort", Sort.unit()));
 	}
 	
 	public static class P extends Participant {

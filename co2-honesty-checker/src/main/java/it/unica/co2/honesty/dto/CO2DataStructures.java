@@ -70,14 +70,14 @@ public class CO2DataStructures {
 
 		public String session;
 		public String action;
-		public Sort sort;
+		public Sort<?> sort;
 	}
 
 	public static class DoSendDS extends PrefixDS {
 
 		public String session;
 		public String action;
-		public Sort sort;
+		public Sort<?> sort;
 	}
 
 	

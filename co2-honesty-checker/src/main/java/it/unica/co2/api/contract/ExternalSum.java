@@ -18,7 +18,7 @@ public class ExternalSum extends Sum<ExternalAction> {
 	}
 	
 	@Override
-	public ExternalSum add(String name, Sort sort, Contract next) {
+	public ExternalSum add(String name, Sort<?> sort, Contract next) {
 		actions.add(new ExternalAction(name, sort, next));
 		return this;
 	}

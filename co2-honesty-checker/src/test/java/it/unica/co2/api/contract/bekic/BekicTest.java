@@ -163,8 +163,8 @@ public class BekicTest {
 		ContractDefinition Cread = def("Cread");
 		ContractDefinition Cwrite = def("Cwrite");
 		
-		C.setContract(externalSum().add("req", Sort.STRING, internalSum().add("ackR", Sort.UNIT, ref(Cread)).add("ackW", Sort.UNIT, ref(Cwrite)).add("error", Sort.UNIT)));
-		Cread.setContract(internalSum().add("data", Sort.INT, externalSum().add("ack", Sort.INT, ref(Cread))).add("error", Sort.UNIT));
+		C.setContract(externalSum().add("req", Sort.string(), internalSum().add("ackR", ref(Cread)).add("ackW", ref(Cwrite)).add("error")));
+		Cread.setContract(internalSum().add("data", Sort.integer(), externalSum().add("ack", Sort.integer(), ref(Cread))).add("error"));
 		Cwrite.setContract(empty());
 		
 		System.out.println(C.getContract());

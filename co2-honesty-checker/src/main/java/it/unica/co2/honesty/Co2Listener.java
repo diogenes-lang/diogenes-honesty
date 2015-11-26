@@ -86,7 +86,7 @@ public class Co2Listener extends ListenerAdapter {
 	private final Class<? extends Participant> processUnderTestClass;
 	
 	/*
-	 * all told contracts
+	 * all advertised contracts
 	 */
 	private Map<String, ContractDefinition> contracts = new TreeMap<>();
 	
@@ -284,9 +284,9 @@ public class Co2Listener extends ListenerAdapter {
 		send.session = sessionName;
 		send.action = action;
 		
-		if (insn.getMethodInfo()==Session2_send) send.sort = Sort.UNIT;
-		if (insn.getMethodInfo()==Session2_sendInt) send.sort = Sort.INT;
-		if (insn.getMethodInfo()==Session2_sendString) send.sort = Sort.STRING;
+		if (insn.getMethodInfo()==Session2_send) send.sort = Sort.unit();
+		if (insn.getMethodInfo()==Session2_sendInt) send.sort = Sort.integer();
+		if (insn.getMethodInfo()==Session2_sendString) send.sort = Sort.string();
 		
 		SumDS sum = new SumDS();
 		sum.prefixes.add(send);

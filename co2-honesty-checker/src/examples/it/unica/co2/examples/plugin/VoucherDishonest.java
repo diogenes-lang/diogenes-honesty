@@ -34,8 +34,8 @@ public class VoucherDishonest {
 	 * contracts initialization
 	 */
 	static {
-		CB.setContract(externalSum().add("clickPay", Sort.UNIT, externalSum().add("pay", Sort.STRING)).add("clickVoucher", Sort.UNIT, internalSum().add("reject", Sort.UNIT, externalSum().add("pay", Sort.STRING)).add("accept", Sort.UNIT, externalSum().add("voucher", Sort.STRING))));
-		CV.setContract(externalSum().add("ok", Sort.UNIT).add("no", Sort.UNIT));
+		CB.setContract(externalSum().add("clickPay", Sort.unit(), externalSum().add("pay", Sort.string())).add("clickVoucher", Sort.unit(), internalSum().add("reject", Sort.unit(), externalSum().add("pay", Sort.string())).add("accept", Sort.unit(), externalSum().add("voucher", Sort.string()))));
+		CV.setContract(externalSum().add("ok", Sort.unit()).add("no", Sort.unit()));
 	}
 	
 	public static class P extends Participant {

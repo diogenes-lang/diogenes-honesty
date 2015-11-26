@@ -8,7 +8,7 @@ public class InternalAction extends Action {
 		super(a);
 	}
 	
-	public InternalAction(String name, Sort sort, Contract next ) {
+	public InternalAction(String name, Sort<?> sort, Contract next ) {
 		super(name, sort, ActionType.INTERNAL, next);
 	}
 

@@ -20,17 +20,17 @@ public abstract class Sum<T extends Action> extends Contract {
 	}
 	
 	public Sum<T> add(String action) {
-		return add(action, Sort.UNIT);
+		return add(action, Sort.unit());
 	}
 
-	public Sum<T> add(String action, Sort sort) {
+	public Sum<T> add(String action, Sort<?> sort) {
 		return add(action, sort, null);
 	}
 	
 	public Sum<T> add(String action, Contract next) {
-		return add(action, Sort.UNIT, next);
+		return add(action, Sort.unit(), next);
 	}
 	
-	abstract public Sum<T> add(String action, Sort sort, Contract next);
+	abstract public Sum<T> add(String action, Sort<?> sort, Contract next);
 	
 }

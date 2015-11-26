@@ -18,7 +18,6 @@ import co2api.TST;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
-import it.unica.co2.api.contract.Sort.StringSort;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
@@ -35,10 +34,10 @@ public class AttackerNode extends Participant{
 	public void run() {
 
 		ContractDefinition c = def("c").setContract(
-				externalSum().add("pair", Sort.string(StringSort.integerPattern+"-"+StringSort.integerPattern),
-						externalSum().add("range", Sort.string(StringSort.base64Pattern+","+StringSort.base64Pattern),
+				externalSum().add("pair", Sort.string(""),
+						externalSum().add("range", Sort.string(),
 								internalSum()
-								.add("result", Sort.STRING))
+								.add("result", Sort.string()))
 								.add("abort")));
 		
 		Public<TST> pbl = tell(c);

@@ -28,7 +28,7 @@ public class Retract {
 	 * contracts initialization
 	 */
 	static {
-		_tell_contr_0.setContract(internalSum().add("a", Sort.UNIT).add("b", Sort.UNIT));
+		_tell_contr_0.setContract(internalSum().add("a", Sort.integer()).add("b", Sort.unit()));
 	}
 	
 	public static class P extends Participant {

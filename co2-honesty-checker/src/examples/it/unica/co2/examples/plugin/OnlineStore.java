@@ -37,10 +37,10 @@ public class OnlineStore {
 	 * contracts initialization
 	 */
 	static {
-		C.setContract(externalSum().add("addToCart", Sort.INT, rec_C_Z_0));
-		rec_C_Z_0.setContract(externalSum().add("addToCart", Sort.INT, rec_C_Z_0).add("checkout", Sort.UNIT, ref(Cpay)));
+		C.setContract(externalSum().add("addToCart", Sort.integer(), rec_C_Z_0));
+		rec_C_Z_0.setContract(externalSum().add("addToCart", Sort.integer(), rec_C_Z_0).add("checkout", Sort.unit(), ref(Cpay)));
 		Cpay.setContract(rec_Cpay_Y_0);
-		rec_Cpay_Y_0.setContract(externalSum().add("pay", Sort.STRING, internalSum().add("ok", Sort.UNIT).add("no", Sort.UNIT, rec_Cpay_Y_0).add("abort", Sort.UNIT)).add("cancel", Sort.UNIT));
+		rec_Cpay_Y_0.setContract(externalSum().add("pay", Sort.string(), internalSum().add("ok", Sort.unit()).add("no", Sort.unit(), rec_Cpay_Y_0).add("abort", Sort.unit())).add("cancel", Sort.unit()));
 	}
 	
 	public static class P extends Participant {

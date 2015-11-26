@@ -1,7 +1,6 @@
 package it.unica.co2;
 
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
-import static org.junit.Assert.*;
 
 import org.junit.Test;
 
@@ -18,8 +17,8 @@ public class ObjectSerializationTest {
 		ContractDefinition Cp = def("Cp");
 		ContractDefinition Cd = def("Cd");
 		
-		Cp.setContract(externalSum().add("hit", Sort.UNIT, internalSum().add("card", Sort.INT).add("lose", Sort.UNIT).add("abort", Sort.UNIT)).add("stand", Sort.UNIT, internalSum().add("win", Sort.UNIT).add("lose", Sort.UNIT).add("abort", Sort.UNIT)));
-		Cd.setContract(internalSum().add("next", Sort.UNIT, externalSum().add("card", Sort.INT)).add("abort", Sort.UNIT));
+		Cp.setContract(externalSum().add("hit", internalSum().add("card", Sort.integer()).add("lose").add("abort")).add("stand", internalSum().add("win").add("lose").add("abort")));
+		Cd.setContract(internalSum().add("next", externalSum().add("card", Sort.integer())).add("abort"));
 		
 		ObjectUtils.serializeObjectToStringQuietly(Cp.getContract());
 		ObjectUtils.serializeObjectToStringQuietly(Cd.getContract());
