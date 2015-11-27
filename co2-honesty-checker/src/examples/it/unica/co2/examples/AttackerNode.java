@@ -12,14 +12,15 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang3.StringUtils;
 
+import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.TST;
 import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
-import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.api.process.SkipMethod;
 import it.unica.co2.honesty.HonestyChecker;
 
 public class AttackerNode extends Participant{
@@ -34,112 +35,61 @@ public class AttackerNode extends Participant{
 	public void run() {
 
 		ContractDefinition c = def("c").setContract(
-				externalSum().add("pair", Sort.string(""),
-						externalSum().add("range", Sort.string(),
+				externalSum().add("pair", Sort.string("plaintext,ciphertext"),
+						externalSum().add("range", Sort.string("0-10"),
 								internalSum()
-								.add("result", Sort.string()))
-								.add("abort")));
+								.add("result", Sort.string())
+								.add("abort"))));
 		
 		Public<TST> pbl = tell(c);
-		Session2<TST> y = waitForSession(pbl);
+		Session2<TST> u = waitForSession(pbl);
 
+		try {
 		
-		if (isFeasible(0)) {
-			y.send("then_branch");
-		}
-		else {
-			y.send("else_branch");
-		}
-		
-		Message msg = y.waitForReceive("a", "b");
-		
-		switch(msg.getLabel()) {
-		
-		case "a":	
-			y.waitForReceive("c", "d");
-			y.send("a_r");
-			break;
-		
-		case "b":	y.send("b_r");
-			break;
-		}
-		
-		y.send("END");
-//		String[] result = test();
-//		System.out.println("result is "+Arrays.toString(result));
-//		
-//		String[] result2 = test();
-//		System.out.println("result "+ Arrays.toString(result) +" / result2 "+Arrays.toString(result2));
-		
-//		try {
-//		
-//			Message msg = u.waitForReceive("pair");
-//			String pairString = msg.getStringValue();
-//
-//			msg = u.waitForReceive("range");
-//			String rangeString = msg.getStringValue();
-//			
-//			if (isInputOk(pairString, rangeString)) {	// concretely evaluated by JPF
-//				
-//				String[] pair = pairString.split(",");
-//				String plaintext = pair[0];
-//				String ciphertext = pair[1];
-//				
-//				
-//				String[] range = rangeString.split("-");
-//				int min = Integer.valueOf(range[0]);
-//				int max = Integer.valueOf(range[1]);
-//			
-//				ifThenElse(
-//					() -> !isFeasible(max-min),
-//					() -> {
-//						u.send("abort");
-//					},
-//					() -> {
-//						String result = getAllPairs(plaintext, ciphertext, min, max);
-//						u.send("result", result);				
-//					}
-//				);
-//			}
-//			else {
-//				u.send("abort");
-//			}
-//		}
-//		catch (ContractException e) {
-//		}
+			Message msg = u.waitForReceive("pair");
+			String pairString = msg.getStringValue();
 
-	}
-	
-	
-private static class ProcessA extends CO2Process {
-		
-		private static final long serialVersionUID = 1L;
-		private final Session2<TST> session;
-		
-		protected ProcessA(Session2<TST> session) {
-			super("ProcessA");
-			this.session = session;
-		}
-
-		@Override
-		public void run() {
-			session.send("a");
+			msg = u.waitForReceive("range");
+			String rangeString = msg.getStringValue();
 			
-			processCall(ProcessA.class, session);
+			if (isInputOk(pairString, rangeString)) {
+				
+				String[] pair = pairString.split(",");
+				String plaintext = pair[0];
+				String ciphertext = pair[1];
+				
+				String[] range = rangeString.split("-");
+				int min = Integer.valueOf(range[0]);
+				int max = Integer.valueOf(range[1]);
+			
+				if (!isFeasible(max-min)) {
+					u.send("abort");
+				}
+				else {
+					String result = getAllPairs(plaintext, ciphertext, min, max);
+					u.send("result", result);				
+				}
+			}
+			else {
+				u.send("abort");
+			}
 		}
-		
+		catch (ContractException e) {
+		}
+
 	}
 	
-	
-	
+	@SkipMethod
 	private boolean isInputOk(String pair, String range) {
 		return pair.contains(",") && range.contains("-");
 	}
 	
-	private boolean isFeasible(int n) {
+	@SkipMethod
+	public boolean isFeasible(int n) {
 		return n>0 && n<=1024;
 	}
 	
+	@SkipMethod
 	private String getAllPairs(String plaintext, String ciphertext, int min, int max) {
 		
 		StringBuilder sb = new StringBuilder();
@@ -165,9 +115,8 @@ private static class ProcessA extends CO2Process {
 	}
 	
 	public static void main(String[] args) {
-		
+
 		HonestyChecker.isHonest(AttackerNode.class, "", "");
-//		System.out.println(System.getProperty("java.io.tmpdir"));
 	}
 }
 

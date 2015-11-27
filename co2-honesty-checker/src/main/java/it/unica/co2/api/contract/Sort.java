@@ -36,6 +36,11 @@ public abstract class Sort<T> implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		private UnitSort() {}
+		
+		@Override
+		public String toString() {
+			return "UNIT";
+		}
 	}
 	
 	public static class IntegerSort extends Sort<Integer> {
@@ -47,6 +52,11 @@ public abstract class Sort<T> implements Serializable {
 		
 		private IntegerSort(Integer validValue) {
 			this.validValue=validValue;
+		}
+		
+		@Override
+		public String toString() {
+			return "INT";
 		}
 	}
 	
@@ -61,5 +71,11 @@ public abstract class Sort<T> implements Serializable {
 		private StringSort(String validValue) {
 			this.validValue=validValue;
 		}
+		
+		@Override
+		public String toString() {
+			return "STRING";
+		}
 	}
+	
 }

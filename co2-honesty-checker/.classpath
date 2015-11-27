@@ -13,6 +13,6 @@
 	<classpathentry kind="lib" path="lib/junit-4.12.jar" sourcepath="/home/nicola/.m2/repository/junit/junit/4.12/junit-4.12-sources.jar"/>
 	<classpathentry kind="lib" path="lib/bcel-5.2.jar"/>
 	<classpathentry kind="lib" path="lib/automaton.jar" sourcepath="lib/automaton-1.11"/>
-	<classpathentry kind="lib" path="lib/co2apiHL.jar"/>
+	<classpathentry kind="lib" path="lib/co2apiHL.jar" sourcepath="/co2-api"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

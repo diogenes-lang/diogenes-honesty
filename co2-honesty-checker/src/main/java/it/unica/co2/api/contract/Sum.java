@@ -8,7 +8,7 @@ public abstract class Sum<T extends Action> extends Contract {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final List<T> actions = new ArrayList<>();;
+	protected final List<T> actions = new ArrayList<>();
 	
 	@SafeVarargs
 	protected Sum(T... actions) {

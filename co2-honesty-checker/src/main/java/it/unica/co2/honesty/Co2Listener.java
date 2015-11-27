@@ -23,7 +23,11 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.ATHROW;
+import gov.nasa.jpf.jvm.bytecode.DRETURN;
+import gov.nasa.jpf.jvm.bytecode.FRETURN;
+import gov.nasa.jpf.jvm.bytecode.IRETURN;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
+import gov.nasa.jpf.jvm.bytecode.LRETURN;
 import gov.nasa.jpf.jvm.bytecode.RETURN;
 import gov.nasa.jpf.jvm.bytecode.SwitchInstruction;
 import gov.nasa.jpf.search.Search;
@@ -40,12 +44,17 @@ import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.choice.IntChoiceFromList;
 import it.unica.co2.api.Session2;
+import it.unica.co2.api.contract.Action;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Sort;
+import it.unica.co2.api.contract.Sort.IntegerSort;
+import it.unica.co2.api.contract.Sort.StringSort;
+import it.unica.co2.api.contract.Sum;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.api.process.SkipMethod;
 import it.unica.co2.honesty.dto.CO2DataStructures.AskDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoReceiveDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
@@ -129,15 +138,25 @@ public class Co2Listener extends ListenerAdapter {
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private HashSet<MethodInfo> methodsToSkip = new HashSet<>();
 	
-	
 	private Map<String, Boolean> contractsDelay = new HashMap<>();
 	private Map<String, Integer> contractsCount = new HashMap<>();
 	private Map<String, String> publicSessionName = new HashMap<>();
 	private int sessionCount = 0;
+
+	private Map<String, Map<String, Sort<?>>> contractActionsSort = new HashMap<>();
 	
 	@Override
 	public void classLoaded(VM vm, ClassInfo ci) {
 
+			
+		for (MethodInfo m : ci.getDeclaredMethodInfos() ) {
+			
+			if (m.getAnnotation(SkipMethod.class.getName())!=null) {
+				log.info("[SKIP] adding method "+m.getFullName());
+				methodsToSkip.add(m);
+			}
+		}
+		
 		if (ci.getName().equals(Participant.class.getName())) {
 			if (Participant_tell == null)
 				Participant_tell = ci.getMethod("_tell", "(Lit/unica/co2/api/contract/ContractDefinition;Ljava/lang/String;Lco2api/Private;Ljava/lang/Integer;)Lco2api/Public;", false); 
@@ -189,6 +208,7 @@ public class Co2Listener extends ListenerAdapter {
 			if (TST_setFromString==null)
 				methodsToSkip.add(ci.getMethod("setFromString", "(Ljava/lang/String;)V", false));
 		}
+		
 	}
 	
 	@Override
@@ -221,9 +241,6 @@ public class Co2Listener extends ListenerAdapter {
 		else if(Message_getStringValue!=null && insn==Message_getStringValue.getFirstInsn()) {
 			handleMessageGetStringValue(ti, insn);
 		}
-		else if (methodsToSkip.contains(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
-			handleSkipRunMethod(ti, insn);
-		}
 		else if (insn instanceof SwitchInstruction && tstate.considerSwitchInstruction((SwitchInstruction) insn)) {
 			tstate.setSwitchInsn((SwitchInstruction) insn);
 		}
@@ -239,6 +256,9 @@ public class Co2Listener extends ListenerAdapter {
 		}
 		else if(Participant_setConnection!=null && insn==Participant_setConnection.getFirstInsn()) {
 			handleParticipantSetConnection(ti, insn);
+		}
+		else if (methodsToSkip.contains(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
+			handleSkipRunMethod(ti, insn);
 		}
 	}
 	
@@ -275,9 +295,9 @@ public class Co2Listener extends ListenerAdapter {
 		/*
 		 * collect the co2 process
 		 */
-		ElementInfo session2 = ti.getThisElementInfo();	//the class that call waitForReceive(String...)
+		ElementInfo session2 = ti.getThisElementInfo();
 		
-		String sessionName = getSessionName(ti, session2.getReferenceField("contract"));
+		String sessionName = getSessionNameBySession(ti, session2);
 		String action = getArgumentString(ti, 0);
 		
 		DoSendDS send = new DoSendDS();
@@ -315,14 +335,25 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 	
-	private String getSessionName(ThreadInfo ti, int objReference) {
-		ElementInfo pbl = ti.getElementInfo(objReference);
-		assert pbl!=null;
-		
+	
+	private String getSessionNameBySession(ThreadInfo ti, ElementInfo session) {
+		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
+		return getSessionNameByPublic(pbl);
+	}
+	
+	private String getSessionNameByPublic(ElementInfo pbl) {
 		String sessionName = publicSessionName.get(pbl.toString());
 		assert sessionName!=null;
-		
 		return sessionName;
+	}
+	
+	private String getUniqueIDBySession(ThreadInfo ti, ElementInfo session) {
+		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
+		return getUniqueIDByPublic(pbl);
+	}
+	
+	private String getUniqueIDByPublic(ElementInfo pbl) {
+		return pbl.getStringField("uniqueID");
 	}
 	
 	
@@ -416,10 +447,40 @@ public class Co2Listener extends ListenerAdapter {
 		log.info("");
 		log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
 		
-		// it works only for methods that return VOID
-		assert insn.getMethodInfo().getReturnTypeCode()==Types.T_VOID;
+		Instruction nextInsn = null;
 		
-		Instruction nextInsn = new RETURN();
+		switch (insn.getMethodInfo().getReturnTypeCode()) {
+		
+		case Types.T_BOOLEAN:
+		case Types.T_BYTE:
+		case Types.T_CHAR: 
+		case Types.T_SHORT: 
+		case Types.T_INT:
+			nextInsn = new IRETURN();
+			break;
+			
+		case Types.T_LONG:
+			nextInsn = new LRETURN();
+			break;
+			
+		case Types.T_FLOAT:
+			nextInsn = new FRETURN();
+			break;
+			
+		case Types.T_DOUBLE:
+			nextInsn = new DRETURN();
+			break;
+			
+		case Types.T_ARRAY:
+		case Types.T_REFERENCE: 
+			nextInsn = new ARETURN();
+			break;
+			
+
+		case Types.T_VOID:
+		default: nextInsn = new RETURN();
+		}
+		
 		nextInsn.setMethodInfo(insn.getMethodInfo());
 		
 		ti.skipInstruction(nextInsn);
@@ -447,9 +508,10 @@ public class Co2Listener extends ListenerAdapter {
 		log.info("");
 		log.info("-- WAIT FOR RECEIVE --");
 		
-		ElementInfo session2 = ti.getThisElementInfo();	//the class that call waitForReceive(String...)
+		ElementInfo session2 = ti.getThisElementInfo();
 		
-		String sessionName = getSessionName(ti, session2.getReferenceField("contract"));
+		String sessionName = getSessionNameBySession(ti, session2);
+		String contractUniqueID = getUniqueIDBySession(ti, session2);
 		
 		//parameters
 		boolean timeout = getArgumentInteger(ti, 0)>0;
@@ -534,8 +596,10 @@ public class Co2Listener extends ListenerAdapter {
 				}
 				else {
 					String action = actions.get(choice);
-					String value = "10";
-					
+					Sort<?> sort = contractActionsSort.get(contractUniqueID).get(action);
+					assert sort!=null : "no sort associated with the given action '"+action+"'";
+					String value = getValidValue(sort);
+
 					log.info("returning message: ["+action+":"+value+"]");
 					
 					DoReceiveDS p = new DoReceiveDS(); 
@@ -565,7 +629,11 @@ public class Co2Listener extends ListenerAdapter {
 			log.info("single choice");
 			
 			String action = actions.get(0);
-			
+			Sort<?> sort = contractActionsSort.get(contractUniqueID).get(action);
+			assert sort!=null : "no sort associated with the given action '"+action+"'";
+
+			String value = getValidValue(sort);
+
 			DoReceiveDS p = new DoReceiveDS(); 
 			p.session = sessionName;
 			p.action = action;
@@ -573,16 +641,16 @@ public class Co2Listener extends ListenerAdapter {
 			SumDS sum = new SumDS();
 			sum.prefixes.add(p);
 			
+			log.info("returning message: ["+action+":"+value+"]");
+			
 			log.info("setting current process: "+sum);
 			log.info("setting current prefix: "+p);
 			ts.setCurrentProcess(sum);		//set the current process
 			ts.setCurrentPrefix(p);
-			
-			
-			log.info("returning a new Message");
+
 			
 			//build the return value
-			ElementInfo messageEI = getMessage(ti, action, "1");
+			ElementInfo messageEI = getMessage(ti, action, value);
 			
 			//set the return value
 			StackFrame frame = ti.getTopFrame();
@@ -598,7 +666,24 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 	
+	private String getValidValue(Sort<?> sort) {
+		String value = "0";		//for backward compatibility
+
+		//get the validValue from Sort
+		if (sort instanceof StringSort) {
+			value = ((StringSort) sort).getValidValue();
+		}
+		else if (sort instanceof IntegerSort) {
+			value = ((IntegerSort) sort).getValidValue().toString();
+		}
+		return value;
+	}
+	
+	
 	private ElementInfo getMessage(ThreadInfo ti, String label, String value) {
+		
+		assert label!=null;
+		assert value!=null;
 		
 		ClassInfo messageCI = ClassInfo.getInitializedClassInfo(Message.class.getName(), ti);
 		ElementInfo messageEI = ti.getHeap().newObject(messageCI, ti);
@@ -617,7 +702,7 @@ public class Co2Listener extends ListenerAdapter {
 		//object Public
 		ElementInfo pbl = ti.getThisElementInfo();
 		
-		String sessionName = getSessionName(ti, pbl.getObjectRef());
+		String sessionName = getSessionNameByPublic(pbl);
 		
 		String contractID = pbl.getStringField("uniqueID");
 		log.info("contractID: "+contractID);
@@ -863,6 +948,8 @@ public class Co2Listener extends ListenerAdapter {
 		ContractDefinition cDef = ObjectUtils.deserializeObjectFromStringQuietly(cserial, ContractDefinition.class);
 		contracts.put(cDef.getName(), cDef);
 		
+		log.info("contract: "+cDef.getContract().toString());
+		
 		ContractExplorer.findAll(
 				cDef.getContract(), 
 				ContractReference.class,
@@ -871,6 +958,22 @@ public class Co2Listener extends ListenerAdapter {
 					contracts.put(x.getReference().getName(), x.getReference());
 				}
 			);
+		
+		Map<String, Sort<?>> actionSortMap = new HashMap<>();
+		
+		log.info("action-sort mapping");
+		ContractExplorer.findAll(
+				cDef.getContract(),
+				Sum.class,
+				(x) -> {
+					for (Object obj : x.getActions()) {
+						Action a = (Action) obj;
+						log.info(a.getName() + " - " + a.getSort().getValidValue());
+						actionSortMap.put(a.getName(), a.getSort());
+					}
+				});
+
+		contractActionsSort.put(contractID, actionSortMap);
 		
 		sessions.add(sessionName);
 		

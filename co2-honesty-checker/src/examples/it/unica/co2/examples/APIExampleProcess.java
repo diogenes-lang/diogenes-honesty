@@ -3,7 +3,6 @@ package it.unica.co2.examples;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
-import co2api.Public;
 import co2api.TST;
 import co2api.TimeExpiredException;
 import it.unica.co2.api.Session2;
