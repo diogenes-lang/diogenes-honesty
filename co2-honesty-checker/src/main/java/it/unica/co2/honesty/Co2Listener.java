@@ -167,7 +167,7 @@ public class Co2Listener extends ListenerAdapter {
 		
 		if (ci.getName().equals(CO2Process.class.getName())) {
 			if (CO2Process_parallel == null)
-				CO2Process_parallel = ci.getMethod("parallel", "(Ljava/lang/Runnable;)J", false); 
+				CO2Process_parallel = ci.getMethod("parallel", "(Ljava/lang/Runnable;)Ljava/lang/Thread;", false); 
 			
 			if (CO2Process_processCall == null)
 				CO2Process_processCall = ci.getMethod("processCall", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Object;)V", false);

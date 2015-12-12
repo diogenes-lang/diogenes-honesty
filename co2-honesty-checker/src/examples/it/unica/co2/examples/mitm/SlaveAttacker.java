@@ -1,16 +1,8 @@
-package it.unica.co2.examples;
+package it.unica.co2.examples.mitm;
 
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import java.util.Base64;
-import java.util.Base64.Decoder;
-import java.util.Base64.Encoder;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-
-import org.apache.commons.lang3.StringUtils;
 
 import co2api.ContractException;
 import co2api.Message;
@@ -21,13 +13,12 @@ import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
-import it.unica.co2.honesty.HonestyChecker;
 
-public class AttackerNode extends Participant{
+public class SlaveAttacker extends Participant{
 
 	private static final long serialVersionUID = 1L;
 
-	protected AttackerNode(String username, String password) {
+	protected SlaveAttacker(String username, String password) {
 		super(username, password);
 	}
 	
@@ -35,18 +26,27 @@ public class AttackerNode extends Participant{
 	public void run() {
 
 		ContractDefinition c = def("c").setContract(
-				externalSum().add("pair", Sort.string("plaintext,ciphertext"),
+				externalSum()
+				.add("pair", Sort.string("plaintext,ciphertext"),
 						externalSum().add("range", Sort.string("0-10"),
 								internalSum()
 								.add("result", Sort.string())
-								.add("abort"))));
+								.add("abort")))
+				.add("abort"));
 		
 		Public<TST> pbl = tell(c);
 		Session2<TST> u = waitForSession(pbl);
 
 		try {
 		
-			Message msg = u.waitForReceive("pair");
+			Message msg = u.waitForReceive("pair", "abort");
+			
+			switch (msg.getLabel()) {
+			case "abort":
+				logger.log("abort received");
+				return;
+			}
+			
 			String pairString = msg.getStringValue();
 
 			msg = u.waitForReceive("range");
@@ -95,11 +95,16 @@ public class AttackerNode extends Participant{
 		StringBuilder sb = new StringBuilder();
 		
 		for (int i=min; i<=max; i++) {
+			
 			if (i>min)
-				sb.append("");
+				sb.append(",");
 			
 			String key = AESUtils.getKey(i);
 			
+//			logger.log("key: "+key);
+//			logger.log("plaintext: "+plaintext);
+//			logger.log("ciphertext: "+ciphertext);
+
 			sb
 			.append(key)
 			.append("-")
@@ -111,60 +116,31 @@ public class AttackerNode extends Participant{
 		byte[] encodedResult = Base64.getEncoder().encode(sb.toString().getBytes());
 		
 		return new String(encodedResult);
-		
+//		return sb.toString();
 	}
 	
 	public static void main(String[] args) {
-
-		HonestyChecker.isHonest(AttackerNode.class, "", "");
+		
+		Thread t1;
+		
+		System.out.println("starting attacker 1");
+		t1 = new Thread(new SlaveAttacker("mitm-slave@nicola.com", "mitm-slave"));
+		t1.start();
+		
+		System.out.println("starting attacker 2");
+		t1 = new Thread(new SlaveAttacker("mitm-slave@nicola.com", "mitm-slave"));
+		t1.start();
+		
+		System.out.println("starting attacker 3");
+		t1 = new Thread(new SlaveAttacker("mitm-slave@nicola.com", "mitm-slave"));
+		t1.start();
+		
+//		String key = "00000000000000000000001001111001";
+//		String plain = "Hello world!";
+//		String cipher = "iTXjkRbkqwQ0rOU/rIMOZ/Y/hunhWKx3Yy9DwqCwNMk=";
+//		
+//		assert AESUtils.encrypt(key, plain).equals("Enm+Q4CcF5Pn38wI+fP7Kg==");
+//		
+//		System.out.println(AESUtils.decrypt(key, cipher));
 	}
-}
-
-class AESUtils {
-	
-	static final Decoder base64Decoder = Base64.getDecoder();
-	static final Encoder base64Encoder = Base64.getEncoder();
-	
-	public static String getKey(int n) {
-		return StringUtils.leftPad(Integer.toBinaryString(n), 32, '0');
-	}
-	
-    public static String encrypt(String key, String value) {
-        try {
-            IvParameterSpec iv = new IvParameterSpec("0123456789abcdef".getBytes("UTF-8"));
-            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
-
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
-
-            byte[] encrypted = cipher.doFinal(value.getBytes());
-            
-            String encryptedString = base64Encoder.encodeToString(encrypted);
-
-            return encryptedString;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public static String decrypt(String key, String encrypted) {
-        try {
-            IvParameterSpec iv = new IvParameterSpec("0123456789abcdef".getBytes("UTF-8"));
-            SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
-
-            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-            cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
-
-            byte[] original = cipher.doFinal(base64Decoder.decode(encrypted));
-
-            return new String(original);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-        return null;
-    }
-
 }

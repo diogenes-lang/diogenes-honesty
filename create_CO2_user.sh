@@ -4,7 +4,7 @@ if [[ $# -ne 1 && $# -ne 2 ]]; then
 fi
 
 USERNAME=$1
-DOMAIN="nicola.com"
+DOMAIN="co2.unica.it"
 
 if [[ $# -eq 1 ]]; then
 	PASSWORD=$USERNAME

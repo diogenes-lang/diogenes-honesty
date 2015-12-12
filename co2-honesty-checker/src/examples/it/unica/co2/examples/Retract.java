@@ -22,7 +22,7 @@ public class Retract {
 	/*
 	 * contracts declaration
 	 */
-	private static ContractDefinition _tell_contr_0 = def("_tell_contr_0");
+	private static ContractDefinition _tell_contr_0 = def("C");
 	
 	/*
 	 * contracts initialization

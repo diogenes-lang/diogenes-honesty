@@ -6,6 +6,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+
 import it.unica.co2.util.Logger;
 
 
@@ -22,11 +24,11 @@ public abstract class CO2Process implements Runnable, Serializable {
 		logger = Logger.getInstance(username, System.out, this.getClass().getSimpleName());
 	}
 	
-	synchronized protected long parallel(Runnable process) {
+	synchronized protected Thread parallel(Runnable process) {
 		logger.log("starting parallel process");
 		Thread t = new Thread(process);
 		t.start();
-		return t.getId();
+		return t;
 	}
 	
 	
@@ -50,18 +52,17 @@ public abstract class CO2Process implements Runnable, Serializable {
 		
 		Constructor<? extends CO2Process> ctor;
 		try {
-			ctor = pClass.getDeclaredConstructor(typesArray);	// get the constructor with the corresponding types
+			ctor = ConstructorUtils.getMatchingAccessibleConstructor(pClass, typesArray);	// get the constructor with the corresponding types
+			
+//			ctor = pClass.getDeclaredConstructor(typesArray);	// get the constructor with the corresponding types
 			ctor.setAccessible(true);
 			CO2Process p = ctor.newInstance(args);				// create a new instance passing the given args
 			p.run();											// run the process
 		}
-		catch (	SecurityException | IllegalArgumentException | NoSuchMethodException | 
+		catch (	SecurityException | IllegalArgumentException | 
 				InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException("error instantiating the class "+pClass, e);
 		}
 	}
 	
-	protected String[] test() {
-		return new String[]{"pippo!", "pippo2!"};
-	}
 }
