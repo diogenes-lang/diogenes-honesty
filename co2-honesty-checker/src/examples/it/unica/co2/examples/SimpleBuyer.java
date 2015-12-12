@@ -38,18 +38,18 @@ public class SimpleBuyer extends Participant {
 		try {
 			Session2<TST> session = tellAndWait(contract);
 			
-			session.send("item", "01234");
+			session.sendIfAllowed("item", "01234");
 			
 			Message msg = session.waitForReceive("amount");
 			
 			Integer n = Integer.valueOf(msg.getStringValue());
 			
 			if (n<10) {
-				session.send("pay", n);
+				session.sendIfAllowed("pay", n);
 				msg = session.waitForReceive("item");
 			}
 			else {
-				session.send("abort");
+				session.sendIfAllowed("abort");
 			}
 		}
 		catch (ContractException e) {

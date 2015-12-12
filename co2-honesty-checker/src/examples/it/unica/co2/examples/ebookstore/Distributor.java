@@ -40,7 +40,7 @@ public class Distributor extends Participant {
 			isbn = msg.getStringValue();
 			
 			if (isPresent(isbn)) {
-				session.send("confirmdistr");
+				session.sendIfAllowed("confirmdistr");
 				
 				msg = session.waitForReceive("paydistrib", "quitdistr");
 				
@@ -56,7 +56,7 @@ public class Distributor extends Participant {
 				}
 			}
 			else {
-				session.send("abortdistrib");
+				session.sendIfAllowed("abortdistrib");
 			} 
 			
 		}

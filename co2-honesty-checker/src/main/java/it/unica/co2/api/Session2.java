@@ -18,12 +18,11 @@ public class Session2<T extends ContractModel> extends Session<T>{
 		super(conn, publ);
 	}
 	
-	@Override
-	public Boolean send(String action) {
+	public Boolean sendIfAllowed(String action) {
     	System.out.println(">>> sending "+action+"!");
 
 		try {
-			return super.send(action);
+			return super.sendIfAllowed(action);
 		}
 		catch (ContractException e) {
 			throw new RuntimeException(e);
@@ -31,11 +30,11 @@ public class Session2<T extends ContractModel> extends Session<T>{
 	}
 	
 	@Override
-	public Boolean send(String action, String value) {
+	public Boolean sendIfAllowed(String action, String value) {
 		System.out.println(">>> sending "+action+"! ["+value+"]");
 
 		try {
-			return super.send(action, value);
+			return super.sendIfAllowed(action, value);
 		}
 		catch (ContractException e) {
 			throw new RuntimeException(e);
@@ -43,11 +42,11 @@ public class Session2<T extends ContractModel> extends Session<T>{
 	}
 	
 	@Override
-	public Boolean send(String action, Integer value) {
+	public Boolean sendIfAllowed(String action, Integer value) {
 		System.out.println(">>> sending "+action+"! ["+value+"]");
 		
 		try {
-			return super.send(action, value);
+			return super.sendIfAllowed(action, value);
 		}
 		catch (ContractException e) {
 			throw new RuntimeException(e);

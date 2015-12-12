@@ -35,25 +35,25 @@ public class VoucherBuyer extends Participant {
 		
 		if (useVoucher()) {
 			
-			session.send("clickvoucher");
+			session.sendIfAllowed("clickvoucher");
 
 			Message msg = session.waitForReceive("reject", "accept");
 			
 			switch(msg.getLabel()) {
 			
 			case "reject":
-				session.send("pay");
+				session.sendIfAllowed("pay");
 				break;
 				
 			case "accept":
-				session.send("voucher");
+				session.sendIfAllowed("voucher");
 				break;
 			}
 			
 		}
 		else {
-			session.send("clickpay");
-			session.send("pay");
+			session.sendIfAllowed("clickpay");
+			session.sendIfAllowed("pay");
 		}
 		
 		

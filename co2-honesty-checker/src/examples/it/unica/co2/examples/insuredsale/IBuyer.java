@@ -29,13 +29,13 @@ public class IBuyer extends Participant {
 		
 		Session2<TST> session = tellAndWait(CA);
 		
-		session.send("order", orderAmount);
+		session.sendIfAllowed("order", orderAmount);
 		
 		Message msg = session.waitForReceive("amount", "abort");
 		
 		switch(msg.getLabel()) {
 		case "amount":
-			session.send("pay", "1234-0000-1234-0000");
+			session.sendIfAllowed("pay", "1234-0000-1234-0000");
 			break;
 			
 		case "abort":

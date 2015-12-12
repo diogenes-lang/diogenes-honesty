@@ -52,7 +52,7 @@ public class Seller extends Participant {
 			
 			if (isInStock(chosenBook)) { // handled internally
 				
-				sessionB.send("confirm");
+				sessionB.sendIfAllowed("confirm");
 				
 				Message msgB = sessionB.waitForReceive("quit", "pay");
 
@@ -77,7 +77,7 @@ public class Seller extends Participant {
 					
 					Session2<TST> sessionD = waitForSession(pbl, 10000);
 					
-					sessionD.send("bookdistrib", chosenBook);
+					sessionD.sendIfAllowed("bookdistrib", chosenBook);
 					
 					try {
 						Message msgD = sessionD.waitForReceive(10000, "abortdistrib", "confirmdistr");
@@ -86,13 +86,13 @@ public class Seller extends Participant {
 						
 						case "abortdistrib" :
 							logger.log("abort received from the distributor");
-							sessionB.send("abort");						//complete the session that involve the buyer
+							sessionB.sendIfAllowed("abort");						//complete the session that involve the buyer
 							break;
 							
 						case "confirmdistr" : 
 							logger.log("confirm received from the distributor");
 							
-							sessionB.send("confirm");					//continue the interaction with the buyer
+							sessionB.sendIfAllowed("confirm");					//continue the interaction with the buyer
 							
 							try {
 								Message msgB = sessionB.waitForReceive(10000, "quit", "pay");
@@ -101,19 +101,19 @@ public class Seller extends Participant {
 								
 								case "quit" :
 									logger.log("quit received");
-									sessionD.send("quitdistr");							//quit the distributor
+									sessionD.sendIfAllowed("quitdistr");							//quit the distributor
 									break;
 									
 								case "pay" : 
 									logger.log("pay received");
 									handlePayment(msgB.getStringValue());			//the buyer sent you the money
-									sessionD.send("paydistrib", bookPrice(chosenBook));	//pay the distributor
+									sessionD.sendIfAllowed("paydistrib", bookPrice(chosenBook));	//pay the distributor
 									break;
 								}
 							}
 							catch (TimeExpiredException e) {
 								//if the buyer not sent 'quit' or 'pay', you are culpable with the distributor
-								sessionD.send("quitdistr");
+								sessionD.sendIfAllowed("quitdistr");
 								
 								//and now, if the buyer sent you something? you are culpable in sessionB?
 								//no, because the buyer does not expect anything
@@ -130,7 +130,7 @@ public class Seller extends Participant {
 						logger.log("no action was received in time");
 						
 						//if the distributor not sent 'abort' or 'confirm', you are culpable in sessionB
-						sessionB.send("abort");		//this action make you honest in sessionB
+						sessionB.sendIfAllowed("abort");		//this action make you honest in sessionB
 						
 						//and now, if the distributor sent you something? you are culpable in sessionD!
 						processCall(AbortSessionD2.class, sessionD);
@@ -143,7 +143,7 @@ public class Seller extends Participant {
 					logger.log("sessionD not fused in time");
 					
 					//if the session is never fused, you are culpable in sessionB
-					sessionB.send("abort");		//this action make you honest in sessionB
+					sessionB.sendIfAllowed("abort");		//this action make you honest in sessionB
 					
 					//and now, if the session is fused?
 					Session2<TST> sessionD = waitForSession(pbl);	//blocking
@@ -198,7 +198,7 @@ public class Seller extends Participant {
 		@Override
 		public void run() {
 			
-			sessionD.send("bookdistrib");
+			sessionD.sendIfAllowed("bookdistrib");
 			
 			processCall(AbortSessionD2.class, sessionD);
 		}
@@ -222,7 +222,7 @@ public class Seller extends Participant {
 			
 			case "abortdistrib" :
 				break;
-			case "confirmdistr" : sessionD.send("quitdistr");
+			case "confirmdistr" : sessionD.sendIfAllowed("quitdistr");
 				break;
 			}
 		}

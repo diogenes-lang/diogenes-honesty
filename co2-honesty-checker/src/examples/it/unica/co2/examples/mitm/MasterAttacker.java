@@ -65,12 +65,12 @@ public class MasterAttacker extends Participant{
 					processCall(Attack.class, pairs, x, y, z);
 				}
 				catch (ContractExpiredException e) {
-					x.send("abort");
-					y.send("abort");
+					x.sendIfAllowed("abort");
+					y.sendIfAllowed("abort");
 				}
 			}
 			catch (ContractExpiredException e) {
-				x.send("abort");
+				x.sendIfAllowed("abort");
 			}
 		}
 		catch (ContractExpiredException e) {
@@ -206,8 +206,8 @@ public class MasterAttacker extends Participant{
 
 		@Override
 		public void run() {
-			x.send("pair", pair);
-			x.send("range", range);
+			x.sendIfAllowed("pair", pair);
+			x.sendIfAllowed("range", range);
 			
 			Message msg = x.waitForReceive("result", "abort");
 			

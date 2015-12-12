@@ -169,10 +169,10 @@ public class OnlineStore {
 		@Override
 		public void run() {
 			if ((amount<100)) {
-				x.send("ok");
+				x.sendIfAllowed("ok");
 			}
 			else {
-				x.send("no");
+				x.sendIfAllowed("no");
 				new Ppay(x,amount).run();
 			}
 		}

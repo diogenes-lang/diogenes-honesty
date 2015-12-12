@@ -49,17 +49,17 @@ public class Retract {
 			try {
 				Session2<TST> sessionX = waitForSession(pblX, 10000);
 				
-				sessionX.send("a");
-				sessionY.send("c");
+				sessionX.sendIfAllowed("a");
+				sessionY.sendIfAllowed("c");
 				
 			}
 			catch(ContractExpiredException e) {
 				//retract x
 				
-				sessionY.send("d");
+				sessionY.sendIfAllowed("d");
 			}
 			catch (TimeExpiredException e) {
-				sessionY.send("c");
+				sessionY.sendIfAllowed("c");
 			}
 		}
 	}

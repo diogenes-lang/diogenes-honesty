@@ -27,10 +27,10 @@ public class VoucherService extends Participant {
 		
 		
 		if (isServiceAvailable()) {
-			session.send("ok");
+			session.sendIfAllowed("ok");
 		}
 		else {
-			session.send("no");
+			session.sendIfAllowed("no");
 		}
 		
 	}

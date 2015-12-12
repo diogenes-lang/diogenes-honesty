@@ -54,13 +54,18 @@ public abstract class CO2Process implements Runnable, Serializable {
 		try {
 			ctor = ConstructorUtils.getMatchingAccessibleConstructor(pClass, typesArray);	// get the constructor with the corresponding types
 			
-//			ctor = pClass.getDeclaredConstructor(typesArray);	// get the constructor with the corresponding types
+			if (ctor==null) {
+				ctor = pClass.getDeclaredConstructor(typesArray);	// get the constructor with the corresponding types
+			}
+
+			assert ctor!=null;
+			
 			ctor.setAccessible(true);
 			CO2Process p = ctor.newInstance(args);				// create a new instance passing the given args
 			p.run();											// run the process
 		}
 		catch (	SecurityException | IllegalArgumentException | 
-				InstantiationException | IllegalAccessException | InvocationTargetException e) {
+				InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
 			throw new RuntimeException("error instantiating the class "+pClass, e);
 		}
 	}

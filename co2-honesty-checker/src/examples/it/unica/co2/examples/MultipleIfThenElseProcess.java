@@ -47,27 +47,27 @@ public class MultipleIfThenElseProcess extends Participant {
 			
 			Session2<TST> session = tellAndWait(A);
 			
-			session.send("start");
+			session.sendIfAllowed("start");
 			
 			Integer x = new Integer(10);
 			Integer y = 10;
 			
 			if (x>5){
-				session.send("then");
+				session.sendIfAllowed("then");
 				
 				if(y>5) {
-					session.send("then_1");
+					session.sendIfAllowed("then_1");
 				}
 				else {
-					session.send("else_1");
+					session.sendIfAllowed("else_1");
 				}
 				
 			}			
 			else {
-				session.send("else");
+				session.sendIfAllowed("else");
 			}
 			
-			session.send("end");
+			session.sendIfAllowed("end");
 			
 			logger.log("END");
 		

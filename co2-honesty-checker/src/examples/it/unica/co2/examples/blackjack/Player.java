@@ -56,7 +56,7 @@ public class Player extends Participant {
 			Message msg;
 			
 			if (n<21) {
-				session.send("hit");
+				session.sendIfAllowed("hit");
 				
 				msg = session.waitForReceive("card", "lose", "abort");
 				
@@ -84,7 +84,7 @@ public class Player extends Participant {
 				
 			}
 			else {
-				session.send("stand");
+				session.sendIfAllowed("stand");
 
 				msg = session.waitForReceive("win", "lose", "abort");
 				

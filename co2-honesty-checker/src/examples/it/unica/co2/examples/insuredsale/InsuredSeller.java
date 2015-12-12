@@ -71,7 +71,7 @@ public class InsuredSeller extends Participant {
 		public void run() {
 			
 			if (isServiceAvailable()) {
-				session.send("amount", amount);
+				session.sendIfAllowed("amount", amount);
 				Message msg = session.waitForReceive("pay");
 				
 				try {
@@ -84,7 +84,7 @@ public class InsuredSeller extends Participant {
 				
 			}
 			else {
-				session.send("abort");
+				session.sendIfAllowed("abort");
 			}
 		}
 	
@@ -122,7 +122,7 @@ public class InsuredSeller extends Participant {
 			try {
 				sessionI = waitForSession(pblI, 10000);
 				
-				sessionI.send("reqi", amount);
+				sessionI.sendIfAllowed("reqi", amount);
 				
 				try {
 					Message msg = sessionI.waitForReceive(10000, "oki", "aborti");
@@ -134,14 +134,14 @@ public class InsuredSeller extends Participant {
 						break;
 						
 					case "aborti":
-						session.send("abort");
+						session.sendIfAllowed("abort");
 						break;
 					}
 					
 				}
 				catch (TimeExpiredException e) {
 					
-					session.send("abort");
+					session.sendIfAllowed("abort");
 					
 					sessionI.waitForReceive("oki", "aborti");
 				}
@@ -149,10 +149,10 @@ public class InsuredSeller extends Participant {
 			}
 			catch (TimeExpiredException e) {
 				
-				session.send("abort");
+				session.sendIfAllowed("abort");
 				
 				sessionI = waitForSession(pblI);
-				sessionI.send("reqi");
+				sessionI.sendIfAllowed("reqi");
 				sessionI.waitForReceive("oki", "aborti");
 			}
 		

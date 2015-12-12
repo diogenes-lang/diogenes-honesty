@@ -36,7 +36,7 @@ public class Buyer extends Participant {
 		String isbn = "8794567347859"; // book id
 		Integer desiredPrice = 10;
 		
-		session.send("book", isbn);
+		session.sendIfAllowed("book", isbn);
 		
 		try {
 			mB = session.waitForReceive("abort", "confirm");
@@ -52,9 +52,9 @@ public class Buyer extends Participant {
 				price = Integer.parseInt(mB.getStringValue());
 				
 				if (price > desiredPrice)
-					session.send("quit");
+					session.sendIfAllowed("quit");
 				else {
-					session.send("pay", price);
+					session.sendIfAllowed("pay", price);
 					System.out.println("Session completed: I've buyed the book");
 				}
 				

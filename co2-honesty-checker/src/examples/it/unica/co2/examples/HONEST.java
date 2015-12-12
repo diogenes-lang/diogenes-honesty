@@ -32,7 +32,7 @@ public class HONEST extends Participant {
 			session.waitForReceive(3000, "a");
 		}
 		catch (TimeExpiredException e) {
-			session.send("b");
+			session.sendIfAllowed("b");
 		}
 				
 	}

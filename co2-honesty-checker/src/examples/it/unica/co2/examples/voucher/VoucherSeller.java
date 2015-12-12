@@ -57,7 +57,7 @@ public class VoucherSeller extends Participant {
 			catch (TimeExpiredException e) {
 				
 				parallel(()->{
-					sessionB.send("reject");
+					sessionB.sendIfAllowed("reject");
 					sessionB.waitForReceive("pay");
 				});
 				
@@ -92,12 +92,12 @@ public class VoucherSeller extends Participant {
 				switch(msg.getLabel()) {
 				
 				case "ok":
-					sessionB.send("accept");
+					sessionB.sendIfAllowed("accept");
 					sessionB.waitForReceive("voucher");
 					break;
 					
 				case "no":
-					sessionB.send("reject");
+					sessionB.sendIfAllowed("reject");
 					sessionB.waitForReceive("pay");
 					break;
 				}
@@ -105,7 +105,7 @@ public class VoucherSeller extends Participant {
 			catch (TimeExpiredException e) {
 				
 				parallel(()->{
-					sessionB.send("reject");
+					sessionB.sendIfAllowed("reject");
 					sessionB.waitForReceive("pay");
 				});
 				

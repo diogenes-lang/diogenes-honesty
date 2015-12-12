@@ -62,13 +62,13 @@ public class Dealer extends Participant {
 			processCall(Pplay.class, sessionP, sessionD, 0);
 		}
 		catch (TimeExpiredException e) {
-			sessionD.send("abort");
+			sessionD.sendIfAllowed("abort");
 			
 			sessionP = waitForSession(pblP);
 			
 			//you are culpable in sessionP
 			sessionP.waitForReceive("hit", "stand");
-			sessionP.send("abort");
+			sessionP.sendIfAllowed("abort");
 			
 			//you are honest in all sessions
 		}
@@ -103,7 +103,7 @@ public class Dealer extends Participant {
 				
 				case "hit":
 					logger.log("hit received");
-					sessionD.send("next");
+					sessionD.sendIfAllowed("next");
 					processCall(Pdeck.class, sessionP, sessionD, nP);
 					break;
 					
@@ -114,11 +114,11 @@ public class Dealer extends Participant {
 				}
 			}
 			catch (TimeExpiredException e) {
-				sessionD.send("abort");
+				sessionD.sendIfAllowed("abort");
 				
 				//you are culpable in sessionP
 				sessionP.waitForReceive("hit", "stand");
-				sessionP.send("abort");
+				sessionP.sendIfAllowed("abort");
 				
 				//you are honest
 			}
@@ -159,10 +159,10 @@ public class Dealer extends Participant {
 				}
 			}
 			catch (TimeExpiredException e) {
-				sessionP.send("abort");
+				sessionP.sendIfAllowed("abort");
 				
 				sessionD.waitForReceive("card");
-				sessionD.send("abort");
+				sessionD.sendIfAllowed("abort");
 			}
 			
 		}
@@ -190,12 +190,12 @@ public class Dealer extends Participant {
 		public void run() {
 			
 			if (nP<=21) {
-				sessionD.send("next");
+				sessionD.sendIfAllowed("next");
 				processCall(Qdeck.class, sessionP, sessionD, nP, nD);
 			}
 			else {
-				sessionP.send("win");
-				sessionD.send("abort");
+				sessionP.sendIfAllowed("win");
+				sessionD.sendIfAllowed("abort");
 			}
 			
 		}
@@ -223,12 +223,12 @@ public class Dealer extends Participant {
 		public void run() {
 			
 			if (nP<=21) {
-				sessionP.send("card", n);
+				sessionP.sendIfAllowed("card", n);
 				processCall(Pplay.class, sessionP, sessionD, nP);
 			}
 			else {
-				sessionP.send("lose");
-				sessionD.send("abort");
+				sessionP.sendIfAllowed("lose");
+				sessionD.sendIfAllowed("abort");
 			}
 			
 		}
@@ -271,10 +271,10 @@ public class Dealer extends Participant {
 				
 			}
 			catch (TimeExpiredException e) {
-				sessionP.send("abort");
+				sessionP.sendIfAllowed("abort");
 				
 				sessionD.waitForReceive("card");
-				sessionD.send("abort");
+				sessionD.sendIfAllowed("abort");
 			}
 			
 		}
@@ -305,8 +305,8 @@ public class Dealer extends Participant {
 				processCall(Qstand.class, sessionP, sessionD, nP, nD);
 			}
 			else {
-				sessionP.send("lose");
-				sessionD.send("abort");
+				sessionP.sendIfAllowed("lose");
+				sessionD.sendIfAllowed("abort");
 			}
 			
 		}

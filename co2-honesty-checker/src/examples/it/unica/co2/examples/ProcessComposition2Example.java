@@ -49,7 +49,7 @@ public class ProcessComposition2Example {
 			
 			processCall(ProcessA.class, session);
 			
-//			session.send("end");		//JPF fails
+//			session.sendIfAllowed("end");		//JPF fails
 			
 		}
 

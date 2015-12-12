@@ -47,7 +47,7 @@ public class APIExampleProcess extends Participant {
 			try {
 				sessionC.waitForReceive(1000, "a", "b");
 				
-				sessionC.send("END");
+				sessionC.sendIfAllowed("END");
 			}
 			catch (TimeExpiredException e) {
 				

@@ -67,7 +67,7 @@ public class DeckService extends Participant {
 			
 			switch(msg.getLabel()) {
 			case "next":
-				session.send("card", getNextCard());
+				session.sendIfAllowed("card", getNextCard());
 				processCall(Deck.class, session);
 				break;
 				

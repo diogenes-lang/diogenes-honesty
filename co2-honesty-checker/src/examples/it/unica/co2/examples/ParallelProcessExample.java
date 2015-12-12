@@ -30,19 +30,19 @@ public class ParallelProcessExample {
 			
 			parallel(()-> {
 				Session2<TST> session = tellAndWait(C1);
-				session.send("a");
+				session.sendIfAllowed("a");
 				session.waitForReceive("a","b");
 			});
 			
 			parallel(()-> {
 				Session2<TST> session = tellAndWait(C2);
-				session.send("b");
+				session.sendIfAllowed("b");
 				session.waitForReceive("a");
 			});
 			
 			parallel(()-> {
 				Session2<TST> session = tellAndWait(C3);
-				session.send("c");
+				session.sendIfAllowed("c");
 				session.waitForReceive("a");
 			});
 		}

@@ -129,9 +129,9 @@ public class Co2Listener extends ListenerAdapter {
 	private MethodInfo Public_waitForSession;
 	private MethodInfo Public_waitForSessionT;
 	private MethodInfo Session2_waitForReceive;
-	private MethodInfo Session2_send;
-	private MethodInfo Session2_sendString;
-	private MethodInfo Session2_sendInt;
+	private MethodInfo Session2_sendIfAllowed;
+	private MethodInfo Session2_sendIfAllowedString;
+	private MethodInfo Session2_sendIfAllowedInt;
 	private MethodInfo Message_getStringValue;
 	private MethodInfo TST_setFromString;
 	
@@ -187,14 +187,14 @@ public class Co2Listener extends ListenerAdapter {
 			if (Session2_waitForReceive==null)
 				Session2_waitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
 			
-			if (Session2_send==null)
-				Session2_send = ci.getMethod("send", "(Ljava/lang/String;)Ljava/lang/Boolean;", false);
+			if (Session2_sendIfAllowed==null)
+				Session2_sendIfAllowed = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;)Ljava/lang/Boolean;", false);
 			
-			if (Session2_sendString==null)
-				Session2_sendString = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;", false);
+			if (Session2_sendIfAllowedString==null)
+				Session2_sendIfAllowedString = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;", false);
 			
-			if (Session2_sendInt==null)
-				Session2_sendInt = ci.getMethod("send", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
+			if (Session2_sendIfAllowedInt==null)
+				Session2_sendIfAllowedInt = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
 		}
 		
 		if (ci.getName().equals(Message.class.getName())) {
@@ -248,9 +248,9 @@ public class Co2Listener extends ListenerAdapter {
 			handleIfThenElse(tstate, ti, insn);
 		}
 		else if (
-				(Session2_send!=null && insn==Session2_send.getFirstInsn()) ||
-				(Session2_sendInt!=null && insn==Session2_sendInt.getFirstInsn()) ||
-				(Session2_sendString!=null && insn==Session2_sendString.getFirstInsn())
+				(Session2_sendIfAllowed!=null && insn==Session2_sendIfAllowed.getFirstInsn()) ||
+				(Session2_sendIfAllowedInt!=null && insn==Session2_sendIfAllowedInt.getFirstInsn()) ||
+				(Session2_sendIfAllowedString!=null && insn==Session2_sendIfAllowedString.getFirstInsn())
 				) {
 			handleSession2Send(tstate, ti, insn);
 		}
@@ -304,9 +304,9 @@ public class Co2Listener extends ListenerAdapter {
 		send.session = sessionName;
 		send.action = action;
 		
-		if (insn.getMethodInfo()==Session2_send) send.sort = Sort.unit();
-		if (insn.getMethodInfo()==Session2_sendInt) send.sort = Sort.integer();
-		if (insn.getMethodInfo()==Session2_sendString) send.sort = Sort.string();
+		if (insn.getMethodInfo()==Session2_sendIfAllowed) send.sort = Sort.unit();
+		if (insn.getMethodInfo()==Session2_sendIfAllowedInt) send.sort = Sort.integer();
+		if (insn.getMethodInfo()==Session2_sendIfAllowedString) send.sort = Sort.string();
 		
 		SumDS sum = new SumDS();
 		sum.prefixes.add(send);

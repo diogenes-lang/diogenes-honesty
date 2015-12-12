@@ -63,15 +63,15 @@ public class SlaveAttacker extends Participant{
 				int max = Integer.valueOf(range[1]);
 			
 				if (!isFeasible(max-min)) {
-					u.send("abort");
+					u.sendIfAllowed("abort");
 				}
 				else {
 					String result = getAllPairs(plaintext, ciphertext, min, max);
-					u.send("result", result);				
+					u.sendIfAllowed("result", result);				
 				}
 			}
 			else {
-				u.send("abort");
+				u.sendIfAllowed("abort");
 			}
 		}
 		catch (ContractException e) {

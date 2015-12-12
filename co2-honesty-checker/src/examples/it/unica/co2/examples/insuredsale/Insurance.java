@@ -36,10 +36,10 @@ public class Insurance extends Participant {
 		}
 		
 		if (isInsurable(amount)) {
-			session.send("oki");
+			session.sendIfAllowed("oki");
 		}
 		else {
-			session.send("aborti");
+			session.sendIfAllowed("aborti");
 		}
 	}
 

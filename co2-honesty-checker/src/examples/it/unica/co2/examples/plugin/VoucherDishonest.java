@@ -135,7 +135,7 @@ public class VoucherDishonest {
 					
 					case "ok":
 						logger.log("received [ok]");
-						x.send("accept");
+						x.sendIfAllowed("accept");
 						logger.log("waiting on 'x' for actions [voucher]");
 						Message msg$1 = x.waitForReceive("voucher");
 						
@@ -150,7 +150,7 @@ public class VoucherDishonest {
 					
 					case "no":
 						logger.log("received [no]");
-						x.send("reject");
+						x.sendIfAllowed("reject");
 						logger.log("waiting on 'x' for actions [pay]");
 						Message msg$2 = x.waitForReceive("pay");
 						
@@ -204,7 +204,7 @@ public class VoucherDishonest {
 		
 		@Override
 		public void run() {
-			x.send("reject");
+			x.sendIfAllowed("reject");
 			logger.log("waiting on 'x' for actions [pay]");
 			Message msg$0 = x.waitForReceive("pay");
 			

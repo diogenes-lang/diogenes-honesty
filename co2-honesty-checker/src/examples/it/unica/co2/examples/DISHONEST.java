@@ -26,7 +26,7 @@ public class DISHONEST extends Participant {
 		
 		Session2<TST> session = tellAndWait(CB);
 		
-		session.send("b");
+		session.sendIfAllowed("b");
 				
 	}
 	

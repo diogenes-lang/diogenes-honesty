@@ -28,7 +28,7 @@ public class ProcessCompositionExample {
 
 		@Override
 		public void run() {
-			session.send("a");
+			session.sendIfAllowed("a");
 			
 			processCall(ProcessA.class, session);
 		}
@@ -47,7 +47,7 @@ public class ProcessCompositionExample {
 
 		@Override
 		public void run() {
-			session.send("b");
+			session.sendIfAllowed("b");
 		}
 	}
 	
@@ -85,7 +85,7 @@ public class ProcessCompositionExample {
 			else
 				processCall(ProcessB.class, session);
 				
-//			session.send("end");		//JPF fails
+//			session.sendIfAllowed("end");		//JPF fails
 			
 		}
 

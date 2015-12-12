@@ -61,17 +61,17 @@ public class APIExampleProcess2 extends Participant {
 		@Override
 		public void run() {
 			parallel(()->{
-				x.send("pippo");
+				x.sendIfAllowed("pippo");
 				processCall(abort.class, x);
 			});
 	
 			parallel(()->{
-				y.send("pippo");
+				y.sendIfAllowed("pippo");
 				processCall(abort.class, y);
 			});
 			
 			parallel(()->{
-				z.send("pippo");
+				z.sendIfAllowed("pippo");
 				processCall(abort.class, z);
 			});
 		}
@@ -90,7 +90,7 @@ public class APIExampleProcess2 extends Participant {
 		@Override
 		public void run() {
 			logger.log("ABORT - entered on run method");
-			u.send("abort");
+			u.sendIfAllowed("abort");
 		}
 	}
 }

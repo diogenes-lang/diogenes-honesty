@@ -63,7 +63,7 @@ public class Blackjack {
 				new Pplay(xp,xd,0).run();
 			}
 			catch(TimeExpiredException e) {
-				xd.send("abort");
+				xd.sendIfAllowed("abort");
 				Session2<TST> xp$0 = waitForSession(pbl$xp$Cp);
 				new PabortP(xp$0).run();
 			}
@@ -94,7 +94,7 @@ public class Blackjack {
 					
 					case "hit":
 						logger.log("received [hit]");
-						xd.send("next");
+						xd.sendIfAllowed("next");
 						new Pdeck(xp,xd,np).run();
 						break;
 					
@@ -108,7 +108,7 @@ public class Blackjack {
 				}
 			}
 			catch (TimeExpiredException e) {
-				xd.send("abort");
+				xd.sendIfAllowed("abort");
 				new PabortP(xp).run();
 			}
 			
@@ -145,7 +145,7 @@ public class Blackjack {
 				new Pcard(xp,xd,(np+n$card$msg1),n$card$msg1).run();
 			}
 			catch (TimeExpiredException e) {
-				xp.send("abort");
+				xp.sendIfAllowed("abort");
 				new PabortD(xd).run();
 			}
 			
@@ -171,11 +171,11 @@ public class Blackjack {
 		@Override
 		public void run() {
 			if ((np<21)) {
-				xp.send("card", n);
+				xp.sendIfAllowed("card", n);
 				new Pplay(xp,xd,np).run();
 			}
 			else {
-				xp.send("lose");
+				xp.sendIfAllowed("lose");
 				new PabortD(xd).run();
 			}
 		}
@@ -200,12 +200,12 @@ public class Blackjack {
 		@Override
 		public void run() {
 			if ((nd<21)) {
-				xd.send("next");
+				xd.sendIfAllowed("next");
 				new Qdeck(xp,xd,np,nd).run();
 			}
 			else {
-				xp.send("win");
-				xd.send("abort");
+				xp.sendIfAllowed("win");
+				xd.sendIfAllowed("abort");
 			}
 		}
 	}
@@ -242,7 +242,7 @@ public class Blackjack {
 				new Qcard(xp,xd,np,nd).run();
 			}
 			catch (TimeExpiredException e) {
-				xp.send("abort");
+				xp.sendIfAllowed("abort");
 				new PabortD(xd).run();
 			}
 			
@@ -271,7 +271,7 @@ public class Blackjack {
 				new Qstand(xp,xd,np,nd).run();
 			}
 			else {
-				xp.send("lose");
+				xp.sendIfAllowed("lose");
 				new PabortD(xd).run();
 			}
 		}
@@ -296,12 +296,12 @@ public class Blackjack {
 				
 				case "hit":
 					logger.log("received [hit]");
-					xp.send("abort");
+					xp.sendIfAllowed("abort");
 					break;
 				
 				case "stand":
 					logger.log("received [stand]");
-					xp.send("abort");
+					xp.sendIfAllowed("abort");
 					break;
 				
 				default:
@@ -324,7 +324,7 @@ public class Blackjack {
 		public void run() {
 			
 			parallel(()->{
-				xd.send("abort");
+				xd.sendIfAllowed("abort");
 			});
 			
 			parallel(()->{
@@ -338,7 +338,7 @@ public class Blackjack {
 				catch (NumberFormatException | ContractException e) {
 					throw new RuntimeException(e);
 				}
-				xd.send("abort");
+				xd.sendIfAllowed("abort");
 			});
 		}
 	}
