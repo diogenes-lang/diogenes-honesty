@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Random;
 
 import co2api.Message;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
@@ -34,7 +34,7 @@ public class DeckService extends Participant {
 		contract.setContract(externalSum().add("next", internalSum().add("card", recRef(contract))).add("abort"));
 
 		logger.log("tell and wait");
-		Session2<TST> session = tellAndWait(contract);
+		Session<TST> session = tellAndWait(contract);
 		
 		processCall(Deck.class, session);
 	}
@@ -43,10 +43,10 @@ public class DeckService extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session2<TST> session;
+		private final Session<TST> session;
 		private List<Integer> deck = new ArrayList<>();
 		
-		protected Deck(Session2<TST> session) {
+		protected Deck(Session<TST> session) {
 			super("Deck");
 			this.session = session;
 			

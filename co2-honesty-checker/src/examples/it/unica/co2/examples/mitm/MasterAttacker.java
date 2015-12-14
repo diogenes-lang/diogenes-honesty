@@ -17,8 +17,8 @@ import co2api.ContractException;
 import co2api.ContractExpiredException;
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.CO2Process;
@@ -51,15 +51,15 @@ public class MasterAttacker extends Participant{
 		
 		try {
 			Public<TST> pblx = tell(c, 10_000);
-			Session2<TST> x = waitForSession(pblx);
+			Session<TST> x = pblx.waitForSession();
 
 			try {
 				Public<TST> pbly = tell(c, 10_000);
-				Session2<TST> y = waitForSession(pbly);
+				Session<TST> y = pbly.waitForSession();
 				
 				try {
 					Public<TST> pblz = tell(c, 10_000);
-					Session2<TST> z = waitForSession(pblz);
+					Session<TST> z = pblz.waitForSession();
 					//all session are fused
 					
 					processCall(Attack.class, pairs, x, y, z);
@@ -83,11 +83,11 @@ public class MasterAttacker extends Participant{
 		private static final long serialVersionUID = 1L;
 
 		private List<String> pairs;
-		private final Session2<TST> x;
-		private final Session2<TST> y;
-		private final Session2<TST> z;
+		private final Session<TST> x;
+		private final Session<TST> y;
+		private final Session<TST> z;
 
-		public Attack(List<String> pairs, Session2<TST> x, Session2<TST> y, Session2<TST> z) {
+		public Attack(List<String> pairs, Session<TST> x, Session<TST> y, Session<TST> z) {
 			this.pairs = pairs;
 			this.x = x;
 			this.y = y;
@@ -192,11 +192,11 @@ public class MasterAttacker extends Participant{
 		private static final long serialVersionUID = 1L;
 
 		private List<String> pairs;
-		private final Session2<TST> x;
+		private final Session<TST> x;
 		private final String pair;
 		private final String range;
 		
-		public CallToSlave(List<String> pairs, Session2<TST> x, String pair, String range) {
+		public CallToSlave(List<String> pairs, Session<TST> x, String pair, String range) {
 			super("Tid-"+Thread.currentThread().getId());
 			this.pairs = pairs;
 			this.x = x;

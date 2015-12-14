@@ -6,8 +6,6 @@ import co2api.Private;
 import co2api.Public;
 import co2api.Session;
 import co2api.TST;
-import co2api.TimeExpiredException;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.util.ObjectUtils;
@@ -50,31 +48,14 @@ public abstract class Participant extends CO2Process {
 	
 	
 	
-	public Session2<TST> tellAndWait(Contract c) {
+	public Session<TST> tellAndWait(Contract c) {
 		return tellAndWait(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c));
 	}
 	
-	public Session2<TST> tellAndWait(ContractDefinition c) {
-		try {
-			return tellAndWait(c, -1);
-		}
-		catch (TimeExpiredException e) {
-			/* you never go here */
-			throw new RuntimeException(e);
-		}
+	public Session<TST> tellAndWait(ContractDefinition c) {
+		return tell(c).waitForSession();
 	}
 	
-	//keep it private!
-	private Session2<TST> tellAndWait(ContractDefinition c, Integer timeout) throws TimeExpiredException {
-		return waitForSession( tell(c) , timeout);
-	}
-	
-	
-	
-	
-	public Public<TST> tell (Contract c, Integer delay) {
-		return tell(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c), delay);
-	}
 
 	public Public<TST> tell (Contract c) {
 		return tell(c, 0);
@@ -82,6 +63,10 @@ public abstract class Participant extends CO2Process {
 	
 	public Public<TST> tell (ContractDefinition cDef) {
 		return tell(cDef, 0);
+	}
+
+	public Public<TST> tell (Contract c, Integer delay) {
+		return tell(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c), delay);
 	}
 	
 	public Public<TST> tell (ContractDefinition cDef, Integer delay) {
@@ -105,36 +90,6 @@ public abstract class Participant extends CO2Process {
 		try {
 			logger.log("telling contract <"+cDef.getContract().toTST()+">");
 			return pvt.tell(delay);
-		}
-		catch (ContractException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public Session2<TST> waitForSession(Public<TST> pbl) {
-		try {
-			return waitForSession(pbl, -1);
-		}
-		catch (TimeExpiredException e) {
-			/* you never go here */
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public Session2<TST> waitForSession(Public<TST> pbl, Integer timeout) throws TimeExpiredException {
-		try {
-			logger.log("waiting for a session");
-			
-			Session<TST> session = null;
-			if (timeout==-1) {
-				session = pbl.waitForSession();
-			}
-			else {
-				session = pbl.waitForSession(timeout);
-			}
-			
-			logger.log("session fused");
-			return new Session2<TST>(connection, session.getContract());
 		}
 		catch (ContractException e) {
 			throw new RuntimeException(e);

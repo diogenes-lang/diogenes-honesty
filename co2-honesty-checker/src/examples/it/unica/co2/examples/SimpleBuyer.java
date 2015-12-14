@@ -4,8 +4,8 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
 import co2api.Message;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
 
@@ -36,7 +36,7 @@ public class SimpleBuyer extends Participant {
 	public void run() {
 		
 		try {
-			Session2<TST> session = tellAndWait(contract);
+			Session<TST> session = tellAndWait(contract);
 			
 			session.sendIfAllowed("item", "01234");
 			

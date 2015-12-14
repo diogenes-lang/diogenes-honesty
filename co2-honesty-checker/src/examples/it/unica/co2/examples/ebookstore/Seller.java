@@ -5,9 +5,9 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
@@ -42,7 +42,7 @@ public class Seller extends Participant {
 		);
 		
 		
-		Session2<TST> sessionB = tellAndWait(cB);
+		Session<TST> sessionB = tellAndWait(cB);
 		
 		Message msg = sessionB.waitForReceive("book");
 		
@@ -75,7 +75,7 @@ public class Seller extends Participant {
 				
 				try {
 					
-					Session2<TST> sessionD = waitForSession(pbl, 10000);
+					Session<TST> sessionD = pbl.waitForSession(10000);
 					
 					sessionD.sendIfAllowed("bookdistrib", chosenBook);
 					
@@ -146,7 +146,7 @@ public class Seller extends Participant {
 					sessionB.sendIfAllowed("abort");		//this action make you honest in sessionB
 					
 					//and now, if the session is fused?
-					Session2<TST> sessionD = waitForSession(pbl);	//blocking
+					Session<TST> sessionD = pbl.waitForSession();	//blocking
 					
 					//and now, if the distributor sent you something? you are culpable in sessionD!
 					processCall(AbortSessionD1.class, sessionD);
@@ -188,9 +188,9 @@ public class Seller extends Participant {
 	private static class AbortSessionD1 extends CO2Process {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> sessionD;
+		private Session<TST> sessionD;
 		
-		protected AbortSessionD1(Session2<TST> session) {
+		protected AbortSessionD1(Session<TST> session) {
 			super("AbortSessionD1");
 			this.sessionD = session;
 		}
@@ -207,9 +207,9 @@ public class Seller extends Participant {
 	private static class AbortSessionD2 extends CO2Process {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> sessionD;
+		private Session<TST> sessionD;
 		
-		protected AbortSessionD2(Session2<TST> session) {
+		protected AbortSessionD2(Session<TST> session) {
 			super("AbortSessionD2");
 			this.sessionD = session;
 		}

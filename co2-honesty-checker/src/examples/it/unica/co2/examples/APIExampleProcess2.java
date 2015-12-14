@@ -3,8 +3,8 @@ package it.unica.co2.examples;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
@@ -37,9 +37,9 @@ public class APIExampleProcess2 extends Participant {
 			logger.log("tell");
 			
 			
-			Session2<TST> s1 = tellAndWait(A);
-			Session2<TST> s2 = tellAndWait(A);
-			Session2<TST> s3 = tellAndWait(A);
+			Session<TST> s1 = tellAndWait(A);
+			Session<TST> s2 = tellAndWait(A);
+			Session<TST> s3 = tellAndWait(A);
 			
 			processCall(abortAll.class, s1, s2, s3);
 	}
@@ -47,11 +47,11 @@ public class APIExampleProcess2 extends Participant {
 	public static class abortAll extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> x;
-		private Session2<TST> y;
-		private Session2<TST> z;
+		private Session<TST> x;
+		private Session<TST> y;
+		private Session<TST> z;
 		
-		public abortAll(Session2<TST> x, Session2<TST> y, Session2<TST> z) {
+		public abortAll(Session<TST> x, Session<TST> y, Session<TST> z) {
 			super(username, password);
 			this.x=x;
 			this.y=y;
@@ -80,9 +80,9 @@ public class APIExampleProcess2 extends Participant {
 	public static class abort extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> u;
+		private Session<TST> u;
 		
-		public abort(Session2<TST> u) {
+		public abort(Session<TST> u) {
 			super(username, password);
 			this.u=u;
 		}

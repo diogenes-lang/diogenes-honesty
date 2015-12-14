@@ -4,9 +4,9 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
@@ -37,7 +37,7 @@ public class VoucherSeller extends Participant {
 		
 		
 		
-		Session2<TST> sessionB = tellAndWait(CB);
+		Session<TST> sessionB = tellAndWait(CB);
 		
 		Message msg = sessionB.waitForReceive("clickpay", "clickvoucher");
 		
@@ -51,7 +51,7 @@ public class VoucherSeller extends Participant {
 			Public<TST> pblV = tell(CV);
 			
 			try {
-				Session2<TST> sessionV = waitForSession(pblV, 10000);
+				Session<TST> sessionV = pblV.waitForSession(10000);
 				processCall(Q.class,sessionB, sessionV);
 			}
 			catch (TimeExpiredException e) {
@@ -61,7 +61,7 @@ public class VoucherSeller extends Participant {
 					sessionB.waitForReceive("pay");
 				});
 				
-				Session2<TST> sessionV = waitForSession(pblV);
+				Session<TST> sessionV = pblV.waitForSession();
 				sessionV.waitForReceive("ok","no");
 			}
 			
@@ -73,10 +73,10 @@ public class VoucherSeller extends Participant {
 	public static class Q extends CO2Process {
 
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> sessionB;
-		private Session2<TST> sessionV;
+		private Session<TST> sessionB;
+		private Session<TST> sessionV;
 		
-		protected Q(Session2<TST> sessionB, Session2<TST> sessionV) {
+		protected Q(Session<TST> sessionB, Session<TST> sessionV) {
 			super("Q");
 			this.sessionB = sessionB;
 			this.sessionV = sessionV;

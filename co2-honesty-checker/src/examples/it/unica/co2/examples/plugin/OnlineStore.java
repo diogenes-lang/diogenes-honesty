@@ -5,8 +5,8 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.Sort;
@@ -54,7 +54,7 @@ public class OnlineStore {
 		@Override
 		public void run() {
 			Public<TST> pbl$x$C = tell(C.getContract());
-			Session2<TST> x = waitForSession(pbl$x$C);
+			Session<TST> x = pbl$x$C.waitForSession();
 			
 			logger.log("waiting on 'x' for actions [addToCart]");
 			Message msg$0 = x.waitForReceive("addToCart");
@@ -74,10 +74,10 @@ public class OnlineStore {
 	public static class Padd extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> x;
+		private Session<TST> x;
 		private Integer total;
 		
-		public Padd(Session2<TST> x,Integer total) {
+		public Padd(Session<TST> x,Integer total) {
 			super(username, password);
 			this.x=x;
 			this.total=total;
@@ -116,10 +116,10 @@ public class OnlineStore {
 	public static class Ppay extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> x;
+		private Session<TST> x;
 		private Integer amount;
 		
-		public Ppay(Session2<TST> x,Integer amount) {
+		public Ppay(Session<TST> x,Integer amount) {
 			super(username, password);
 			this.x=x;
 			this.amount=amount;
@@ -157,10 +157,10 @@ public class OnlineStore {
 	public static class Pack extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> x;
+		private Session<TST> x;
 		private Integer amount;
 		
-		public Pack(Session2<TST> x,Integer amount) {
+		public Pack(Session<TST> x,Integer amount) {
 			super(username, password);
 			this.x=x;
 			this.amount=amount;

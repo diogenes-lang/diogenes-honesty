@@ -4,8 +4,8 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
 import co2api.Message;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.process.CO2Process;
@@ -32,7 +32,7 @@ public class Player extends Participant {
 		
 		contract.setContract(internalSum().add("hit", hit).add("stand", end));
 	
-		Session2<TST> session = tellAndWait(contract);
+		Session<TST> session = tellAndWait(contract);
 		
 		processCall(Play.class, session, 0);
 	}
@@ -41,10 +41,10 @@ public class Player extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session2<TST> session;
+		private final Session<TST> session;
 		private final Integer n;
 		
-		protected Play(Session2<TST> session, Integer n) {
+		protected Play(Session<TST> session, Integer n) {
 			super("Play");
 			this.session = session;
 			this.n=n;

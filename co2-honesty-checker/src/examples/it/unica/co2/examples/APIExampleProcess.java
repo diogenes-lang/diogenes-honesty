@@ -3,9 +3,9 @@ package it.unica.co2.examples;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
+import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
@@ -42,7 +42,7 @@ public class APIExampleProcess extends Participant {
 					.add("hello")
 			;
 			
-			Session2<TST> sessionC = tellAndWait(C);
+			Session<TST> sessionC = tellAndWait(C);
 			
 			try {
 				sessionC.waitForReceive(1000, "a", "b");

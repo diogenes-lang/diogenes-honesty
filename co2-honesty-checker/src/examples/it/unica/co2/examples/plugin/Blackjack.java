@@ -5,9 +5,9 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.Sort;
@@ -54,17 +54,17 @@ public class Blackjack {
 		@Override
 		public void run() {
 			Public<TST> pbl$xd$Cd = tell(Cd.getContract());
-			Session2<TST> xd = waitForSession(pbl$xd$Cd);
+			Session<TST> xd = pbl$xd$Cd.waitForSession();
 			
 			Public<TST> pbl$xp$Cp = tell(Cp.getContract());
 			
 			try {
-				Session2<TST> xp = waitForSession(pbl$xp$Cp, 10000);
+				Session<TST> xp = pbl$xp$Cp.waitForSession(10000);
 				new Pplay(xp,xd,0).run();
 			}
 			catch(TimeExpiredException e) {
 				xd.sendIfAllowed("abort");
-				Session2<TST> xp$0 = waitForSession(pbl$xp$Cp);
+				Session<TST> xp$0 = pbl$xp$Cp.waitForSession();
 				new PabortP(xp$0).run();
 			}
 		}
@@ -73,11 +73,11 @@ public class Blackjack {
 	public static class Pplay extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> xp;
-		private Session2<TST> xd;
+		private Session<TST> xp;
+		private Session<TST> xd;
 		private Integer np;
 		
-		public Pplay(Session2<TST> xp,Session2<TST> xd,Integer np) {
+		public Pplay(Session<TST> xp,Session<TST> xd,Integer np) {
 			super(username, password);
 			this.xp=xp;
 			this.xd=xd;
@@ -118,11 +118,11 @@ public class Blackjack {
 	public static class Pdeck extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> xp;
-		private Session2<TST> xd;
+		private Session<TST> xp;
+		private Session<TST> xd;
 		private Integer np;
 		
-		public Pdeck(Session2<TST> xp,Session2<TST> xd,Integer np) {
+		public Pdeck(Session<TST> xp,Session<TST> xd,Integer np) {
 			super(username, password);
 			this.xp=xp;
 			this.xd=xd;
@@ -155,12 +155,12 @@ public class Blackjack {
 	public static class Pcard extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> xp;
-		private Session2<TST> xd;
+		private Session<TST> xp;
+		private Session<TST> xd;
 		private Integer np;
 		private Integer n;
 		
-		public Pcard(Session2<TST> xp,Session2<TST> xd,Integer np,Integer n) {
+		public Pcard(Session<TST> xp,Session<TST> xd,Integer np,Integer n) {
 			super(username, password);
 			this.xp=xp;
 			this.xd=xd;
@@ -184,12 +184,12 @@ public class Blackjack {
 	public static class Qstand extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> xp;
-		private Session2<TST> xd;
+		private Session<TST> xp;
+		private Session<TST> xd;
 		private Integer np;
 		private Integer nd;
 		
-		public Qstand(Session2<TST> xp,Session2<TST> xd,Integer np,Integer nd) {
+		public Qstand(Session<TST> xp,Session<TST> xd,Integer np,Integer nd) {
 			super(username, password);
 			this.xp=xp;
 			this.xd=xd;
@@ -213,12 +213,12 @@ public class Blackjack {
 	public static class Qdeck extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> xp;
-		private Session2<TST> xd;
+		private Session<TST> xp;
+		private Session<TST> xd;
 		private Integer np;
 		private Integer nd;
 		
-		public Qdeck(Session2<TST> xp,Session2<TST> xd,Integer np,Integer nd) {
+		public Qdeck(Session<TST> xp,Session<TST> xd,Integer np,Integer nd) {
 			super(username, password);
 			this.xp=xp;
 			this.xd=xd;
@@ -252,12 +252,12 @@ public class Blackjack {
 	public static class Qcard extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> xp;
-		private Session2<TST> xd;
+		private Session<TST> xp;
+		private Session<TST> xd;
 		private Integer np;
 		private Integer nd;
 		
-		public Qcard(Session2<TST> xp,Session2<TST> xd,Integer np,Integer nd) {
+		public Qcard(Session<TST> xp,Session<TST> xd,Integer np,Integer nd) {
 			super(username, password);
 			this.xp=xp;
 			this.xd=xd;
@@ -280,9 +280,9 @@ public class Blackjack {
 	public static class PabortP extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> xp;
+		private Session<TST> xp;
 		
-		public PabortP(Session2<TST> xp) {
+		public PabortP(Session<TST> xp) {
 			super(username, password);
 			this.xp=xp;
 		}
@@ -313,9 +313,9 @@ public class Blackjack {
 	public static class PabortD extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> xd;
+		private Session<TST> xd;
 		
-		public PabortD(Session2<TST> xd) {
+		public PabortD(Session<TST> xd) {
 			super(username, password);
 			this.xd=xd;
 		}

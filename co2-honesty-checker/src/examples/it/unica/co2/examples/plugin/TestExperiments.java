@@ -1,7 +1,5 @@
 package it.unica.co2.examples.plugin;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

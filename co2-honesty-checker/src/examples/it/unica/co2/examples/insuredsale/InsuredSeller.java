@@ -5,9 +5,9 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
 
@@ -35,7 +35,7 @@ public class InsuredSeller extends Participant {
 		
 		
 		Public<TST> pbl = tell(CA);
-		Session2<TST> session = waitForSession(pbl);
+		Session<TST> session = pbl.waitForSession();
 		
 		Message msg = session.waitForReceive("order");
 		
@@ -49,7 +49,7 @@ public class InsuredSeller extends Participant {
 				processCall(HandleInsurance.class, session, n);
 			}
 		}
-		catch (Exception | ContractException e) {
+		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		
@@ -58,10 +58,10 @@ public class InsuredSeller extends Participant {
 	private static class HandlePayment extends Participant {
 
 		private static final long serialVersionUID = 1L;
-		private final Session2<TST> session;
+		private final Session<TST> session;
 		private final Integer amount;
 		
-		protected HandlePayment(Session2<TST> session, Integer amount) {
+		protected HandlePayment(Session<TST> session, Integer amount) {
 			super(username, password);
 			this.session = session;
 			this.amount = amount;
@@ -101,10 +101,10 @@ public class InsuredSeller extends Participant {
 	private static class HandleInsurance extends Participant {
 
 		private static final long serialVersionUID = 1L;
-		private final Session2<TST> session;
+		private final Session<TST> session;
 		private final Integer amount;
 		
-		protected HandleInsurance(Session2<TST> session, Integer amount) {
+		protected HandleInsurance(Session<TST> session, Integer amount) {
 			super(username, password);
 			this.session = session;
 			this.amount = amount;
@@ -117,10 +117,10 @@ public class InsuredSeller extends Participant {
 
 			Public<TST> pblI = tell(CI);
 		
-			Session2<TST> sessionI;
+			Session<TST> sessionI;
 			
 			try {
-				sessionI = waitForSession(pblI, 10000);
+				sessionI = pblI.waitForSession(10000);
 				
 				sessionI.sendIfAllowed("reqi", amount);
 				
@@ -151,7 +151,7 @@ public class InsuredSeller extends Participant {
 				
 				session.sendIfAllowed("abort");
 				
-				sessionI = waitForSession(pblI);
+				sessionI = pblI.waitForSession();
 				sessionI.sendIfAllowed("reqi");
 				sessionI.waitForReceive("oki", "aborti");
 			}

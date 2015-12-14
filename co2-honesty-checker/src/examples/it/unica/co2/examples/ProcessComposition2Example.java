@@ -4,8 +4,8 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
 import co2api.Message;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.process.CO2Process;
@@ -32,7 +32,7 @@ public class ProcessComposition2Example {
 			
 			Contract C = externalSum().add("request", rec);
 			
-			Session2<TST> session = tellAndWait(C);
+			Session<TST> session = tellAndWait(C);
 
 			Message msg = null;
 			
@@ -60,9 +60,9 @@ public class ProcessComposition2Example {
 
 		private static final long serialVersionUID = 1L;
 
-		private final Session2<TST> session;
+		private final Session<TST> session;
 		
-		protected ProcessA(Session2<TST> session) {
+		protected ProcessA(Session<TST> session) {
 			super("ProcessA");
 			this.session = session;
 		}

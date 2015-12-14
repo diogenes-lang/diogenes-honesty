@@ -2,8 +2,8 @@ package it.unica.co2.examples;
 
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
 
@@ -29,19 +29,19 @@ public class ParallelProcessExample {
 			Contract C3 = internalSum().add("c", externalSum().add("a"));
 			
 			parallel(()-> {
-				Session2<TST> session = tellAndWait(C1);
+				Session<TST> session = tellAndWait(C1);
 				session.sendIfAllowed("a");
 				session.waitForReceive("a","b");
 			});
 			
 			parallel(()-> {
-				Session2<TST> session = tellAndWait(C2);
+				Session<TST> session = tellAndWait(C2);
 				session.sendIfAllowed("b");
 				session.waitForReceive("a");
 			});
 			
 			parallel(()-> {
-				Session2<TST> session = tellAndWait(C3);
+				Session<TST> session = tellAndWait(C3);
 				session.sendIfAllowed("c");
 				session.waitForReceive("a");
 			});

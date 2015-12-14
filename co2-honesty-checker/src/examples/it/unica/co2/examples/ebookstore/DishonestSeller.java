@@ -5,9 +5,9 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
@@ -42,7 +42,7 @@ public class DishonestSeller extends Participant {
 		);
 		
 		
-		Session2<TST> sessionB = tellAndWait(cB);
+		Session<TST> sessionB = tellAndWait(cB);
 		
 		Message msg = sessionB.waitForReceive("book");
 		
@@ -72,7 +72,7 @@ public class DishonestSeller extends Participant {
 			else { // handled with the distributor
 				
 				Public<TST> pbl = tell(cD);
-				Session2<TST> sessionD = waitForSession(pbl);
+				Session<TST> sessionD = pbl.waitForSession();
 				
 				/*
 				 * the waitForSession(Public<TST>) above is blocking.
@@ -174,9 +174,9 @@ public class DishonestSeller extends Participant {
 	private static class AbortSessionD2 extends CO2Process {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> sessionD;
+		private Session<TST> sessionD;
 		
-		protected AbortSessionD2(Session2<TST> session) {
+		protected AbortSessionD2(Session<TST> session) {
 			super("AbortSessionD2");
 			this.sessionD = session;
 		}

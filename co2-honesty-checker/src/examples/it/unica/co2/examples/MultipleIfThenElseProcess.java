@@ -3,8 +3,8 @@ package it.unica.co2.examples;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
 
@@ -45,7 +45,7 @@ public class MultipleIfThenElseProcess extends Participant {
 								)
 						);
 			
-			Session2<TST> session = tellAndWait(A);
+			Session<TST> session = tellAndWait(A);
 			
 			session.sendIfAllowed("start");
 			

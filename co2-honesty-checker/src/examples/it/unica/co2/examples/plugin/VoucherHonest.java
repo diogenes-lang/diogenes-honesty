@@ -5,9 +5,9 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.Participant;
@@ -49,7 +49,7 @@ public class VoucherHonest {
 		@Override
 		public void run() {
 			Public<TST> pbl$x$CB = tell(CB.getContract());
-			Session2<TST> x = waitForSession(pbl$x$CB);
+			Session<TST> x = pbl$x$CB.waitForSession();
 			
 			logger.log("waiting on 'x' for actions [clickPay,clickVoucher]");
 			Message msg$0 = x.waitForReceive("clickPay","clickVoucher");
@@ -84,9 +84,9 @@ public class VoucherHonest {
 	public static class Q extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> x;
+		private Session<TST> x;
 		
-		public Q(Session2<TST> x) {
+		public Q(Session<TST> x) {
 			super(username, password);
 			this.x=x;
 		}
@@ -96,7 +96,7 @@ public class VoucherHonest {
 			Public<TST> pbl$y$CV = tell(CV.getContract());
 			
 			try {
-				Session2<TST> y = waitForSession(pbl$y$CV, 10000);
+				Session<TST> y = pbl$y$CV.waitForSession(10000);
 				new Q1(x,y).run();
 			}
 			catch(TimeExpiredException e) {
@@ -106,7 +106,7 @@ public class VoucherHonest {
 				});
 				
 				parallel(()->{
-					Session2<TST> y$0 = waitForSession(pbl$y$CV);
+					Session<TST> y$0 = pbl$y$CV.waitForSession();
 					new abortY(y$0).run();
 				});
 			}
@@ -116,10 +116,10 @@ public class VoucherHonest {
 	public static class Q1 extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> x;
-		private Session2<TST> y;
+		private Session<TST> x;
+		private Session<TST> y;
 		
-		public Q1(Session2<TST> x,Session2<TST> y) {
+		public Q1(Session<TST> x,Session<TST> y) {
 			super(username, password);
 			this.x=x;
 			this.y=y;
@@ -177,10 +177,10 @@ public class VoucherHonest {
 	public static class R1 extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> x;
-		private Session2<TST> y;
+		private Session<TST> x;
+		private Session<TST> y;
 		
-		public R1(Session2<TST> x,Session2<TST> y) {
+		public R1(Session<TST> x,Session<TST> y) {
 			super(username, password);
 			this.x=x;
 			this.y=y;
@@ -202,9 +202,9 @@ public class VoucherHonest {
 	public static class abortX extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> x;
+		private Session<TST> x;
 		
-		public abortX(Session2<TST> x) {
+		public abortX(Session<TST> x) {
 			super(username, password);
 			this.x=x;
 		}
@@ -228,9 +228,9 @@ public class VoucherHonest {
 	public static class abortY extends Participant {
 		
 		private static final long serialVersionUID = 1L;
-		private Session2<TST> y;
+		private Session<TST> y;
 		
-		public abortY(Session2<TST> y) {
+		public abortY(Session<TST> y) {
 			super(username, password);
 			this.y=y;
 		}

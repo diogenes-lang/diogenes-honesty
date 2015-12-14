@@ -1,7 +1,0 @@
-
-target = it.unica.co2.examples.TEST
-
-native_classpath+=./bin,./lib/commons-lang3-3.4.jar
-classpath+=./bin/,./lib/commons-lang3-3.4.jar
-
-cg.enumerate_random = true

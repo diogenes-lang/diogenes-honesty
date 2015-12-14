@@ -7,8 +7,8 @@ import java.util.Base64;
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
+import co2api.Session;
 import co2api.TST;
-import it.unica.co2.api.Session2;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.Participant;
@@ -35,7 +35,7 @@ public class SlaveAttacker extends Participant{
 				.add("abort"));
 		
 		Public<TST> pbl = tell(c);
-		Session2<TST> u = waitForSession(pbl);
+		Session<TST> u = pbl.waitForSession();
 
 		try {
 		
