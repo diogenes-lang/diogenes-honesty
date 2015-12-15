@@ -76,7 +76,13 @@ public abstract class Participant extends CO2Process {
 		String cserial = ObjectUtils.serializeObjectToStringQuietly(cDef);
 		
 		try {
+			String context = cDef.getContract().getContext();
 			TST tst = new TST(cDef.getContract().toTST());
+			
+			if (context!=null && !context.trim().isEmpty()) {
+				tst.setContext(context);
+			}
+			
 			Private<TST> pvt = tst.toPrivate(connection);
 			return _tell(cDef, cserial, pvt, delay);
 		}

@@ -10,7 +10,16 @@ public abstract class Contract implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	private String context;
 	private Action preceeding;
+	
+	public String getContext() {
+		return context;
+	}
+	
+	public void setContext(String context) {
+		this.context = context;
+	}
 	
 	public Action getPreceeding() {
 		return preceeding;
@@ -19,7 +28,6 @@ public abstract class Contract implements Serializable {
 	public void setPreceeding(Action preceeding) {
 		this.preceeding = preceeding;
 	}
-	
 	
 	public abstract Contract deepCopy();
 	
