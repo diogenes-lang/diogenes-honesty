@@ -9,8 +9,8 @@ public class ExternalAction extends Action {
 		super(a);
 	}
 	
-	public ExternalAction( String name, Sort<?> sort, Contract next) {
-		super(name, sort, ActionType.EXTERNAL, next);
+	public ExternalAction( String name, Sort<?> sort, String guard, Contract next) {
+		super(name, sort, ActionType.EXTERNAL, guard, next);
 	}
 
 	@SuppressWarnings("unchecked")

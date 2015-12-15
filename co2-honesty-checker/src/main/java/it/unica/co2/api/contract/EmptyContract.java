@@ -5,7 +5,7 @@ public class EmptyContract extends Sum<Action> {
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public EmptyContract add(String name, Sort<?> sort, Contract next) {
+	public EmptyContract add(String name, Sort<?> sort, String guard, Contract next) {
 		throw new UnsupportedOperationException();
 	}
 	

@@ -8,21 +8,24 @@ public abstract class Action implements Serializable {
 
 	protected final String name;
 	protected final Sort<?> sort;
+	protected final String guard;
 	protected final ActionType actionType;
 	protected Contract next;
 	
 	public Action(Action a) {
 		this.name = a.getName();
 		this.sort = a.getSort();
+		this.guard = a.getGuard();
 		this.actionType = a.getActionType();
 		this.next = a.getNext()!=null? a.getNext().deepCopy(): null;
 		if (next!=null)
 			next.setPreceeding(this);
 	}
 	
-	public Action(String name, Sort<?> sort, ActionType actionType, Contract next) {
+	public Action(String name, Sort<?> sort, ActionType actionType, String guard, Contract next) {
 		this.name = name;
 		this.sort = sort;
+		this.guard = guard;
 		this.actionType = actionType;
 		this.next = next;
 		if (next!=null)
@@ -32,7 +35,11 @@ public abstract class Action implements Serializable {
 	public String getName() {
 		return name;
 	}
-
+	
+	public String getGuard() {
+		return guard;
+	}
+	
 	public Sort<?> getSort() {
 		return sort;
 	}

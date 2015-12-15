@@ -8,8 +8,8 @@ public class InternalAction extends Action {
 		super(a);
 	}
 	
-	public InternalAction(String name, Sort<?> sort, Contract next ) {
-		super(name, sort, ActionType.INTERNAL, next);
+	public InternalAction(String name, Sort<?> sort, String guard, Contract next ) {
+		super(name, sort, ActionType.INTERNAL, guard, next);
 	}
 
 	@SuppressWarnings("unchecked")

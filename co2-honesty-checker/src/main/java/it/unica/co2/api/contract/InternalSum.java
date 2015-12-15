@@ -18,8 +18,8 @@ public class InternalSum extends Sum<InternalAction> {
 	}
 	
 	@Override
-	public InternalSum add(String name, Sort<?> sort, Contract next) {
-		actions.add( new InternalAction(name, sort, next) );
+	public InternalSum add(String name, Sort<?> sort, String guard, Contract next) {
+		actions.add( new InternalAction(name, sort, guard, next) );
 		return this;
 	}
 	

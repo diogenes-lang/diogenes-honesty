@@ -39,28 +39,30 @@ public class TSTContractGenerator extends AbstractContractGenerator{
 	}
 	
 	@Override
-	protected String convert(InternalAction contract) {
+	protected String convert(InternalAction action) {
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("!").append(contract.getName());
+		sb.append("!").append(action.getName());
+		sb.append(action.getGuard());
 		
-		if (contract.getNext()!=null && !(contract.getNext() instanceof EmptyContract))
+		if (action.getNext()!=null && !(action.getNext() instanceof EmptyContract))
 			sb.append(" . ( ")
-			.append( this.convert(contract.getNext()))
+			.append( this.convert(action.getNext()))
 			.append(" )");
 
 		return sb.toString();
 	}
 	
 	@Override
-	protected String convert(ExternalAction contract) {
+	protected String convert(ExternalAction action) {
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("?").append(contract.getName());
+		sb.append("?").append(action.getName());
+		sb.append(action.getGuard());
 		
-		if (contract.getNext()!=null && !(contract.getNext() instanceof EmptyContract))
+		if (action.getNext()!=null && !(action.getNext() instanceof EmptyContract))
 			sb.append(" . ( ")
-			.append( this.convert(contract.getNext()))
+			.append( this.convert(action.getNext()))
 			.append(" )");
 
 		return sb.toString();

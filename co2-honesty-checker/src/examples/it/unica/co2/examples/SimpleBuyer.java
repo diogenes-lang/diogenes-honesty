@@ -8,6 +8,7 @@ import co2api.Session;
 import co2api.TST;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.honesty.HonestyChecker;
 
 
 public class SimpleBuyer extends Participant {
@@ -58,7 +59,7 @@ public class SimpleBuyer extends Participant {
 	}
 
 	public static void main(String[] args) {
-		new SimpleBuyer().run();
+		HonestyChecker.isHonest(SimpleBuyer.class);
 	}
 
 }

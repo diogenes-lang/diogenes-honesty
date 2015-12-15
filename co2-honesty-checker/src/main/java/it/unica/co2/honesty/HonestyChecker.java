@@ -25,14 +25,8 @@ public class HonestyChecker {
 	
 	public static Statistics stats;
 	
+	
 	synchronized public static <T extends Participant> HonestyResult isHonest(Class<T> participantClass, Object... args) {
-		
-		stats = new Statistics();
-		stats.update(Event.HONESTY_START);
-		
-		System.out.println("================================================== HONESTY CHECKER ");
-		System.out.println("checking the honesty of "+participantClass.getName());
-		
 		
 		// get all arguments types
 		List<Class<?>> types = new ArrayList<>();
@@ -45,7 +39,7 @@ public class HonestyChecker {
 		
 		Participant participant;
 		Constructor<? extends Participant> ctor;
-
+		
 		try {
 			ctor = participantClass.getDeclaredConstructor(typesArray);	// get the constructor with the corresponding types
 			ctor.setAccessible(true);
@@ -55,6 +49,17 @@ public class HonestyChecker {
 				InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			throw new RuntimeException("error instantiating the class "+participantClass, e);
 		}
+		
+		return isHonest(participant);
+	}
+	
+	synchronized public static <T extends Participant> HonestyResult isHonest(T participant) {
+		
+		stats = new Statistics();
+		stats.update(Event.HONESTY_START);
+		
+		System.out.println("================================================== HONESTY CHECKER ");
+		System.out.println("checking the honesty of "+participant.getClass().getName());
 		
 		stats.update(Event.JPF_START);
 		String maudeProcess = getMaudeProcess(participant);
