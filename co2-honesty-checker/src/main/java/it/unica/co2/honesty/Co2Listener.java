@@ -132,7 +132,6 @@ public class Co2Listener extends ListenerAdapter {
 	private MethodInfo Session_sendIfAllowedString;
 	private MethodInfo Session_sendIfAllowedInt;
 	private MethodInfo Message_getStringValue;
-	private MethodInfo TST_setFromString;
 	
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private HashSet<MethodInfo> methodsToSkip = new HashSet<>();
@@ -203,9 +202,8 @@ public class Co2Listener extends ListenerAdapter {
 		}
 		
 		if (ci.getName().equals(TST.class.getName())) {
-			
-			if (TST_setFromString==null)
-				methodsToSkip.add(ci.getMethod("setFromString", "(Ljava/lang/String;)V", false));
+			methodsToSkip.add(ci.getMethod("setFromString", "(Ljava/lang/String;)V", false));
+			methodsToSkip.add(ci.getMethod("setContext", "(Ljava/lang/String;)V", false));
 		}
 		
 	}
@@ -268,7 +266,7 @@ public class Co2Listener extends ListenerAdapter {
 		log.info("HANDLE -> PARTICIPANT SET CONNECTION");
 		
 		//object Participant
-		ElementInfo participant = ti.getThisElementInfo();
+		ElementInfo participant = ti.getThisElementInfo().getModifiableInstance();
 		
 		ClassInfo connectionCI = ClassInfo.getInitializedClassInfo(CO2ServerConnection.class.getName(), ti);
 		ElementInfo connectionEI = ti.getHeap().newObject(connectionCI, ti);

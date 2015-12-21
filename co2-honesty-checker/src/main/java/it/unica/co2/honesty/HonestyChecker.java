@@ -10,22 +10,20 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
-import gov.nasa.jpf.JPFConfigException;
-import gov.nasa.jpf.JPFException;
-import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.api.process.SkipMethod;
 import it.unica.co2.honesty.Statistics.Event;
-import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.util.ObjectUtils;
 
 public class HonestyChecker {
 	
 	public static Statistics stats;
 	
-	
+	@SkipMethod
 	synchronized public static <T extends Participant> HonestyResult isHonest(Class<T> participantClass, Object... args) {
 		
 		// get all arguments types
@@ -53,6 +51,7 @@ public class HonestyChecker {
 		return isHonest(participant);
 	}
 	
+	@SkipMethod
 	synchronized public static <T extends Participant> HonestyResult isHonest(T participant) {
 		
 		stats = new Statistics();
@@ -91,13 +90,8 @@ public class HonestyChecker {
 	
 	
 	
-	
-	/**
-	 * We use JPF to extract the maude code by java code introspection
-	 * @param participant
-	 * @return
-	 */
-	private static String getMaudeProcess(Participant participant) {
+	@SkipMethod
+	public static String getMaudeProcess(Participant participant) {
 		
 		String processSerialized = ObjectUtils.serializeObjectToStringQuietly(participant);
 		
@@ -114,8 +108,8 @@ public class HonestyChecker {
 
 		JPF jpf = new JPF(conf);
 		
-		Co2Listener maudeListener = new Co2Listener(conf, participant.getClass());
-		jpf.addListener(maudeListener);
+		Co2Listener co2Listener = new Co2Listener(conf, participant.getClass());
+		jpf.addListener(co2Listener);
 		
 		try {
 			System.out.println("starting JPF to build maude process");
@@ -139,41 +133,32 @@ public class HonestyChecker {
 				System.out.println("JPF ends without errors");
 				
 				//jpf.getListenerOfType(MaudeListener.class);
-				System.out.println("CO2 maude process:");
-				System.out.println("    "+maudeListener.getCo2Process().toMaude("    "));
+//				System.out.println("CO2 maude process:");
+//				System.out.println("    "+co2Listener.getCo2Process().toMaude("    "));
+//				
+//				System.out.println("CO2 maude contracts:");
+//				
+//				for (ContractDefinition c : co2Listener.getContracts().values()) {
+//					System.out.println("    "+c.getName()+": "+c.getContract().toMaude());
+//				}
+//				
+//				System.out.println("CO2 maude defined process:");
+//				for (ProcessDefinitionDS p : co2Listener.getEnvProcesses()) {
+//					System.out.println("    "+p.toMaude("    "));
+//				}
 				
-				System.out.println("CO2 maude contracts:");
-				
-				for (ContractDefinition c : maudeListener.getContracts().values()) {
-					System.out.println("    "+c.getName()+": "+c.getContract().toMaude());
-				}
-				
-				System.out.println("CO2 maude defined process:");
-				for (ProcessDefinitionDS p : maudeListener.getEnvProcesses()) {
-					System.out.println("    "+p.toMaude("    "));
-				}
-				
-				String maudeProcess = MaudeTemplate.getMaudeProcess(maudeListener);
+				String maudeProcess = MaudeTemplate.getMaudeProcess(co2Listener);
 				
 				return maudeProcess;
 			}
 			
 		}
-		catch (JPFConfigException e){
-			// ... handle configuration exception
-			// ...  can happen before running JPF and indicates inconsistent configuration data
-			e.printStackTrace();
-		}
-		catch (JPFException e){
-			// ... handle exception while executing JPF, can be further differentiated into
-			// ...  JPFListenerException - occurred from within configured listener
-			// ...  JPFNativePeerException - occurred from within MJI method/native peer
-			// ...  all others indicate JPF internal errors
-			e.printStackTrace();
+		catch (Exception e){
+			System.out.println("Unexpected error occurs");
+			System.out.println(ExceptionUtils.getStackTrace(e));
+			return null;
 		}
 		
-		System.out.println("Unexpected error occurs");
-		return null;
 	}
 	
 	
@@ -182,7 +167,8 @@ public class HonestyChecker {
 	 * JPF starting-point
 	 * @param serializedParticipant
 	 */
-	public static void runProcess(String[] serializedParticipant) {
+	@SuppressWarnings("unused")
+	private static void runProcess(String[] serializedParticipant) {
 		System.out.println("serializedParticipant: "+serializedParticipant[0]);
 		
 		Participant p = ObjectUtils.deserializeObjectFromStringQuietly(serializedParticipant[0], Participant.class);
