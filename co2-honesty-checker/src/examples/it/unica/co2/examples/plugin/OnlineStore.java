@@ -56,10 +56,10 @@ public class OnlineStore {
 			Public<TST> pbl$x$C = tell(C.getContract());
 			Session<TST> x = pbl$x$C.waitForSession();
 			
-			logger.log("waiting on 'x' for actions [addToCart]");
+			System.out.println("waiting on 'x' for actions [addToCart]");
 			Message msg$0 = x.waitForReceive("addToCart");
 			
-			logger.log("received [addToCart]");
+			System.out.println("received [addToCart]");
 			Integer n$addToCart$msg1;
 			try {
 				n$addToCart$msg1 = Integer.parseInt(msg$0.getStringValue());
@@ -85,13 +85,13 @@ public class OnlineStore {
 		
 		@Override
 		public void run() {
-			logger.log("waiting on 'x' for actions [addToCart,checkout]");
+			System.out.println("waiting on 'x' for actions [addToCart,checkout]");
 			Message msg$0 = x.waitForReceive("addToCart","checkout");
 			
 			switch (msg$0.getLabel()) {			
 				
 				case "addToCart":
-					logger.log("received [addToCart]");
+				System.out.println("received [addToCart]");
 					Integer n$addToCart$msg1;
 					try {
 						n$addToCart$msg1 = Integer.parseInt(msg$0.getStringValue());
@@ -103,7 +103,7 @@ public class OnlineStore {
 					break;
 				
 				case "checkout":
-					logger.log("received [checkout]");
+				System.out.println("received [checkout]");
 					new Ppay(x,total).run();
 					break;
 				
@@ -127,13 +127,13 @@ public class OnlineStore {
 		
 		@Override
 		public void run() {
-			logger.log("waiting on 'x' for actions [pay,cancel]");
+			System.out.println("waiting on 'x' for actions [pay,cancel]");
 			Message msg$0 = x.waitForReceive("pay","cancel");
 			
 			switch (msg$0.getLabel()) {			
 				
 				case "pay":
-					logger.log("received [pay]");
+				System.out.println("received [pay]");
 					String s$pay$msg1;
 					try {
 						s$pay$msg1 = msg$0.getStringValue();
@@ -145,7 +145,7 @@ public class OnlineStore {
 					break;
 				
 				case "cancel":
-					logger.log("received [cancel]");
+				System.out.println("received [cancel]");
 					break;
 				
 				default:

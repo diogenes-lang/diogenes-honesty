@@ -15,30 +15,19 @@ import it.unica.co2.util.ObjectUtils;
 public abstract class Participant extends CO2Process {
 
 	private static final long serialVersionUID = 1L;
+	private transient CO2ServerConnection connection;
+	private final String username;
+	private final String password;
 	
 	protected Participant(String username, String password) {
-		super(username);
-		this.setUsername(username);
-		this.setPassword(password);
-	}
-	
-	private transient CO2ServerConnection connection;
-	private String username;
-	private String password;
-		
-
-	
-	private void setUsername(String username) {
 		this.username = username;
-	}
-
-	private void setPassword(String password) {
 		this.password = password;
 	}
 
+	
 	private void setConnection() {
 		try {
-			logger.log("creating new connection: username=<"+username+"> password=<"+password+">");
+			System.out.println("creating new connection: username=<"+username+"> password=<"+password+">");
 			connection = new CO2ServerConnection(username, password);
 		}
 		catch (ContractException e) {
@@ -94,7 +83,7 @@ public abstract class Participant extends CO2Process {
 	private Public<TST> _tell (ContractDefinition cDef, String cserial, Private<TST> pvt, Integer delay) {
 		
 		try {
-			logger.log("telling contract <"+cDef.getContract().toTST()+">");
+			System.out.println("telling contract <"+cDef.getContract().toTST()+">");
 			return pvt.tell(delay);
 		}
 		catch (ContractException e) {

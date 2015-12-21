@@ -87,19 +87,19 @@ public class Blackjack {
 		@Override
 		public void run() {
 			try {
-				logger.log("waiting on 'xp' for actions [hit,stand]");
+				System.out.println("waiting on 'xp' for actions [hit,stand]");
 				Message msg$0 = xp.waitForReceive(10000, "hit","stand");
 				
 				switch (msg$0.getLabel()) {			
 					
 					case "hit":
-						logger.log("received [hit]");
+					System.out.println("received [hit]");
 						xd.sendIfAllowed("next");
 						new Pdeck(xp,xd,np).run();
 						break;
 					
 					case "stand":
-						logger.log("received [stand]");
+					System.out.println("received [stand]");
 						new Qstand(xp,xd,np,0).run();
 						break;
 					
@@ -132,7 +132,7 @@ public class Blackjack {
 		@Override
 		public void run() {
 			try {
-				logger.log("waiting on 'xd' for actions [card]");
+				System.out.println("waiting on 'xd' for actions [card]");
 				Message msg$0 = xd.waitForReceive(10000, "card");
 				
 				Integer n$card$msg1;
@@ -229,7 +229,7 @@ public class Blackjack {
 		@Override
 		public void run() {
 			try {
-				logger.log("waiting on 'xd' for actions [card]");
+				System.out.println("waiting on 'xd' for actions [card]");
 				Message msg$0 = xd.waitForReceive(10000, "card");
 				
 				Integer n$card$msg1;
@@ -289,18 +289,18 @@ public class Blackjack {
 		
 		@Override
 		public void run() {
-			logger.log("waiting on 'xp' for actions [hit,stand]");
+			System.out.println("waiting on 'xp' for actions [hit,stand]");
 			Message msg$0 = xp.waitForReceive("hit","stand");
 			
 			switch (msg$0.getLabel()) {			
 				
 				case "hit":
-					logger.log("received [hit]");
+				System.out.println("received [hit]");
 					xp.sendIfAllowed("abort");
 					break;
 				
 				case "stand":
-					logger.log("received [stand]");
+				System.out.println("received [stand]");
 					xp.sendIfAllowed("abort");
 					break;
 				
@@ -328,7 +328,7 @@ public class Blackjack {
 			});
 			
 			parallel(()->{
-				logger.log("waiting on 'xd' for actions [card]");
+				System.out.println("waiting on 'xd' for actions [card]");
 				Message msg$0 = xd.waitForReceive("card");
 				
 				Integer n$card$msg1;

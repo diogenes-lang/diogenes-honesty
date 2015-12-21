@@ -85,7 +85,7 @@ public class Dealer extends Participant {
 		private final Integer nP;
 		
 		protected Pplay(Session<TST> sessionP, Session<TST> sessionD, Integer nP) {
-			super("Pplay");
+			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
 			this.nP = nP;
@@ -102,13 +102,13 @@ public class Dealer extends Participant {
 				switch (msg.getLabel()) {
 				
 				case "hit":
-					logger.log("hit received");
+					System.out.println("hit received");
 					sessionD.sendIfAllowed("next");
 					processCall(Pdeck.class, sessionP, sessionD, nP);
 					break;
 					
 				case "stand":
-					logger.log("stand received");
+					System.out.println("stand received");
 					processCall(Qstand.class, sessionP, sessionD, nP, 0);
 					break;
 				}
@@ -136,7 +136,7 @@ public class Dealer extends Participant {
 		private final Integer nP;
 		
 		protected Pdeck(Session<TST> sessionP, Session<TST> sessionD, Integer nP) {
-			super("Pdeck");
+			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
 			this.nP = nP;
@@ -151,7 +151,7 @@ public class Dealer extends Participant {
 				try {
 					Integer n = Integer.parseInt(msg.getStringValue());
 					
-					logger.log("received card "+n);
+					System.out.println("received card "+n);
 					processCall(Pcard.class, sessionP, sessionD, nP+n, n);
 				}
 				catch (NumberFormatException | ContractException e) {
@@ -179,7 +179,7 @@ public class Dealer extends Participant {
 		private final Integer nD;
 		
 		protected Qstand(Session<TST> sessionP, Session<TST> sessionD, Integer nP, Integer nD) {
-			super("P");
+			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
 			this.nP = nP;
@@ -212,7 +212,7 @@ public class Dealer extends Participant {
 		private final Integer n;
 		
 		protected Pcard(Session<TST> sessionP, Session<TST> sessionD, Integer nP, Integer n) {
-			super("P");
+			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
 			this.nP = nP;
@@ -245,7 +245,7 @@ public class Dealer extends Participant {
 		private final Integer nD;
 		
 		protected Qdeck(Session<TST> sessionP, Session<TST> sessionD, Integer nP, Integer nD) {
-			super("Qdeck");
+			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
 			this.nP = nP;
@@ -262,7 +262,7 @@ public class Dealer extends Participant {
 				try {
 					n = Integer.parseInt(msg.getStringValue());
 
-					logger.log("received card "+n);
+					System.out.println("received card "+n);
 					processCall(Qcard.class, sessionP, sessionD, nP, nD+n);
 				}
 				catch (NumberFormatException | ContractException e) {
@@ -291,7 +291,7 @@ public class Dealer extends Participant {
 		private final Integer nD;
 		
 		protected Qcard(Session<TST> sessionP, Session<TST> sessionD, Integer nP, Integer nD) {
-			super("Qcard");
+			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
 			this.nP = nP;

@@ -34,7 +34,7 @@ public class APIExampleProcess2 extends Participant {
 					.add("b", externalSum().add("a").add("b").add("c")))
 			;
 			
-			logger.log("tell");
+			System.out.println("tell");
 			
 			
 			Session<TST> s1 = tellAndWait(A);
@@ -89,7 +89,7 @@ public class APIExampleProcess2 extends Participant {
 		
 		@Override
 		public void run() {
-			logger.log("ABORT - entered on run method");
+			System.out.println("ABORT - entered on run method");
 			u.sendIfAllowed("abort");
 		}
 	}

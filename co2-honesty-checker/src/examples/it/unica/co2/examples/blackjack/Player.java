@@ -45,7 +45,7 @@ public class Player extends Participant {
 		private final Integer n;
 		
 		protected Play(Session<TST> session, Integer n) {
-			super("Play");
+			super();
 			this.session = session;
 			this.n=n;
 		}
@@ -62,7 +62,7 @@ public class Player extends Participant {
 				
 				switch(msg.getLabel()) {
 				case "card":
-					logger.log("card received");
+					System.out.println("card received");
 					try {
 						Integer n = Integer.parseInt(msg.getStringValue());
 						processCall(Play.class, session, this.n+n);
@@ -73,11 +73,11 @@ public class Player extends Participant {
 					break;
 				
 				case "lose":
-					logger.log("you lose! :(");
+					System.out.println("you lose! :(");
 					break;
 					
 				case "abort":
-					logger.log("abort by the dealer");
+					System.out.println("abort by the dealer");
 					break;
 				}
 				
@@ -90,15 +90,15 @@ public class Player extends Participant {
 				
 				switch(msg.getLabel()) {
 				case "win":
-					logger.log("you win! :)");
+					System.out.println("you win! :)");
 					break;
 					
 				case "lose":
-					logger.log("you lose! :(");
+					System.out.println("you lose! :(");
 					break;
 				
 				case "abort":
-					logger.log("abort by the dealer");
+					System.out.println("abort by the dealer");
 					break;
 				}
 			}

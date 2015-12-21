@@ -51,14 +51,14 @@ public class VoucherHonest {
 			Public<TST> pbl$x$CB = tell(CB.getContract());
 			Session<TST> x = pbl$x$CB.waitForSession();
 			
-			logger.log("waiting on 'x' for actions [clickPay,clickVoucher]");
+			System.out.println("waiting on 'x' for actions [clickPay,clickVoucher]");
 			Message msg$0 = x.waitForReceive("clickPay","clickVoucher");
 			
 			switch (msg$0.getLabel()) {			
 				
 				case "clickPay":
-					logger.log("received [clickPay]");
-					logger.log("waiting on 'x' for actions [pay]");
+				System.out.println("received [clickPay]");
+				System.out.println("waiting on 'x' for actions [pay]");
 					Message msg$1 = x.waitForReceive("pay");
 					
 					String code$pay$msg2;
@@ -71,7 +71,7 @@ public class VoucherHonest {
 					break;
 				
 				case "clickVoucher":
-					logger.log("received [clickVoucher]");
+				System.out.println("received [clickVoucher]");
 					new Q(x).run();
 					break;
 				
@@ -128,15 +128,15 @@ public class VoucherHonest {
 		@Override
 		public void run() {
 			try {
-				logger.log("waiting on 'y' for actions [ok,no]");
+				System.out.println("waiting on 'y' for actions [ok,no]");
 				Message msg$0 = y.waitForReceive(10000, "ok","no");
 				
 				switch (msg$0.getLabel()) {			
 					
 					case "ok":
-						logger.log("received [ok]");
+					System.out.println("received [ok]");
 						x.sendIfAllowed("accept");
-						logger.log("waiting on 'x' for actions [voucher]");
+					System.out.println("waiting on 'x' for actions [voucher]");
 						Message msg$1 = x.waitForReceive("voucher");
 						
 						String v$voucher$msg2;
@@ -149,9 +149,9 @@ public class VoucherHonest {
 						break;
 					
 					case "no":
-						logger.log("received [no]");
+					System.out.println("received [no]");
 						x.sendIfAllowed("reject");
-						logger.log("waiting on 'x' for actions [pay]");
+					System.out.println("waiting on 'x' for actions [pay]");
 						Message msg$2 = x.waitForReceive("pay");
 						
 						String code$pay$msg3;
@@ -212,7 +212,7 @@ public class VoucherHonest {
 		@Override
 		public void run() {
 			x.sendIfAllowed("reject");
-			logger.log("waiting on 'x' for actions [pay]");
+			System.out.println("waiting on 'x' for actions [pay]");
 			Message msg$0 = x.waitForReceive("pay");
 			
 			String code$pay$msg1;
@@ -237,17 +237,17 @@ public class VoucherHonest {
 		
 		@Override
 		public void run() {
-			logger.log("waiting on 'y' for actions [ok,no]");
+			System.out.println("waiting on 'y' for actions [ok,no]");
 			Message msg$0 = y.waitForReceive("ok","no");
 			
 			switch (msg$0.getLabel()) {			
 				
 				case "ok":
-					logger.log("received [ok]");
+				System.out.println("received [ok]");
 					break;
 				
 				case "no":
-					logger.log("received [no]");
+				System.out.println("received [no]");
 					break;
 				
 				default:

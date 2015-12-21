@@ -47,11 +47,11 @@ public class Distributor extends Participant {
 				switch (msg.getLabel()) {
 				
 				case "paydistrib":	
-					logger.log("pay received");
+					System.out.println("pay received");
 					break;
 				
 				case "quitdistr": 
-					logger.log("quit received");
+					System.out.println("quit received");
 					break;
 				}
 			}
@@ -61,7 +61,7 @@ public class Distributor extends Participant {
 			
 		}
 		catch (ContractException e) {
-			logger.log("exception: "+e.getMessage());
+			System.out.println("exception: "+e.getMessage());
 		}
 		
 	}

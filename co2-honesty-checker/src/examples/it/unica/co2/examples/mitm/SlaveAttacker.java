@@ -43,7 +43,7 @@ public class SlaveAttacker extends Participant{
 			
 			switch (msg.getLabel()) {
 			case "abort":
-				logger.log("abort received");
+				System.out.println("abort received");
 				return;
 			}
 			

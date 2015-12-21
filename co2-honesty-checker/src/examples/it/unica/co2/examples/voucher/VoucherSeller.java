@@ -77,7 +77,7 @@ public class VoucherSeller extends Participant {
 		private Session<TST> sessionV;
 		
 		protected Q(Session<TST> sessionB, Session<TST> sessionV) {
-			super("Q");
+			super();
 			this.sessionB = sessionB;
 			this.sessionV = sessionV;
 		}

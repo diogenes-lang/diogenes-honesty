@@ -27,7 +27,7 @@ public class MultipleIfThenElseProcess extends Participant {
 	public void run() {
 		try {
 			
-			logger.log("START");
+			System.out.println("START");
 
 			Contract A = internalSum().add("start",
 							internalSum()
@@ -69,7 +69,7 @@ public class MultipleIfThenElseProcess extends Participant {
 			
 			session.sendIfAllowed("end");
 			
-			logger.log("END");
+			System.out.println("END");
 		
 		}
 		catch (Exception e) {

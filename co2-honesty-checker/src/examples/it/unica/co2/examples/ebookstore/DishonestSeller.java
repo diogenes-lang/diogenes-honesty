@@ -59,11 +59,11 @@ public class DishonestSeller extends Participant {
 				switch(msgB.getLabel()) {
 				
 				case "quit" :
-					logger.log("quit received");
+					System.out.println("quit received");
 					break;
 					
 				case "pay" : 
-					logger.log("pay received");
+					System.out.println("pay received");
 					handlePayment(msgB.getStringValue());
 					break;
 				}
@@ -88,12 +88,12 @@ public class DishonestSeller extends Participant {
 					switch(msgD.getLabel()) {
 					
 					case "abortdistrib" :
-						logger.log("abort received from the distributor");
+						System.out.println("abort received from the distributor");
 						sessionB.sendIfAllowed("abort");						//complete the session that involve the buyer
 						break;
 						
 					case "confirmdistr" : 
-						logger.log("confirm received from the distributor");
+						System.out.println("confirm received from the distributor");
 						
 						sessionB.sendIfAllowed("confirm");					//continue the interaction with the buyer
 						
@@ -103,12 +103,12 @@ public class DishonestSeller extends Participant {
 							switch(msgB.getLabel()) {
 							
 							case "quit" :
-								logger.log("quit received");
+								System.out.println("quit received");
 								sessionD.sendIfAllowed("quitdistr");							//quit the distributor
 								break;
 								
 							case "pay" : 
-								logger.log("pay received");
+								System.out.println("pay received");
 								handlePayment(msgB.getStringValue());			//the buyer sent you the money
 								sessionD.sendIfAllowed("paydistrib", bookPrice(chosenBook));	//pay the distributor
 								break;
@@ -129,7 +129,7 @@ public class DishonestSeller extends Participant {
 				}
 				catch (TimeExpiredException e){
 					
-					logger.log("no action was received in time");
+					System.out.println("no action was received in time");
 					
 					//if the distributor not sent 'abort' or 'confirm', you are culpable in sessionB
 					sessionB.sendIfAllowed("abort");		//this action make you honest in sessionB
@@ -177,7 +177,7 @@ public class DishonestSeller extends Participant {
 		private Session<TST> sessionD;
 		
 		protected AbortSessionD2(Session<TST> session) {
-			super("AbortSessionD2");
+			super();
 			this.sessionD = session;
 		}
 		

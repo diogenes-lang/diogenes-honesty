@@ -44,11 +44,11 @@ public class Buyer extends Participant {
 			switch (mB.getLabel()) {
 			
 			case "abort":
-				logger.log("abort received");
+				System.out.println("abort received");
 				break;
 				
 			case "confirm":
-				logger.log("confirm received");
+				System.out.println("confirm received");
 				price = Integer.parseInt(mB.getStringValue());
 				
 				if (price > desiredPrice)
@@ -61,7 +61,7 @@ public class Buyer extends Participant {
 			}
 		}
 		catch (NumberFormatException | ContractException e) {
-			logger.log("exception: "+e.getMessage());
+			System.out.println("exception: "+e.getMessage());
 		}
 		
 	}

@@ -104,7 +104,7 @@ public class MasterAttacker extends Participant{
 			
 			String pair = plaintext + "," + ciphertext;
 			
-			logger.log("pair to decrypt: "+pair);
+			System.out.println("pair to decrypt: "+pair);
 			
 			String rangex = "0-500";
 			String rangey = "500-1000";
@@ -129,7 +129,7 @@ public class MasterAttacker extends Participant{
 			}
 			catch (InterruptedException e) {}
 			
-			logger.log("all slaves are terminated");
+			System.out.println("all slaves are terminated");
 			
 			Pair<String,String> keys = findKeys(pairs);
 			checkKeys(plaintext, ciphertext, keys);
@@ -139,22 +139,22 @@ public class MasterAttacker extends Participant{
 		private void checkKeys(String plaintext, String ciphertext, Pair<String, String> keys) {
 			
 			if (keys==null) {
-				logger.log("key not found! Check your implementation");
+				System.out.println("key not found! Check your implementation");
 			}
 			else {
-				logger.log("k1: "+ keys.getLeft());
-				logger.log("k2: "+ keys.getRight());
+				System.out.println("k1: "+ keys.getLeft());
+				System.out.println("k2: "+ keys.getRight());
 				
-				logger.log("plaintext: "+plaintext);
-				logger.log("ciphertext: "+ciphertext);
-				logger.log("plaintext (computed): "+AESUtils.decrypt(keys.getLeft(), AESUtils.decrypt(keys.getRight(), ciphertext)));
-				logger.log("ciphertext (computed): "+AESUtils.encrypt(keys.getRight(), AESUtils.encrypt(keys.getLeft(), plaintext)));				
+				System.out.println("plaintext: "+plaintext);
+				System.out.println("ciphertext: "+ciphertext);
+				System.out.println("plaintext (computed): "+AESUtils.decrypt(keys.getLeft(), AESUtils.decrypt(keys.getRight(), ciphertext)));
+				System.out.println("ciphertext (computed): "+AESUtils.encrypt(keys.getRight(), AESUtils.encrypt(keys.getLeft(), plaintext)));				
 			}
 		}
 		
 		@SkipMethod
 		private Pair<String, String> findKeys(List<String> pairs) {
-			logger.log("pairs.size(): "+pairs.size());
+			System.out.println("pairs.size(): "+pairs.size());
 			
 			Decoder decoder = Base64.getDecoder();
 			
@@ -197,7 +197,7 @@ public class MasterAttacker extends Participant{
 		private final String range;
 		
 		public CallToSlave(List<String> pairs, Session<TST> x, String pair, String range) {
-			super("Tid-"+Thread.currentThread().getId());
+			super();
 			this.pairs = pairs;
 			this.x = x;
 			this.pair = pair;

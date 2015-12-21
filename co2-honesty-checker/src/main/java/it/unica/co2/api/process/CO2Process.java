@@ -8,24 +8,14 @@ import java.util.List;
 
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 
-import it.unica.co2.util.Logger;
-
 
 public abstract class CO2Process implements Runnable, Serializable {
 
 	private static final long serialVersionUID = 1L;
-	protected transient Logger logger;
 	
-	protected CO2Process() {
-		this(null);
-	}
-	
-	protected CO2Process(String username) {
-		logger = Logger.getInstance(username, System.out, this.getClass().getSimpleName());
-	}
 	
 	synchronized protected Thread parallel(Runnable process) {
-		logger.log("starting parallel process");
+		System.out.println("starting parallel process");
 		Thread t = new Thread(process);
 		t.start();
 		return t;

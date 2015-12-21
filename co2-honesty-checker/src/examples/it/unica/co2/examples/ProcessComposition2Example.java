@@ -63,7 +63,7 @@ public class ProcessComposition2Example {
 		private final Session<TST> session;
 		
 		protected ProcessA(Session<TST> session) {
-			super("ProcessA");
+			super();
 			this.session = session;
 		}
 

@@ -33,7 +33,7 @@ public class DeckService extends Participant {
 		Recursion contract = recursion("x");
 		contract.setContract(externalSum().add("next", internalSum().add("card", recRef(contract))).add("abort"));
 
-		logger.log("tell and wait");
+		System.out.println("tell and wait");
 		Session<TST> session = tellAndWait(contract);
 		
 		processCall(Deck.class, session);
@@ -47,7 +47,7 @@ public class DeckService extends Participant {
 		private List<Integer> deck = new ArrayList<>();
 		
 		protected Deck(Session<TST> session) {
-			super("Deck");
+			super();
 			this.session = session;
 			
 			Integer[] cards = new Integer[]{1,2,3,4,5,6,7,8,9,10,10,10,10};
@@ -86,7 +86,7 @@ public class DeckService extends Participant {
 			int choice = new Random().nextInt(size);
 			int card = deck.remove(choice);
 			
-			logger.log("extracted card "+card);
+			System.out.println("extracted card "+card);
 			
 			assert deck.size()==size-1;
 			
