@@ -86,3 +86,11 @@ We check the honesty with
 #!java
 HonestyChecker.isHonest(SimpleBuyer.class);
 ```
+
+#Maven
+```
+mvn install:install-file -Dfile=co2apiHL.jar -DgroupId=co2.unica.it -DartifactId=co2apiHL -Dversion=1.0.0 -Dpackaging=jar
+mvn install:install-file -Dfile=jpf.jar -DgroupId=jpf -DartifactId=jpf -Dversion=1.0.0 -Dpackaging=jar
+mvn install:install-file -Dfile=jpf-classes.jar -DgroupId=jpf-classes -DartifactId=jpf-classes -Dversion=1.0.0 -Dpackaging=jar
+mvn install:install-file -Dfile=jpf-annotations.jar -DgroupId=jpf-annotations -DartifactId=jpf-annotations -Dversion=1.0.0 -Dpackaging=jar
+```

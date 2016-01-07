@@ -16,7 +16,7 @@ sourceSets {
 
 jar {
 	destinationDir file(".")
-	archiveName "co2-java-honesty-${version}.${extension}"
+	archiveName "co2-honesty-checker-${version}.${extension}"
 	//from sourceSets.main.allSource
 
 	//into('lib') {
