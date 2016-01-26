@@ -12,8 +12,8 @@ import it.unica.co2.api.process.Participant;
 
 public class ProcessCompositionExample {
 
-	private static String username = "alice@test.com";
-	private static String password = "alice";
+	private static String user = "alice@test.com";
+	private static String pass = "alice";
 
 	public static class ProcessA extends Participant {
 
@@ -22,7 +22,7 @@ public class ProcessCompositionExample {
 		private final Session<TST> session;
 		
 		protected ProcessA(Session<TST> session) {
-			super(username, password);
+			super(user, pass);
 			this.session = session;
 		}
 
@@ -41,7 +41,7 @@ public class ProcessCompositionExample {
 		private final Session<TST> session;
 		
 		protected ProcessB(Session<TST> session) {
-			super(username, password);
+			super(user, pass);
 			this.session = session;
 		}
 
@@ -56,7 +56,7 @@ public class ProcessCompositionExample {
 		private static final long serialVersionUID = 1L;
 		
 		public ComposedProcess() {
-			super(username, password);
+			super(user, pass);
 		}
 
 		@Override

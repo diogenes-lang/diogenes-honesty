@@ -43,7 +43,7 @@ public class VoucherDishonest {
 		private static final long serialVersionUID = 1L;
 		
 		public P() {
-			super(username, password);
+			super(VoucherDishonest.username, VoucherDishonest.password);
 		}
 		
 		@Override
@@ -87,7 +87,7 @@ public class VoucherDishonest {
 		private Session<TST> x;
 		
 		public Q(Session<TST> x) {
-			super(username, password);
+			super(VoucherDishonest.username, VoucherDishonest.password);
 			this.x=x;
 		}
 		
@@ -120,7 +120,7 @@ public class VoucherDishonest {
 		private Session<TST> y;
 		
 		public Q1(Session<TST> x,Session<TST> y) {
-			super(username, password);
+			super(VoucherDishonest.username, VoucherDishonest.password);
 			this.x=x;
 			this.y=y;
 		}
@@ -181,7 +181,7 @@ public class VoucherDishonest {
 		private Session<TST> y;
 		
 		public R1(Session<TST> x,Session<TST> y) {
-			super(username, password);
+			super(VoucherDishonest.username, VoucherDishonest.password);
 			this.x=x;
 			this.y=y;
 		}
@@ -198,7 +198,7 @@ public class VoucherDishonest {
 		private Session<TST> x;
 		
 		public abortX(Session<TST> x) {
-			super(username, password);
+			super(VoucherDishonest.username, VoucherDishonest.password);
 			this.x=x;
 		}
 		
@@ -224,7 +224,7 @@ public class VoucherDishonest {
 		private Session<TST> y;
 		
 		public abortY(Session<TST> y) {
-			super(username, password);
+			super(VoucherDishonest.username, VoucherDishonest.password);
 			this.y=y;
 		}
 		

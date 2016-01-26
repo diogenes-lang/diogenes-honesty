@@ -17,8 +17,9 @@ public abstract class Contract implements Serializable {
 		return context;
 	}
 	
-	public void setContext(String context) {
+	public Contract setContext(String context) {
 		this.context = context;
+		return this;
 	}
 	
 	public Action getPreceeding() {

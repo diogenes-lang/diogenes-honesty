@@ -13,11 +13,11 @@ public class APIExampleProcess2 extends Participant {
 
 	private static final long serialVersionUID = 1L;
 	
-	private static String username = "alice@nicola.com";
-	private static String password = "alice";
+	private static String user = "alice@nicola.com";
+	private static String pass = "alice";
 
 	public APIExampleProcess2() {
-		super(username, password);
+		super(user, pass);
 	}
 
 	public static void main(String[] args) throws ContractException {
@@ -52,7 +52,7 @@ public class APIExampleProcess2 extends Participant {
 		private Session<TST> z;
 		
 		public abortAll(Session<TST> x, Session<TST> y, Session<TST> z) {
-			super(username, password);
+			super(user, pass);
 			this.x=x;
 			this.y=y;
 			this.z=z;
@@ -83,7 +83,7 @@ public class APIExampleProcess2 extends Participant {
 		private Session<TST> u;
 		
 		public abort(Session<TST> u) {
-			super(username, password);
+			super(user, pass);
 			this.u=u;
 		}
 		

@@ -62,7 +62,7 @@ public class InsuredSeller extends Participant {
 		private final Integer amount;
 		
 		protected HandlePayment(Session<TST> session, Integer amount) {
-			super(username, password);
+			super(InsuredSeller.username, InsuredSeller.password);
 			this.session = session;
 			this.amount = amount;
 		}
@@ -105,7 +105,7 @@ public class InsuredSeller extends Participant {
 		private final Integer amount;
 		
 		protected HandleInsurance(Session<TST> session, Integer amount) {
-			super(username, password);
+			super(InsuredSeller.username, InsuredSeller.password);
 			this.session = session;
 			this.amount = amount;
 		}

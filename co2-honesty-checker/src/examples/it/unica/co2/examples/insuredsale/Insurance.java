@@ -8,6 +8,8 @@ import co2api.Session;
 import co2api.TST;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.api.process.SkipMethod;
+import it.unica.co2.honesty.HonestyChecker;
 
 
 public class Insurance extends Participant {
@@ -21,11 +23,11 @@ public class Insurance extends Participant {
 	@Override
 	public void run() {
 
-		Contract CI = externalSum().add("reqi", internalSum().add("oki").add("aborti"));
+		Contract CI = externalSum().add("req", internalSum().add("ok").add("abort"));
 		
 		Session<TST> session = tellAndWait(CI);
 		
-		Message msg = session.waitForReceive("reqi");
+		Message msg = session.waitForReceive("req");
 		
 		Integer amount;
 		try {
@@ -36,18 +38,19 @@ public class Insurance extends Participant {
 		}
 		
 		if (isInsurable(amount)) {
-			session.sendIfAllowed("oki");
+			session.sendIfAllowed("ok");
 		}
 		else {
-			session.sendIfAllowed("aborti");
+			session.sendIfAllowed("abort");
 		}
 	}
 
+	@SkipMethod
 	private boolean isInsurable(Integer amount) {
 		return amount < 100;
 	}
 	
 	public static void main(String[] args) {
-		new Insurance().run();
+		HonestyChecker.isHonest(Insurance.class);
 	}
 }

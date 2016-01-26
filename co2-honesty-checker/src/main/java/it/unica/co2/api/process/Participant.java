@@ -1,7 +1,11 @@
 package it.unica.co2.api.process;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import co2api.CO2ServerConnection;
 import co2api.ContractException;
+import co2api.ContractExpiredException;
 import co2api.Private;
 import co2api.Public;
 import co2api.Session;
@@ -15,9 +19,11 @@ import it.unica.co2.util.ObjectUtils;
 public abstract class Participant extends CO2Process {
 
 	private static final long serialVersionUID = 1L;
+	private static final Logger logger = LoggerFactory.getLogger(Participant.class);
+	
 	private transient CO2ServerConnection connection;
-	private final String username;
-	private final String password;
+	protected final String username;
+	protected final String password;
 	
 	protected Participant(String username, String password) {
 		this.username = username;
@@ -27,7 +33,7 @@ public abstract class Participant extends CO2Process {
 	
 	private void setConnection() {
 		try {
-			System.out.println("creating new connection: username=<"+username+"> password=<"+password+">");
+			logger.info("creating new connection: username=<"+username+"> password=<"+password+">");
 			connection = new CO2ServerConnection(username, password);
 		}
 		catch (ContractException e) {
@@ -44,7 +50,14 @@ public abstract class Participant extends CO2Process {
 	public Session<TST> tellAndWait(ContractDefinition c) {
 		return tell(c).waitForSession();
 	}
+
+	public Session<TST> tellAndWait(Contract c, int timeout) throws ContractExpiredException {
+		return tellAndWait(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c), timeout);
+	}
 	
+	public Session<TST> tellAndWait(ContractDefinition c, int timeout) throws ContractExpiredException {
+		return tell(c, timeout).waitForSession();
+	}
 
 	public Public<TST> tell (Contract c) {
 		return tell(c, 0);
@@ -83,7 +96,7 @@ public abstract class Participant extends CO2Process {
 	private Public<TST> _tell (ContractDefinition cDef, String cserial, Private<TST> pvt, Integer delay) {
 		
 		try {
-			System.out.println("telling contract <"+cDef.getContract().toTST()+">");
+			logger.info("telling contract <{}> with delay {} msec", cDef.getContract().toTST(), delay);
 			return pvt.tell(delay);
 		}
 		catch (ContractException e) {

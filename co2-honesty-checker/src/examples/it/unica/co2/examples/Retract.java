@@ -15,8 +15,8 @@ import it.unica.co2.api.process.Participant;
 
 public class Retract {
 	
-	private static String username = "test@co2-plugin.com";
-	private static String password = "test";
+	private static String user = "test@co2-plugin.com";
+	private static String pass = "test";
 	
 	
 	/*
@@ -36,7 +36,7 @@ public class Retract {
 		private static final long serialVersionUID = 1L;
 		
 		public P() {
-			super(username, password);
+			super(user, pass);
 		}
 		
 		@Override

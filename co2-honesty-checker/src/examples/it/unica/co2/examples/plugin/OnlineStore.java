@@ -48,7 +48,7 @@ public class OnlineStore {
 		private static final long serialVersionUID = 1L;
 		
 		public P() {
-			super(username, password);
+			super(OnlineStore.username, OnlineStore.password);
 		}
 		
 		@Override
@@ -78,7 +78,7 @@ public class OnlineStore {
 		private Integer total;
 		
 		public Padd(Session<TST> x,Integer total) {
-			super(username, password);
+			super(OnlineStore.username, OnlineStore.password);
 			this.x=x;
 			this.total=total;
 		}
@@ -120,7 +120,7 @@ public class OnlineStore {
 		private Integer amount;
 		
 		public Ppay(Session<TST> x,Integer amount) {
-			super(username, password);
+			super(OnlineStore.username, OnlineStore.password);
 			this.x=x;
 			this.amount=amount;
 		}
@@ -161,7 +161,7 @@ public class OnlineStore {
 		private Integer amount;
 		
 		public Pack(Session<TST> x,Integer amount) {
-			super(username, password);
+			super(OnlineStore.username, OnlineStore.password);
 			this.x=x;
 			this.amount=amount;
 		}

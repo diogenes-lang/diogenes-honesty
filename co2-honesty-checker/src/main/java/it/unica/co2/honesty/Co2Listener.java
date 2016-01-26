@@ -193,6 +193,9 @@ public class Co2Listener extends ListenerAdapter {
 			
 			if (Session_sendIfAllowedInt==null)
 				Session_sendIfAllowedInt = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
+			
+			methodsToSkip.add(ci.getMethod("amIOnDuty", "()Ljava/lang/Boolean;", false));
+			methodsToSkip.add(ci.getMethod("amICulpable", "()Ljava/lang/Boolean;", false));
 		}
 		
 		if (ci.getName().equals(Message.class.getName())) {
@@ -206,6 +209,11 @@ public class Co2Listener extends ListenerAdapter {
 			methodsToSkip.add(ci.getMethod("setContext", "(Ljava/lang/String;)V", false));
 		}
 		
+		if (ci.getName().startsWith("org.slf4j.")) {
+			for (MethodInfo mi : ci.getDeclaredMethodInfos()) {
+				methodsToSkip.add(mi);
+			}
+		}
 	}
 	
 	@Override
@@ -255,7 +263,7 @@ public class Co2Listener extends ListenerAdapter {
 			handleParticipantSetConnection(ti, insn);
 		}
 		else if (methodsToSkip.contains(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
-			handleSkipRunMethod(ti, insn);
+			handleSkipVMethod(ti, insn);
 		}
 	}
 	
@@ -312,7 +320,8 @@ public class Co2Listener extends ListenerAdapter {
 		
 		tstate.setCurrentProcess(sum);		//set the current process
 		tstate.setCurrentPrefix(send);		//set the current prefix
-
+		tstate.printInfo();
+		
 		/*
 		 * handle return value
 		 */
@@ -372,6 +381,7 @@ public class Co2Listener extends ListenerAdapter {
 			
 			
 			tstate.setCurrentProcess(ifThenElse);		//set the current process
+			tstate.printInfo();
 			tstate.pushIfElse(ifThenElse);
 
 			BooleanChoiceGenerator cg = new BooleanChoiceGenerator(tstate.getIfThenElseChoiceGeneratorName(), false);
@@ -414,7 +424,8 @@ public class Co2Listener extends ListenerAdapter {
 				log.finer("next insn: "+ifInsn.getNext().getPosition());
 				
 				tstate.setCurrentPrefix(thenTau);		//set the current prefix
-
+				tstate.printInfo();
+				
 				ti.skipInstruction(ifInsn.getNext());
 				
 				tstate.setPeekThen();
@@ -428,6 +439,7 @@ public class Co2Listener extends ListenerAdapter {
 				log.finer("next insn: "+ifInsn.getTarget().getPosition());
 
 				tstate.setCurrentPrefix(elseTau);		//set the current prefix
+				tstate.printInfo();
 				
 				ti.skipInstruction(ifInsn.getTarget());
 				
@@ -440,7 +452,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 
-	private void handleSkipRunMethod(ThreadInfo ti, Instruction insn) {
+	private void handleSkipVMethod(ThreadInfo ti, Instruction insn) {
 		log.info("");
 		log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
 		
@@ -541,6 +553,7 @@ public class Co2Listener extends ListenerAdapter {
 					ts.pushSum(sum, actions.toArray(new String[]{}));
 					
 				ts.setCurrentProcess(sum);
+				ts.printInfo();
 				
 				List<Integer> choiceSet = new ArrayList<>();
 				
@@ -577,6 +590,7 @@ public class Co2Listener extends ListenerAdapter {
 					log.info("setting current prefix: "+tau);
 					ts.popSum(tau);
 					ts.setCurrentPrefix(tau);
+					ts.printInfo();
 					
 					log.info("timeout expired, throwing a TimeExpiredException");
 					
@@ -608,6 +622,7 @@ public class Co2Listener extends ListenerAdapter {
 					log.info("setting current prefix: "+p);
 					ts.popSum(p);
 					ts.setCurrentPrefix(p);
+					ts.printInfo();
 					
 					ElementInfo message = getMessage(ti, action, value);
 					
@@ -644,7 +659,7 @@ public class Co2Listener extends ListenerAdapter {
 			log.info("setting current prefix: "+p);
 			ts.setCurrentProcess(sum);		//set the current process
 			ts.setCurrentPrefix(p);
-
+			ts.printInfo();
 			
 			//build the return value
 			ElementInfo messageEI = getMessage(ti, action, value);
@@ -722,7 +737,8 @@ public class Co2Listener extends ListenerAdapter {
 				SumDS sum = new SumDS();
 				
 				tstate.setCurrentProcess(sum);		//set the current process
-
+				tstate.printInfo();
+				
 				/*
 				 * the co2CurrentPrefix is set in methodExited
 				 */
@@ -780,6 +796,7 @@ public class Co2Listener extends ListenerAdapter {
 					
 					log.info("setting current prefix: "+ask);
 					tstate.setCurrentPrefix(ask);
+					tstate.printInfo();
 					tstate.popSum(ask);
 
 					//build the return value
@@ -809,6 +826,7 @@ public class Co2Listener extends ListenerAdapter {
 					
 					log.info("setting current prefix: "+retract);
 					tstate.setCurrentPrefix(retract);
+					tstate.printInfo();
 					tstate.popSum(retract);
 					
 					log.info("delay expired, throwing a ContractExpiredException");
@@ -832,6 +850,7 @@ public class Co2Listener extends ListenerAdapter {
 					
 					log.info("setting current prefix: "+tau);
 					tstate.setCurrentPrefix(tau);
+					tstate.printInfo();
 					tstate.popSum(tau);
 					
 					log.info("timeout expired, throwing a TimeExpiredException");
@@ -862,6 +881,7 @@ public class Co2Listener extends ListenerAdapter {
 			log.info("setting current prefix: "+ask);
 			tstate.setCurrentProcess(sum);		//set the current process
 			tstate.setCurrentPrefix(ask);
+			tstate.printInfo();
 			
 			log.info("returning a new Session");
 			
@@ -969,6 +989,19 @@ public class Co2Listener extends ListenerAdapter {
 						actionSortMap.put(a.getName(), a.getSort());
 					}
 				});
+		
+		for (ContractDefinition ref : ContractExplorer.getAllReferences(cDef)) {
+			ContractExplorer.findAll(
+					ref.getContract(),
+					Sum.class,
+					(x) -> {
+						for (Object obj : x.getActions()) {
+							Action a = (Action) obj;
+							log.info(a.getName() + " - " + a.getSort().getValidValue());
+							actionSortMap.put(a.getName(), a.getSort());
+						}
+					});
+		}
 
 		contractActionsSort.put(contractID, actionSortMap);
 		
@@ -1014,7 +1047,7 @@ public class Co2Listener extends ListenerAdapter {
 	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
 		
 		ClassInfo ci = currentThread.getExecutingClassInfo();
-		ThreadState tstate = threadStates.get(vm.getCurrentThread());
+		ThreadState tstate = threadStates.get(currentThread);
 		
 		if (enteredMethod==CO2Process_parallel) {
 			log.info("");
@@ -1023,21 +1056,21 @@ public class Co2Listener extends ListenerAdapter {
 			ParallelProcessesDS parallel = new ParallelProcessesDS();
 			
 			SumDS sumA = new SumDS();
-			PrefixPlaceholderDS tauA = new PrefixPlaceholderDS();
-			sumA.prefixes.add(tauA);
+			PrefixPlaceholderDS placeholderA = new PrefixPlaceholderDS();
+			sumA.prefixes.add(placeholderA);
 			
 			SumDS sumB = new SumDS();
-			PrefixPlaceholderDS tauB = new PrefixPlaceholderDS();
-			sumB.prefixes.add(tauB);
+			PrefixPlaceholderDS placeholderB = new PrefixPlaceholderDS();
+			sumB.prefixes.add(placeholderB);
 			
 			parallel.processA = sumA;
 			parallel.processB = sumB;
 			
-			tstate.setCurrentProcess( parallel);
-			tstate.setCurrentPrefix( tauB);
+			tstate.setCurrentProcess(parallel);
+			tstate.setCurrentPrefix(placeholderB);
 			
 			threadCurrentProcess = sumA;
-			threadCurrentPrefix = tauA;
+			threadCurrentPrefix = placeholderA;
 		}
 		else if (enteredMethod==CO2Process_processCall) {
 			log.info("");
@@ -1151,6 +1184,7 @@ public class Co2Listener extends ListenerAdapter {
 					log.info("process already built: "+proc.toString());
 				}
 				
+				log.info("[SKIP] [T-ID "+tstate.getId()+"] adding method "+enteredMethod.getFullName());
 				methodsToSkip.add(enteredMethod);
 			}
 			else {

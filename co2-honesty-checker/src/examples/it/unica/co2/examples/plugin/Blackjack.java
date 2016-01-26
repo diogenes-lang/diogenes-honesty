@@ -48,7 +48,7 @@ public class Blackjack {
 		private static final long serialVersionUID = 1L;
 		
 		public P() {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 		}
 		
 		@Override
@@ -78,7 +78,7 @@ public class Blackjack {
 		private Integer np;
 		
 		public Pplay(Session<TST> xp,Session<TST> xd,Integer np) {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 			this.xp=xp;
 			this.xd=xd;
 			this.np=np;
@@ -123,7 +123,7 @@ public class Blackjack {
 		private Integer np;
 		
 		public Pdeck(Session<TST> xp,Session<TST> xd,Integer np) {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 			this.xp=xp;
 			this.xd=xd;
 			this.np=np;
@@ -161,7 +161,7 @@ public class Blackjack {
 		private Integer n;
 		
 		public Pcard(Session<TST> xp,Session<TST> xd,Integer np,Integer n) {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 			this.xp=xp;
 			this.xd=xd;
 			this.np=np;
@@ -190,7 +190,7 @@ public class Blackjack {
 		private Integer nd;
 		
 		public Qstand(Session<TST> xp,Session<TST> xd,Integer np,Integer nd) {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 			this.xp=xp;
 			this.xd=xd;
 			this.np=np;
@@ -219,7 +219,7 @@ public class Blackjack {
 		private Integer nd;
 		
 		public Qdeck(Session<TST> xp,Session<TST> xd,Integer np,Integer nd) {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 			this.xp=xp;
 			this.xd=xd;
 			this.np=np;
@@ -258,7 +258,7 @@ public class Blackjack {
 		private Integer nd;
 		
 		public Qcard(Session<TST> xp,Session<TST> xd,Integer np,Integer nd) {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 			this.xp=xp;
 			this.xd=xd;
 			this.np=np;
@@ -283,7 +283,7 @@ public class Blackjack {
 		private Session<TST> xp;
 		
 		public PabortP(Session<TST> xp) {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 			this.xp=xp;
 		}
 		
@@ -316,7 +316,7 @@ public class Blackjack {
 		private Session<TST> xd;
 		
 		public PabortD(Session<TST> xd) {
-			super(username, password);
+			super(Blackjack.username, Blackjack.password);
 			this.xd=xd;
 		}
 		
