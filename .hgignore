@@ -25,5 +25,5 @@ xtend-gen
 *synctex.gz
 *.blg
 
-*.jar
-*/lib/
+*co2-honesty-checker-*.jar
+#*/lib/
