@@ -32,9 +32,9 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>co2.unica.it</groupId>
-			<artifactId>co2apiHL</artifactId>
-			<version>1.0.0</version>
+			<groupId>tcs.unica.it</groupId>
+			<artifactId>co2api</artifactId>
+			<version>0.0.1</version>
 		</dependency>
 		
 		<dependency>
