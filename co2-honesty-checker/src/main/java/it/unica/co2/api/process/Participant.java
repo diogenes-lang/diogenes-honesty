@@ -19,7 +19,7 @@ import it.unica.co2.util.ObjectUtils;
 public abstract class Participant extends CO2Process {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger logger = LoggerFactory.getLogger(Participant.class);
+	private Logger logger;
 	
 	private transient CO2ServerConnection connection;
 	protected final String username;
@@ -28,6 +28,7 @@ public abstract class Participant extends CO2Process {
 	protected Participant(String username, String password) {
 		this.username = username;
 		this.password = password;
+		this.logger = LoggerFactory.getLogger(this.getClass());
 	}
 
 	

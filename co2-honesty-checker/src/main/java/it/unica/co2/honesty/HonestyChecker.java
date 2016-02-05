@@ -4,13 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -43,9 +43,16 @@ public class HonestyChecker {
 			ctor.setAccessible(true);
 			participant = ctor.newInstance(args);				// create a new instance passing the given args
 		}
-		catch (	SecurityException | IllegalArgumentException | NoSuchMethodException | 
-				InstantiationException | IllegalAccessException | InvocationTargetException e) {
-			throw new RuntimeException("error instantiating the class "+participantClass, e);
+		catch (Exception e) {
+			
+			ctor = ConstructorUtils.getMatchingAccessibleConstructor(participantClass, typesArray);
+			try {
+				ctor.setAccessible(true);
+				participant = ctor.newInstance(args);			// create a new instance passing the given args
+			}
+			catch (Exception e1) {
+				throw new RuntimeException("error instantiating the class "+participantClass, e);
+			}			
 		}
 		
 		return isHonest(participant);
