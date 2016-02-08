@@ -11,6 +11,7 @@ import co2api.TimeExpiredException;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.honesty.HonestyChecker;
 
 public class Seller extends Participant {
 
@@ -163,7 +164,8 @@ public class Seller extends Participant {
 	}
 
 	public static void main(String args[]) throws ContractException {
-		new Seller().run();
+//		new Seller().run();
+		HonestyChecker.isHonest(Seller.class);
 	}
 	
 	// ---------------------------- //

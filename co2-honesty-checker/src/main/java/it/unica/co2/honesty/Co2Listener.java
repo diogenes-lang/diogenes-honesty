@@ -608,7 +608,7 @@ public class Co2Listener extends ListenerAdapter {
 				else {
 					String action = actions.get(choice);
 					Sort<?> sort = contractActionsSort.get(contractUniqueID).get(action);
-					assert sort!=null : "no sort associated with the given action '"+action+"'";
+					
 					String value = getValidValue(sort);
 
 					log.info("returning message: ["+action+":"+value+"]");
@@ -642,7 +642,6 @@ public class Co2Listener extends ListenerAdapter {
 			
 			String action = actions.get(0);
 			Sort<?> sort = contractActionsSort.get(contractUniqueID).get(action);
-			assert sort!=null : "no sort associated with the given action '"+action+"'";
 
 			String value = getValidValue(sort);
 

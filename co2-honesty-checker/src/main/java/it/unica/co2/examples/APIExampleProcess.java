@@ -3,6 +3,9 @@ package it.unica.co2.examples;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
+import co2api.ContractExpiredException;
+import co2api.Message;
+import co2api.Public;
 import co2api.Session;
 import co2api.TST;
 import co2api.TimeExpiredException;
@@ -42,16 +45,42 @@ public class APIExampleProcess extends Participant {
 					.add("hello")
 			;
 			
-			Session<TST> sessionC = tellAndWait(C);
+			
+			Public<TST> pblI = tell(C, 5000);
+			
+			Session<TST> session;
 			
 			try {
-				sessionC.waitForReceive(1000, "a", "b");
 				
-				sessionC.sendIfAllowed("END");
+				session = pblI.waitForSession();
+				session.sendIfAllowed("req", 0);
+				
+				try {
+					Message msg = session.waitForReceive(10000, "ok", "no");
+					
+					switch (msg.getLabel()) {
+					
+					case "ok":
+						break;
+						
+					case "no":
+						break;
+					}
+					
+				}
+				catch (TimeExpiredException e) {
+					
+					session.sendIfAllowed("abort");
+					
+//					try {
+						session.waitForReceive("ok", "no");
+//					}
+//					catch (ContractViolationException e1) {
+//					}
+				}
+				
 			}
-			catch (TimeExpiredException e) {
-				
-				sessionC.waitForReceive("a", "b");
+			catch (ContractExpiredException e) {
 			}
 			
 	}
