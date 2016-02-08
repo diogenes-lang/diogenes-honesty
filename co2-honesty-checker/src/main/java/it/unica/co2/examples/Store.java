@@ -85,7 +85,6 @@ public class Store extends Participant{
 			  s1.sendIfAllowed("abort");
 			}
 			
-			s1.sendIfAllowed("abort");
 		}
 	}
 	

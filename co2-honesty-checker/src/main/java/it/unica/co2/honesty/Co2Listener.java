@@ -21,6 +21,7 @@ import co2api.TimeExpiredException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
+import gov.nasa.jpf.jvm.JVMStackFrame;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.ATHROW;
 import gov.nasa.jpf.jvm.bytecode.DRETURN;
@@ -598,7 +599,10 @@ public class Co2Listener extends ListenerAdapter {
 					ClassInfo ci = ClassInfo.getInitializedClassInfo(TimeExpiredException.class.getName(), ti);
 					
 					// create the new exception and push on the top stack
-					ti.getModifiableTopFrame().push(ti.getHeap().newObject(ci, ti).getObjectRef());
+					StackFrame sf = new JVMStackFrame(insn.getMethodInfo());
+					sf.push(ti.getHeap().newObject(ci, ti).getObjectRef());
+					ti.pushFrame(sf);
+					
 					ATHROW athrow = new ATHROW();
 					
 					//schedule the next instruction
