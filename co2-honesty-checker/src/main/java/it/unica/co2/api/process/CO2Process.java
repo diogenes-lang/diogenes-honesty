@@ -7,15 +7,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public abstract class CO2Process implements Runnable, Serializable {
 
 	private static final long serialVersionUID = 1L;
+	protected Logger logger;
 	
+	public CO2Process () {
+		this.logger = LoggerFactory.getLogger(this.getClass().getName());
+	}
 	
 	synchronized protected Thread parallel(Runnable process) {
-		System.out.println("starting parallel process");
+//		logger.info("starting parallel process");
 		Thread t = new Thread(process);
 		t.start();
 		return t;

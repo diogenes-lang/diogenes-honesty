@@ -1,8 +1,5 @@
 package it.unica.co2.api.process;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import co2api.CO2ServerConnection;
 import co2api.ContractException;
 import co2api.ContractExpiredException;
@@ -19,7 +16,6 @@ import it.unica.co2.util.ObjectUtils;
 public abstract class Participant extends CO2Process {
 
 	private static final long serialVersionUID = 1L;
-	private Logger logger;
 	
 	private transient CO2ServerConnection connection;
 	protected final String username;
@@ -28,7 +24,6 @@ public abstract class Participant extends CO2Process {
 	protected Participant(String username, String password) {
 		this.username = username;
 		this.password = password;
-		this.logger = LoggerFactory.getLogger(this.getClass());
 	}
 
 	

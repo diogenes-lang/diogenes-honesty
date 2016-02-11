@@ -49,6 +49,8 @@ public class Store extends Participant{
 		Session<TST> s1 = tell(c1).waitForSession();
 		s1.waitForReceive("order");
 
+		
+		logger.info("foo");
 		if (price < 100) { // checking the order's price
 			s1.sendIfAllowed("amount", price);
 			Message m = s1.waitForReceive("pay");
@@ -92,6 +94,9 @@ public class Store extends Participant{
         HonestyChecker.isHonest(Store.class);
         // new Store().run();
 	}
+	
+	
+	
 }
 
 

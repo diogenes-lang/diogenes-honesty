@@ -11,6 +11,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.slf4j.LoggerFactory;
+
 import co2api.CO2ServerConnection;
 import co2api.ContractExpiredException;
 import co2api.Message;
@@ -133,6 +135,7 @@ public class Co2Listener extends ListenerAdapter {
 	private MethodInfo Session_sendIfAllowedString;
 	private MethodInfo Session_sendIfAllowedInt;
 	private MethodInfo Message_getStringValue;
+	private MethodInfo LoggerFactory_getLogger;
 	
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private HashSet<MethodInfo> methodsToSkip = new HashSet<>();
@@ -210,11 +213,12 @@ public class Co2Listener extends ListenerAdapter {
 			methodsToSkip.add(ci.getMethod("setContext", "(Ljava/lang/String;)V", false));
 		}
 		
-		if (ci.getName().startsWith("org.slf4j.")) {
-			for (MethodInfo mi : ci.getDeclaredMethodInfos()) {
-				methodsToSkip.add(mi);
-			}
+		if (ci.getName().equals(LoggerFactory.class.getName())) {
+			
+			if (LoggerFactory_getLogger==null)
+				LoggerFactory_getLogger = ci.getMethod("getLogger", "(Ljava/lang/String;)Lorg/slf4j/Logger;", false);
 		}
+		
 	}
 	
 	@Override
@@ -233,19 +237,19 @@ public class Co2Listener extends ListenerAdapter {
 //		}
 		
 		if(Participant_tell!=null && insn==Participant_tell.getFirstInsn()) {
-			handleTell(tstate, ti, insn);
+			handle_Participant_tell(tstate, ti, insn);
 		}
 		else if(Public_waitForSession!=null && insn==Public_waitForSession.getFirstInsn()) {
-			handleWaitForSession(tstate, ti, insn, false);
+			handle_Public_waitForSession(tstate, ti, insn, false);
 		}
 		else if(Public_waitForSessionT!=null && insn==Public_waitForSessionT.getFirstInsn()) {
-			handleWaitForSession(tstate, ti, insn, true);
+			handle_Public_waitForSession(tstate, ti, insn, true);
 		}
 		else if(Session_waitForReceive!=null && insn==Session_waitForReceive.getFirstInsn()) {
-			handleWaitForReceive(tstate, ti, insn);
+			handle_Session_waitForReceive(tstate, ti, insn);
 		}
 		else if(Message_getStringValue!=null && insn==Message_getStringValue.getFirstInsn()) {
-			handleMessageGetStringValue(ti, insn);
+			handle_Message_getStringValue(ti, insn);
 		}
 		else if (insn instanceof SwitchInstruction && tstate.considerSwitchInstruction((SwitchInstruction) insn)) {
 			tstate.setSwitchInsn((SwitchInstruction) insn);
@@ -258,18 +262,40 @@ public class Co2Listener extends ListenerAdapter {
 				(Session_sendIfAllowedInt!=null && insn==Session_sendIfAllowedInt.getFirstInsn()) ||
 				(Session_sendIfAllowedString!=null && insn==Session_sendIfAllowedString.getFirstInsn())
 				) {
-			handleSession2Send(tstate, ti, insn);
+			handle_Session_sendIfAllowed(tstate, ti, insn);
 		}
 		else if(Participant_setConnection!=null && insn==Participant_setConnection.getFirstInsn()) {
-			handleParticipantSetConnection(ti, insn);
+			handle_Participant_setConnection(ti, insn);
+		}
+		else if (LoggerFactory_getLogger!=null && insn==LoggerFactory_getLogger.getFirstInsn()) {
+			handle_LoggerFactory_getLogger(ti, insn);
 		}
 		else if (methodsToSkip.contains(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
-			handleSkipVMethod(ti, insn);
+			handleSkipMethod(ti, insn);
 		}
 	}
 	
+	
+	private void handle_LoggerFactory_getLogger(ThreadInfo ti, Instruction insn) {
 
-	private void handleParticipantSetConnection(ThreadInfo ti, Instruction insn) {
+		log.info("");
+		log.info("HANDLE -> LOGGERFACTORY GET LOGGER");
+		
+		ClassInfo loggerCI = ClassInfo.getInitializedClassInfo(org.slf4j.helpers.NOPLogger.class.getName(), ti);
+		ElementInfo loggerEI = ti.getHeap().newObject(loggerCI, ti);
+		
+		//set the return value
+		log.info("loggerEI: "+loggerEI);
+		StackFrame frame = ti.getTopFrame();
+		frame.setReferenceResult(loggerEI.getObjectRef(), null);
+		
+		Instruction nextInsn = new ARETURN();
+		nextInsn.setMethodInfo(insn.getMethodInfo());
+		
+		ti.skipInstruction(nextInsn);
+	}
+
+	private void handle_Participant_setConnection(ThreadInfo ti, Instruction insn) {
 		
 		log.info("");
 		log.info("HANDLE -> PARTICIPANT SET CONNECTION");
@@ -282,10 +308,6 @@ public class Co2Listener extends ListenerAdapter {
 		
 		participant.setReferenceField("connection", connectionEI.getObjectRef());
 		
-		//set the return value
-		StackFrame frame = ti.getTopFrame();
-		frame.setReferenceResult(connectionEI.getObjectRef(), null);
-		
 		Instruction nextInsn = new RETURN();
 		nextInsn.setMethodInfo(insn.getMethodInfo());
 		
@@ -293,7 +315,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 
-	private void handleSession2Send(ThreadState tstate, ThreadInfo ti, Instruction insn) {
+	private void handle_Session_sendIfAllowed(ThreadState tstate, ThreadInfo ti, Instruction insn) {
 		
 		log.info("");
 		log.info("-- SEND --");
@@ -453,7 +475,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 
-	private void handleSkipVMethod(ThreadInfo ti, Instruction insn) {
+	private void handleSkipMethod(ThreadInfo ti, Instruction insn) {
 		log.info("");
 		log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
 		
@@ -497,7 +519,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 
-	private void handleMessageGetStringValue(ThreadInfo ti, Instruction insn) {
+	private void handle_Message_getStringValue(ThreadInfo ti, Instruction insn) {
 		//bypass the type check of the message
 		
 		ElementInfo message = ti.getThisElementInfo();
@@ -513,7 +535,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 
-	private void handleWaitForReceive(ThreadState ts, ThreadInfo ti, Instruction insn) {
+	private void handle_Session_waitForReceive(ThreadState ts, ThreadInfo ti, Instruction insn) {
 		
 		log.info("");
 		log.info("-- WAIT FOR RECEIVE --");
@@ -710,7 +732,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 	
-	private void handleWaitForSession(ThreadState tstate, ThreadInfo ti, Instruction insn, boolean hasTimeout) {
+	private void handle_Public_waitForSession(ThreadState tstate, ThreadInfo ti, Instruction insn, boolean hasTimeout) {
 		log.info("");
 		log.info("-- WAIT FOR SESSION --");
 		
@@ -908,7 +930,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 	
-	private void handleTell(ThreadState tstate, ThreadInfo ti, Instruction insn) {
+	private void handle_Participant_tell(ThreadState tstate, ThreadInfo ti, Instruction insn) {
 		
 		log.info("");
 		log.info("HANDLE -> TELL");
