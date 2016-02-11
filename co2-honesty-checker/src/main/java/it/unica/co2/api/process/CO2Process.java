@@ -21,7 +21,7 @@ public abstract class CO2Process implements Runnable, Serializable {
 	}
 	
 	synchronized protected Thread parallel(Runnable process) {
-//		logger.info("starting parallel process");
+		logger.info("starting parallel process");
 		Thread t = new Thread(process);
 		t.start();
 		return t;
