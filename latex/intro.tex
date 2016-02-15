@@ -134,12 +134,12 @@ and realize them with the $\fact{}{}$ primitive. %
     \setlength{\tabcolsep}{5pt}
   %  \begin{tabular}{p{4cm}p{7.5cm}} 
 
-    $\procP \; = \; (x) \; 
+    \[\procP \; = \; (x) \; 
     \tell {} {\freeze{x}{\atomIn{a} \sumExt \atomIn{b} \contrSeq \atomOut{c}}} \cocoSeq \;
-    \ask{x}{true}\; \cocoSeq \;
+    \ask{x}\; \cocoSeq \;
    % \fact x {\atomIn{a}} \;\cocoPlus\; 
-    \fact x {\atomIn{b}} \;\cocoSeq\; \fact x {\atomOut{c}}$
-        %
+    \fact x {\atomIn{b}} \;\cocoSeq\; \fact x {\atomOut{c}}
+    \]
         
 \begin{mdframed}
 \begin{minted}[fontsize=\scriptsize,linenos]{java}
@@ -184,14 +184,8 @@ contexts where either the session $x$ is not created,
 or the participant at the other endpoint of session $x$ 
 never sends messages of kind $\atom{a}$. %
 
-Another (more involved) example is the following:
-\[
-\procP\; = \; (x, \, y) \;
-\tell {} {\freeze{x}{\atomIn{a}}} \cocoSeq \;
-\tell {} {\freeze{y}{\atomOut{b}}} \cocoSeq \;
-\fact x {\atomIn{a}} \cocoSeq \;
-\fact y {\atomOut{b}}
-\]
+
+Another (more involved) example is shown in \Cref{fig:comp2}.
 
 The process $\procP$ advertises two contracts: 
 $\atomIn{a}$, which waits for a message of kind $\atom{a}$, 
@@ -200,9 +194,58 @@ respectively on sessions $x$ and $y$. %
 When the session $x$ is created, $\procP$ receives a message of kind $\atom{a}$,
 and then,  when also $y$ is created, it sends a message of kind $\atom{b}$. %
 
-Surprisingly enough, the process $\procP$ is \emph{dishonest},
+\begin{figure}
+    \hrulefill
+    \scriptsize
+    \centering
+    \def\arraystretch{1.5}
+    \setlength{\tabcolsep}{5pt}
+  %  \begin{tabular}{p{4cm}p{7.5cm}} 
+
+\[
+\procPi\; = \; (x, \, y) \;
+\tell {} {\freeze{x}{\atomIn{a}}} \cocoSeq \;
+\tell {} {\freeze{y}{\atomOut{b}}} \cocoSeq \;
+\ask{x} \cocoSeq \; 
+\fact x {\atomIn{a}} \cocoSeq \;
+\ask{y} \cocoSeq \;
+\fact y {\atomOut{b}}
+\]
+        
+\begin{mdframed}
+\begin{minted}[fontsize=\scriptsize,linenos]{java}
+Contract c = externalSum().add("a");
+Contract d = internalSum().add("b");
+
+Public pbl_x = tell(c);
+Public pbl_y = tell(d);
+
+Session x = pbl_x.waitForSession();
+Message msg = x.waitForReceive("a")
+
+Session y = pbl_y.waitForSession();
+y.sendIfAllowed("b")
+\end{minted}
+\end{mdframed}
+   
+    %\end{tabular}
+    
+    \hrulefill
+    \vspace{-5pt}
+    \caption{Comparison between \coco specification 
+    and corresponding java implementation} \label{fig:comp2}
+    \vspace{-10pt}
+\end{figure}
+
+
+
+Surprisingly enough, the process $\procPi$ is \emph{dishonest},
 for two different reasons.
-First, in contexts where session $y$ is created and $x$ is not, 
+First, in contexts where session $y$ is created and $x$ is not
+\footnote{Note that once a contract is published with the $\tell{}{}$ prefix 
+(lines \lineno{4} and \lineno{5}), 
+it can be fused independently from waiting for a session to be fused using the $\ask{}{}$ prefix
+(lines \lineno{7} and \lineno{10}) }, 
 the $\fact y {\atomOut{b}}$ cannot be reached 
 (and so the contract at session $y$ is not fulfilled).
 Second, also in those contexts where both sessions are created,
@@ -255,9 +298,33 @@ are therefore needed in order to develop secure contract-oriented applications.
 %Insomma, tutto quello che si puo' dire di positivo su quello che hai fatto, va scritto qui.
 
 We provide a support to programmers on the development of contract-oriented 
-applications. 
-In order to do so, we develop an Eclipse plugin that allow to write \coco processes, verify their honesty, and automatically generate skeletons of Java programs that interact using the above mentioned contract-oriented middleware.
+applications. In particular, we target on two kind of user:
+\begin{itemize}
+\item \emph{expert user}: it masters the \coco syntax and semantics, and it knows the formal notion of honesty and culpability; 
 
+\item \emph{normal user}: it is familiar with contract-oriented computing but ignore
+the formal aspects behind this paradigm. We can consider each (java) developer as
+a normal user, considering the learning curve of the main aspects is generally low.
+\niconote{probabilmente l'affermazione precedente è inappropriata, 
+però gli studenti di FS sono riusciti a capire il paradigma e utilizzare
+ il middleware con facilità.}
+\end{itemize}
+
+We develop an Eclipse plugin that allows expert users to focus on writing
+\coco processes (without carrying about its maude representation) and verify their honesty.
+Static checks help to avoid common
+mistakes immediately, unlike what happens writing maude programs.
+Moreover, the plugin removes the prerequisite to know the maude language.
+
+Furthermore, the plugin automatically generate skeletons of java programs that
+can be adapted to fill implementation specific constraints or add any further 
+logic to it, maybe making it \emph{dishonest}.
+
+Finally, we provide a verification technique that allows normal users
+to directly write distributed contract-oriented application whose
+honesty can be checked from the implementation.
+
+\hidden{
 The possibility of auto-generating Java code from a \coco process simplifies and speeds up the development of a distributed application.
 Without using our tools, a possible approach can be:
 \begin{enumerate}[(i),topsep=5pt,itemsep=1pt,parsep=0pt]
@@ -283,6 +350,9 @@ and it can be modified by the programmer to add any further logic to it,
 maybe making it dishonest. 
 We provide a verification technique that allows to skip steps \textit{\ref{step:1}}\textit{\ref{step:2}}\textit{\ref{step:3}} and to directly write distributed contract-oriented application whose
 honesty can be checked from the implementation.
+}
+
+
 
 \hidden{
 Our methodology is validated against three use cases:
@@ -305,10 +375,12 @@ Our methodology is validated against three use cases:
 	
 \item[Blackjack:] the last example shows how a specification can be difficult to write and maintain. The advertised contracts are both recursive and the specification is split into different parts due to its complexity. There are also multiple sessions, parallel processes, if-then-else selection and recursive behaviour.
 \end{description}
-}
+
 Our tool allows to change the specifications \emph{on-the-fly} and immediately verify if the changes are good or not. 
 Also, considering the total time spent to check the honesty is in the order of few hundred of milliseconds, there is no additional overhead on development.
+}
 
+\hidden{
 \subsection*{Structure of the paper}
 
 The paper is organised as follows: \Cref{sec:back} presents a brief overview of the background theory and tools already presents;
@@ -320,36 +392,4 @@ programs;  \Cref{sec:validation} validates the effectiveness of out
 tools, by applying them to some use cases; finally,
 \Cref{sec:conclusions} summarizes the reached goals and proposes
 possible evolutions of our work.
-
-
-\subsection{Objectives}
- Di fatto i tool sono 3:
- 
- 1. model-checker maude
- 
- 2. model-checker java
- 
- 3. eclipse plugin
-
- la cui dipendenza è 1 $\longleftarrow$ 2 $\longleftarrow$ 3
- 
- Gli obbiettivi che vogliamo raggiungere sono
- 
- - semplificare la scrittura di processi co2 (plugin eclipse)
- 
- - automatizzare la scrittura di codice maude per la verifica di onestà della specifica co2 (plugin eclipse)
- 
- - automatizzare la scrittura di codice java che rispetti la specifica co2 (plugin eclipse)
- 
- - verificare l'onestà di programmi java (tool java)
-
- Descrivere a chi sono rivolti i tool.
-
-
-I tool sono rivolti a due tipi di utenti:
-- utenti esperti: hanno conoscenza di \coco e hanno familiarità nella scrittura
-di processi utilizzando le specifica, conoscono nel dettaglio la semantica e le
-proprietà di onestà e colpevolezza;
-- utenti base: conoscono il paradigma contract-oriented ad un livello astratto 
-ignorando il modello formale; hanno un'idea generica di cosa sià l'onestà 
-e la colpevolezza
+}

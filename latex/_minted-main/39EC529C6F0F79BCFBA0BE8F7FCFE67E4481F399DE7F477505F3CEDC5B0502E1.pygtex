@@ -1,0 +1,13 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{Contract} \PYG{n}{c} \PYG{o}{=} \PYG{n}{externalSum}\PYG{o}{().}\PYG{n+na}{add}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{o}{);}
+\PYG{n}{Contract} \PYG{n}{d} \PYG{o}{=} \PYG{n}{internalSum}\PYG{o}{().}\PYG{n+na}{add}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}b\PYGZdq{}}\PYG{o}{);}
+
+\PYG{n}{Public} \PYG{n}{pbl\PYGZus{}x} \PYG{o}{=} \PYG{n}{tell}\PYG{o}{(}\PYG{n}{c}\PYG{o}{);}
+\PYG{n}{Public} \PYG{n}{pbl\PYGZus{}y} \PYG{o}{=} \PYG{n}{tell}\PYG{o}{(}\PYG{n}{d}\PYG{o}{);}
+
+\PYG{n}{Session} \PYG{n}{x} \PYG{o}{=} \PYG{n}{pbl\PYGZus{}x}\PYG{o}{.}\PYG{n+na}{waitForSession}\PYG{o}{();}
+\PYG{n}{Message} \PYG{n}{msg} \PYG{o}{=} \PYG{n}{x}\PYG{o}{.}\PYG{n+na}{waitForReceive}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{o}{)}
+
+\PYG{n}{Session} \PYG{n}{y} \PYG{o}{=} \PYG{n}{pbl\PYGZus{}y}\PYG{o}{.}\PYG{n+na}{waitForSession}\PYG{o}{();}
+\PYG{n}{y}\PYG{o}{.}\PYG{n+na}{sendIfAllowed}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}b\PYGZdq{}}\PYG{o}{)}
+\end{Verbatim}
