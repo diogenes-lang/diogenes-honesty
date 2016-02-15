@@ -91,6 +91,8 @@ This is a measure of the trustworthiness of a participant
 in its past interactions: the lower is the reputation,
 the lower is the probability of being able to establish new sessions with it.
 
+
+
 \subsection*{Analysing contract-oriented services}
 %Dire che questo paradigma rende possibile degli attacchi (paragrafi a
 %partire da "When the SOC middleware detects contract violations..." in
@@ -124,27 +126,63 @@ In \coco we formalize services
 as processes that can advertise contracts with the $\tell{}{}$ primitive,
 and realize them with the $\fact{}{}$ primitive. %
 
-For example, consider the following \coco process: 
-\[
-\procP \; = \; (x) \; 
-\tell {} {\freeze{x}{\atomIn{a} \sumExt \atomIn{b}}} \cocoSeq \;
-\fact x {\atomIn{a}}
-\]
+\begin{figure}
+    \hrulefill
+    \scriptsize
+    \centering
+    \def\arraystretch{1.5}
+    \setlength{\tabcolsep}{5pt}
+  %  \begin{tabular}{p{4cm}p{7.5cm}} 
+
+    $\procP \; = \; (x) \; 
+    \tell {} {\freeze{x}{\atomIn{a} \sumExt \atomIn{b} \contrSeq \atomOut{c}}} \cocoSeq \;
+    \ask{x}{true}\; \cocoSeq \;
+   % \fact x {\atomIn{a}} \;\cocoPlus\; 
+    \fact x {\atomIn{b}} \;\cocoSeq\; \fact x {\atomOut{c}}$
+        %
+        
+\begin{mdframed}
+\begin{minted}[fontsize=\scriptsize,linenos]{java}
+Contract c = externalSum()
+             .add("a")
+             .add("b", internalSum().add("c"));
+
+Public pbl = tell(c);
+Session x = pbl.waitForSession();
+Message msg = x.waitForReceive("b")
+x.sendIfAllowed("c", "value");
+\end{minted}
+\end{mdframed}
+   
+    %\end{tabular}
+    
+    \hrulefill
+    \vspace{-5pt}
+    \caption{Comparison between \coco specification 
+    and corresponding java implementation} \label{fig:comp}
+    \vspace{-10pt}
+\end{figure}
+
+\Cref{fig:comp} shows how a \coco specification can be implemented in java
+using the \coco middleware's API.
+
 The process $\procP$ above advertises the contract 
-$\atomIn{a} \sumExt \atomIn{b}$, stating that 
+$\atomIn{a} \sumExt \atomIn{b} \contrSeq \atomOut{c}$ (line \lineno{5}), stating that 
 it will receive a message of kind $\atom{a}$ or $\atom{b}$. %
+If $\atom{b}$ has been received, then a message of type $\atom{c}$ has to be sent.
 When the contract is stipulated,
 the middleware creates a new session $x$, 
 and then the service waits to receive through that session 
-a message of kind $\atomIn{a}$. %
+a message of kind $\atomIn{b}$ (line \lineno{7}), then it sends
+a message of type $\atom{c}$ (line \lineno{8}). %
 The process $\procP$ is \emph{dishonest}: 
 indeed, if the other participant involved at session $x$ 
-sends a message of kind $\atom{b}$,
+sends a message of kind $\atom{a}$,
 then $\procP$ is not going to do the corresponding input. %
 Note however that $\procP$ is honest in all 
 contexts where either the session $x$ is not created,
 or the participant at the other endpoint of session $x$ 
-never sends messages of kind $\atom{b}$. %
+never sends messages of kind $\atom{a}$. %
 
 Another (more involved) example is the following:
 \[
@@ -246,6 +284,7 @@ maybe making it dishonest.
 We provide a verification technique that allows to skip steps \textit{\ref{step:1}}\textit{\ref{step:2}}\textit{\ref{step:3}} and to directly write distributed contract-oriented application whose
 honesty can be checked from the implementation.
 
+\hidden{
 Our methodology is validated against three use cases:
 \begin{description}
 
@@ -266,7 +305,7 @@ Our methodology is validated against three use cases:
 	
 \item[Blackjack:] the last example shows how a specification can be difficult to write and maintain. The advertised contracts are both recursive and the specification is split into different parts due to its complexity. There are also multiple sessions, parallel processes, if-then-else selection and recursive behaviour.
 \end{description}
-
+}
 Our tool allows to change the specifications \emph{on-the-fly} and immediately verify if the changes are good or not. 
 Also, considering the total time spent to check the honesty is in the order of few hundred of milliseconds, there is no additional overhead on development.
 
