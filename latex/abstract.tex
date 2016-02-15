@@ -1,39 +1,39 @@
 \begin{abstract}
-  Developing distributed applications typically requires
-  to integrate new code with legacy third-party services,
-  \eg, e-commerce facilities, maps, \etc %
-  These services cannot always be assumed to smoothly collaborate with each other;
-  rather, they live in a ``wild'' environment
-  where they must compete for resources,
-  and possibly diverge from the expected behaviour
-  if they find it convenient to do so. %
-  To overcome these issues,
-  some recent works have proposed to discipline the interaction
-  of mutually distrusting services through \emph{behavioural contracts}. %
-  The idea is a dynamic composition, 
-  where only those services with \emph{compliant} contracts 
-  can establish sessions through which they interact. %
-  Compliance between contracts guarantees that,
-  if services behave honestly, they will enjoy safe interactions. %
+  Modern distributed applications are typically obtained
+  by integrating new code with legacy (and possibly untrusted)
+  third-party services.
+  Some recent works have proposed to discipline the interaction
+  among these services through \emph{behavioural contracts}. %
+  The idea is a dynamic discovery and composition of services,
+  where only those with compliant contracts can interact,
+  and their execution is monitored to detect and sanction 
+  possible contract breaches.
   %
-  The interaction between two participant is \emph{monitored} by a \emph{contract-oriented middleware} which can sanction a culprit that does not respect the contract it advertised, decreasing its \emph{reputation}: the lower is the reputation,
-  the lower is the probability of being able to establish new sessions with it. This mechanism allows new form of attacks and a crucial problem is how to avoid these when deploying a service.
-
-  A crucial property of contract-oriented systems is \emph{honesty}.
-  A service is honest if it always respects the contract it advertises,
-  in all possible execution contexts. %
-  Being honest is important, because otherwise a service 
-  can be blamed and sanctioned by the middleware. %
-  Currently, honesty can be checked only at the specification level, 
-  but there is not any guarantee that the corresponding implementation 
-  preserves the property.
-  
-  We develop an Eclipse plugin that allows to write a formal specification of a contract-oriented application, which is automatically compiled 
-  to a Java implementation that exploits the above-mentioned middleware.
+  In this setting, a service is said \emph{honest} 
+  if it always respects the contract it advertises.
+  Being honest is important, because it guarantees a service 
+  not to be sanctioned; %
+  further, compositions of honest services enjoy deadlock-freedom. %
   %
-  We propose a new technique to verify honesty directly on the Java implementation.
+  However, developing honest programs is not an easy task,
+  because contracts must be respected even in the presence of
+  failures (whether accidental or malicious) of the context.
+  In this paper we present Diogenes, a tool which supports programmers
+  in writing honest Java programs.
   %
-  Overall, our work allows to reduce the time spent on developing 
-  contract-oriented services, and to make them more secure.
-  % , as well as the risk of incurring in sanctions.
+  Through an Eclipse plugin, programmers can
+  write a \coco specification of the service,
+  verify its honesty, and translate it into a skeletal Java program.
+  Then, they can refine this skeleton into proper Java code,
+  and use the tool to verify that its honesty has not been compromised
+  by the refinement.
 \end{abstract}
+
+%  Currently, honesty can be checked only at the specification level, 
+%  but there is not any guarantee that the corresponding implementation 
+%  preserves the property.
+%  We propose a new technique to verify honesty directly on the Java implementation.
+%  We develop  that allows to write a formal specification of a contract-oriented application, which is automatically compiled 
+%  to a Java implementation that exploits the above-mentioned middleware.
+%  Overall, our work allows to reduce the time spent on developing 
+%  contract-oriented services, and to make them more secure.
