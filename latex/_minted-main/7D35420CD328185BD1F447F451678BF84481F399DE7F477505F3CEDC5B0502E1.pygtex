@@ -1,0 +1,13 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{//some code A}
+
+\PYG{n}{parallel}\PYG{o}{(()\PYGZhy{}\PYGZgt{}\PYGZob{}}
+    \PYG{c+c1}{//some code B}
+\PYG{o}{\PYGZcb{});}
+
+\PYG{n}{parallel}\PYG{o}{(()\PYGZhy{}\PYGZgt{}\PYGZob{}}
+    \PYG{c+c1}{//some code C}
+\PYG{o}{\PYGZcb{});}
+
+\PYG{c+c1}{//some code D}
+\end{Verbatim}

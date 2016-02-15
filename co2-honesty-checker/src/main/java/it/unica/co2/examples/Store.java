@@ -64,24 +64,24 @@ public class Store extends Participant{
 			  Session<TST> s2 = pbl2.waitForSession();    // can throws ContractExpiredException
 			  s2.sendIfAllowed("req", price);
 			  
-			  try {
-			    Message msg = s2.waitForReceive(10_000, "yes", "no"); // can throws TimeExpiredException
-			    
-			    switch(msg.getLabel()) {
-			    	case "yes":
-			    		s1.sendIfAllowed("amount");
-				    	s1.waitForReceive("pay");
-				    	break;
-			    	case "no":
-			    		s1.sendIfAllowed("abort");
-			    		break;
-			    }
-			    
-			  }
-			  catch (TimeExpiredException e) {
+//			  try {
+//			    Message msg = s2.waitForReceive(10_000, "yes", "no"); // can throws TimeExpiredException
+//			    
+//			    switch(msg.getLabel()) {
+//			    	case "yes":
+//			    		s1.sendIfAllowed("amount");
+//				    	s1.waitForReceive("pay");
+//				    	break;
+//			    	case "no":
+//			    		s1.sendIfAllowed("abort");
+//			    		break;
+//			    }
+//			    
+//			  }
+//			  catch (TimeExpiredException e) {
 				 s1.sendIfAllowed("abort");
-				 s2.waitForReceive("yes", "no");
-			  }  
+//				 s2.waitForReceive("yes", "no");
+//			  }  
 			  
 			} catch (ContractExpiredException e) {
 			  s1.sendIfAllowed("abort");

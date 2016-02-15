@@ -1,0 +1,10 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{Contract} \PYG{n}{c} \PYG{o}{=} \PYG{o}{...;}
+\PYG{n}{Public} \PYG{n}{p} \PYG{o}{=} \PYG{n}{tell}\PYG{o}{(}\PYG{n}{c}\PYG{o}{);}
+\PYG{n}{Session} \PYG{n}{session} \PYG{o}{=} \PYG{n}{waitForSession}\PYG{o}{(}\PYG{n}{p}\PYG{o}{);}
+
+\PYG{n}{session}\PYG{o}{.}\PYG{n+na}{send}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}a\PYGZdq{}}\PYG{o}{);}
+\PYG{n}{session}\PYG{o}{.}\PYG{n+na}{waitForReceive}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}b\PYGZdq{}}\PYG{o}{,} \PYG{l+s}{\PYGZdq{}c\PYGZdq{}}\PYG{o}{);}
+
+\PYG{n}{session}\PYG{o}{.}\PYG{n+na}{send}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}d\PYGZdq{}}\PYG{o}{);}
+\end{Verbatim}
