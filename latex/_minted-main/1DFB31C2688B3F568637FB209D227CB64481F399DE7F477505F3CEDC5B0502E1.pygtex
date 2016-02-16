@@ -1,0 +1,15 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{ContractDefinition} \PYG{n}{C} \PYG{o}{=} \PYG{n}{def}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}C\PYGZdq{}}\PYG{o}{).}\PYG{n+na}{setContract}\PYG{o}{(}
+    \PYG{n}{externalSum}\PYG{o}{()}
+    \PYG{o}{.}\PYG{n+na}{add}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}order\PYGZdq{}}\PYG{o}{,} \PYG{n}{Sort}\PYG{o}{.}\PYG{n+na}{string}\PYG{o}{(),}
+        \PYG{n}{internalSum}\PYG{o}{()}
+        \PYG{o}{.}\PYG{n+na}{add}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}amount\PYGZdq{}}\PYG{o}{,} \PYG{n}{Sort}\PYG{o}{.}\PYG{n+na}{integer}\PYG{o}{())}
+        \PYG{o}{.}\PYG{n+na}{add}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}abort\PYGZdq{}}\PYG{o}{,} \PYG{n}{Sort}\PYG{o}{.}\PYG{n+na}{unit}\PYG{o}{())));}
+
+\PYG{n}{ContractDefinition} \PYG{n}{D} \PYG{o}{=} \PYG{n}{def}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}D\PYGZdq{}}\PYG{o}{).}\PYG{n+na}{setContract}\PYG{o}{(}
+    \PYG{n}{internalSum}\PYG{o}{()}
+    \PYG{o}{.}\PYG{n+na}{add}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}req\PYGZdq{}}\PYG{o}{,} \PYG{n}{Sort}\PYG{o}{.}\PYG{n+na}{string}\PYG{o}{(),}
+        \PYG{n}{externalSum}\PYG{o}{()}
+        \PYG{o}{.}\PYG{n+na}{add}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}ok\PYGZdq{}}\PYG{o}{,} \PYG{n}{Sort}\PYG{o}{.}\PYG{n+na}{unit}\PYG{o}{())}
+        \PYG{o}{.}\PYG{n+na}{add}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}no\PYGZdq{}}\PYG{o}{,} \PYG{n}{Sort}\PYG{o}{.}\PYG{n+na}{unit}\PYG{o}{())));}
+\end{Verbatim}
