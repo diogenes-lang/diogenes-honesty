@@ -11,7 +11,7 @@ the honesty of any valid process (if decidable); however,
 only a subset of processes can be translated to a java program, 
 so the following examples are limited to this subset.
 
-\subsection{Contracts}
+\paragraph{Contracts}
 A contract describes the intended behaviour of \emph{one} of the two
 participants involved in a session.  We use binary session
 types~\cite{Honda98esop} to define contracts.  Session types are terms
@@ -58,7 +58,7 @@ ContractDefinition D = def("D").setContract(
 where \code{def()}, \code{externalSum()}, \code{internalSum()} 
 are static methods of a factory.
 
-\subsection{Specification}
+\paragraph{Specification}
 A possible specification of a contract-oriented service is
 \begin{lstlisting}[
     language=coco,
@@ -134,7 +134,7 @@ The \cref{fig:outline} shows the outline derived from the above specification.
 \end{figure}
 }
 
-\subsection{Code generation}
+\paragraph{Code generation}
 The plugin automatically generates corresponding Maude and Java files.
 The former can be used directly within Eclipse to verify its honesty,
 exploiting the model-checking tool of~\cite{verifiable};
@@ -143,7 +143,7 @@ Considering the honest specification describe above, the skeleton looks like
 \begin{mdframed}
 \begin{minted}[
     fontsize=\scriptsize
-    %,linenos
+    ,linenos
     ]{java}
 public class Phonest extends Participant {
             
@@ -180,15 +180,16 @@ public class Phonest extends Participant {
 \end{minted}
 \end{mdframed}
 
-\hidden{
-The code is very simple and it is trivial to understand what represents
-each line.
-To better fill implementation specific constrains,
-the user can, for example, define the methods 
-\code{isValid(String order):boolean} and 
-\code{getAmount(String order):int}.
-}
-\subsection{Honesty verification}
+The \inlineCoco{tellRetract} corresponds to perform a tell with
+a delay (line \lineno{10}). The successive \code{waitForSession()} blocks until the delay is
+expired, throwing a \code{ContractExpiredException} if the session 
+was not fused in time (the contract has been retracted).
+The timeout \inlineCoco{t} corresponds to a \code{waitForReceived} with a timeout.
+The method blocks until a message with label \code{"ok"} or \code{"no"} is received,
+or throws a \code{TimeExpiredException} if the timeout expires.
+
+
+\paragraph{Honesty verification}
 Diogenes allows to verify the honesty of Java programs. 
 The only constrains that have to be respected are
 \begin{itemize}
