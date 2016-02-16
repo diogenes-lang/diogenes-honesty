@@ -23,7 +23,7 @@ an \atom{order}, then it answers \atom{amount} or \atom{abort}.
 The answer depends on another service, \ie an insurance service,
 which waits for a \atom{req}est, then it responds \atom{ok} or \atom{no}.
 
-The contracts can be written as follows:
+The two contracts can be written as follows:
 %
 \begin{lstlisting}[language=coco,basicstyle=\scriptsize\ttfamily]
 contract C { order? string . ( amount! int (+) abort! ) }

@@ -1,11 +1,6 @@
 \begin{thebibliography}{1}
 
-\bibitem{Banavar99dc}
-G.~Banavar, T.~D. Chandra, R.~E. Strom, and D.~C. Sturman.
-\newblock A case for message oriented middleware.
-\newblock In {\em Proc. Distributed Computing}, pages 1--18, 1999.
-
-\bibitem{CO2}
+\bibitem{CO2middleware}
 M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
 \newblock A contract-oriented middleware.
 \newblock In {\em Proc. {FACS}}, 2015.
@@ -15,10 +10,5 @@ M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
 M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
 \newblock Verifiable abstractions for contract-oriented systems.
 \newblock 2015.
-
-\bibitem{juhaszviper}
-U.~Juhasz, I.~T. Kassios, P.~M{\"u}ller, M.~Novacek, M.~Schwerhoff, and A.~J.
-  Summers.
-\newblock Viper: A verification infrastructure for permission-based reasoning.
 
 \end{thebibliography}

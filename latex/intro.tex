@@ -53,6 +53,7 @@ a contract violation, and then suitably punish it.
 % the culprit is sanctioned by decreasing its reputation and
 % consequently its chances to establish new sessions.
 
+\hidden{
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.8\textwidth]{primitive-schema.png}
@@ -84,8 +85,9 @@ and it detects when some expected action is missing.
 
 For instance, in (4) the execution monitor has detected  
 an attempt of participant $\pmv B$ to do some illegal action. %
-Upon detection of a contract violation, the middleware 
-punishes the culprit, %
+}
+In~\cite{CO2middleware} is presented a contract-oriented middleware
+that punishes the culprit %
 by suitably decreasing its \emph{reputation}. 
 This is a measure of the trustworthiness of a participant
 in its past interactions: the lower is the reputation,
@@ -99,7 +101,8 @@ the lower is the probability of being able to establish new sessions with it.
 %50-shades-of-honesty). Concludere dicendo che allo stato attuale manca la
 %possibilita' di verificare la honesty dalla specifica all'implementazione.
 
-The sanction mechanism featured by the contract-oriented middleware
+The sanction mechanism
+% featured by the contract-oriented middleware
 allows for a new form of attacks: 
 malicious users can try
 to make some service sanctioned by exploiting possible discrepancies between
