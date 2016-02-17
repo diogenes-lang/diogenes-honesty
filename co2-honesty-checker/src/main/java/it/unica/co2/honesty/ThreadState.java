@@ -248,6 +248,8 @@ class ThreadState {
 	
 	public void pushSum(SumDS sum, String... prefixes ) {
 		
+		logger.info("OOOOOOOOOOOOOOOOO: "+ Arrays.toString(prefixes));
+		
 		Set<String> toReceive = new HashSet<>();
 		
 		assert sum.prefixes.size()==0;

@@ -196,7 +196,7 @@ in a separated method, \eg
     fontsize=\scriptsize
 %    ,linenos
     ]{java}
-public int getOrderAmount(String order) {
+public int getOrderAmount(String order) throws MyException {
     File f = new File("/orders/"+order);
     
     try (
@@ -205,24 +205,71 @@ public int getOrderAmount(String order) {
         String line = br.readLine();
         return Integer.valueOf()[1]);        
     }
-    catch (Exception e) {
-        throw new RuntimeException(e);
-    }
-    
+    catch (IOException e) {
+        throw new MyException("Error: cannot read the order", e);
+    }    
 }
 \end{minted}
 \end{mdframed}
+and change the number 100 in line \lineno{19} with \code{getOrderAmount(v)}.
 
 \paragraph{Diogenes}
 Diogenes allows to verify the honesty of Java programs.
 The honesty of a class extending \code{it.unica.co2.api.process.Participant} 
-can be verified using the static method \code{HonestyChecker.isHonest(Phonest.class)}.
+can be verified using the static method 
+\code{HonestyChecker.isHonest(Class<? extends Participant>)}.
 
 It returns the enumeration \code{HonestyResult} that can be
 \begin{itemize}
 \item \code{HONEST}: the tool was able to extract a \coco model and verify that it is honest;
 \item \code{DISHONEST}: as above, but the model was dishonest;
-\item \code{UNKNOWN}: the tool was unable to extract a model. It can be caused by several issues, such as an error of the tool or unhandled exceptions within the class under test.
+\item \code{UNKNOWN}: the tool was unable to extract a model. 
+It can be caused by several issues, such as an error of the 
+tool or unhandled exceptions within the class under test.
 \end{itemize}
 
 Consider for example the refinement provided above.
+What happens if the method throws \code{MyException} at runtime?
+The user wants to be sure that its application covers all possible scenarios,
+so we provide the annotation \code{@SkipMethod (value="<value>")}.
+Diogenes treats annotated methods in this way:
+1) retrieves all the declared exceptions;
+2) inspects the return type;
+3) symbolically considers both the case of a normal termination of the method
+(returning the value specified in the annotation, if provided),
+and all the possible exceptional terminations, 
+independently from what the method really do.
+
+Annotating the code as follows
+\begin{mdframed}
+\begin{minted}[
+    fontsize=\scriptsize
+%    ,linenos
+    ]{java}
+@SkipMethod("100")
+public int getOrderAmount(String order) throws MyException { ... }
+\end{minted}
+\end{mdframed}
+
+and invoking \code{HonestyChecker.isHonest(Phonest.class)},
+Diogenes answers \code{UNKNOWN} and prints the following information
+\begin{mdframed}
+\begin{minted}[
+    fontsize=\scriptsize
+%    ,linenos
+    ]{java}
+error details: MyException: 
+    This exception is thrown by the honesty checker. Please catch it!
+        at it.unica.co2.store.Store$Phonest.getOrderAmount(Store.java:166)
+        at it.unica.co2.store.Store$Phonest.run(Store.java:129)
+        at it.unica.co2.honesty.HonestyChecker.runProcess(HonestyChecker.java:182)
+\end{minted}
+\end{mdframed}
+Finally, executing \code{x.sendIfAllowed("abort")} on catching the exception,
+the come back \emph{honest}.
+
+
+
+
+
+

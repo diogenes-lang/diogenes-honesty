@@ -5,6 +5,7 @@ import static it.unica.co2.api.contract.utils.ContractFactory.*;
 import java.io.FileNotFoundException;
 
 import co2api.ContractException;
+import co2api.ContractExpiredException;
 import co2api.Message;
 import co2api.Session;
 import co2api.TST;
@@ -31,7 +32,7 @@ public class Insurance extends Participant {
 		
 		Message msg = session.waitForReceive("req");
 		
-		isVoid(1);
+		System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOO-"+isVoid());
 		
 		Integer amount;
 		try {
@@ -54,13 +55,17 @@ public class Insurance extends Participant {
 		}
 	}
 
-	@SkipMethod
+	@SkipMethod("true")
 	private boolean isInsurable(Integer amount) throws RuntimeException, FileNotFoundException {
-		return amount < 100;
+		
+		throw new ContractExpiredException("");
+		
+//		return amount < 100;
 	}
 	
-	@SkipMethod
-	private void isVoid(Integer amount) {
+	@SkipMethod("foo")
+	private String[] isVoid() {
+		return new String[]{"pippo"};
 	}
 	
 	public static void main(String[] args) {

@@ -517,7 +517,9 @@ public class Co2Listener extends ListenerAdapter {
 					
 					tstate.setCurrentProcess(sum);		//set the current process
 					tstate.printInfo();
-					tstate.pushSum(sum, Stream.concat(Stream.of("$norm"), Arrays.stream(choiceSet).mapToObj(Integer::toString).map(x-> "$ex".concat(x))).toArray(String[]::new));
+					tstate.pushSum(sum, Stream.concat(
+							Stream.of("$norm"), 
+							Arrays.stream(Arrays.copyOfRange(choiceSet, 0, exceptions.length)).mapToObj(Integer::toString).map(x-> "$ex".concat(x))).toArray(String[]::new));
 					
 					IntChoiceFromList cg = new IntChoiceFromList(tstate.getSkipMethodRuntimeExceptionGeneratorName(), choiceSet);
 					
@@ -556,7 +558,7 @@ public class Co2Listener extends ListenerAdapter {
 						tstate.setCurrentPrefix(tau);
 						tstate.printInfo();
 						
-						ti.createAndThrowException(exception, "This exception is thrown by the honesty checker. Please handle it!");
+						ti.createAndThrowException(exception, "This exception is thrown by the honesty checker. Please catch it!");
 						
 						return;
 					}
@@ -573,37 +575,88 @@ public class Co2Listener extends ListenerAdapter {
 						tstate.popSum("$norm");
 						tstate.setCurrentPrefix(tau);
 						tstate.printInfo();
+						
 					}
 				}
 			}
 		}
 		
+		
+		//TODO: considera un refactoring del codice seguente
 		Instruction nextInsn = null;
 		
 		switch (insn.getMethodInfo().getReturnTypeCode()) {
 		
 		case Types.T_BOOLEAN:
-		case Types.T_BYTE:
+			if (ai!=null) {
+				//set the return value
+				boolean returnValue = Boolean.parseBoolean(ai.valueAsString());
+				log.info("[skip] setting BOOLEAN return value: "+returnValue);
+				ti.getModifiableTopFrame().push(returnValue? 1:0);
+			}
+			nextInsn = new IRETURN();
+			break;
+			
 		case Types.T_CHAR: 
+			if (ai!=null) {
+				//set the return value
+				char returnValue = ai.valueAsString().charAt(0);
+				log.info("[skip] setting INT return value: "+returnValue);
+				ti.getModifiableTopFrame().push(returnValue);
+			}
+			nextInsn = new IRETURN();
+			break;
+		
+		case Types.T_BYTE:
 		case Types.T_SHORT: 
 		case Types.T_INT:
+			if (ai!=null) {
+				//set the return value
+				int returnValue = Integer.parseInt(ai.valueAsString());
+				log.info("[skip] setting INT return value: "+returnValue);
+				ti.getModifiableTopFrame().push(returnValue);
+			}
 			nextInsn = new IRETURN();
 			break;
 			
 		case Types.T_LONG:
+			if (ai!=null) {
+				//set the return value
+				long returnValue = Long.parseLong(ai.valueAsString());
+				log.info("[skip] setting LONG return value: "+returnValue);
+				ti.getModifiableTopFrame().pushLong(returnValue);
+			}
 			nextInsn = new LRETURN();
 			break;
 			
 		case Types.T_FLOAT:
+			if (ai!=null) {
+				//set the return value
+				float returnValue = Float.parseFloat(ai.valueAsString());
+				log.info("[skip] setting FLOAT return value: "+returnValue);
+				ti.getModifiableTopFrame().pushFloat(returnValue);
+			}
 			nextInsn = new FRETURN();
 			break;
 			
 		case Types.T_DOUBLE:
+			if (ai!=null) {
+				//set the return value
+				double returnValue = Double.parseDouble(ai.valueAsString());
+				log.info("[skip] setting DOUBLE return value: "+returnValue);
+				ti.getModifiableTopFrame().pushDouble(returnValue);
+			}
 			nextInsn = new DRETURN();
 			break;
 			
 		case Types.T_ARRAY:
-		case Types.T_REFERENCE: 
+		case Types.T_REFERENCE:
+			if (ai!=null) {
+				//set the return value
+				String returnValue = ai.valueAsString();
+				log.info("[skip] setting REF return value: "+returnValue);
+				ti.getModifiableTopFrame().pushRef(ti.getHeap().newString(returnValue, ti).getObjectRef());
+			}
 			nextInsn = new ARETURN();
 			break;
 			
@@ -698,8 +751,9 @@ public class Co2Listener extends ListenerAdapter {
 				// get the choice generator
 				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(ts.getWaitForReceiveChoiceGeneratorName(), IntChoiceFromList.class);
 				
-				// take a choice
+				assert cg!=null : "choice generator not found: "+ts.getWaitForReceiveChoiceGeneratorName();
 				
+				// take a choice
 				int choice = cg.getNextChoice();
 				
 				if (choice==actions.size()) {
