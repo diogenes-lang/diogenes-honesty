@@ -1,8 +1,27 @@
 \section{Architecture}
 
+\Cref{fig:data-flow} shows the data-flow through our tools.
+
+\begin{figure}
+    \includegraphics[width=\textwidth]{img/diogenes-arch.png}
+    \caption{Data flow schema}
+    \label{fig:data-flow}
+\end{figure}
+
+\paragraph{Eclipse plugin}
+The development of the Eclipse plugin mainly depends on
+two framework: Xtext\cite{xtext-site}, a framework for 
+development of programming languages and domain-specific languages, and
+Xsemantics\cite{xsemantics-site}, a DSL for writing type systems
+for languages implemented in Xtext.
+
+The Xtext grammar was defined with focus on \cite{verifiable}.
 
 
-\subsection{Eclipse plugin}
-The development of the Eclipse plugin mainly depends on Xtext\footnote{\url{https://eclipse.org/Xtext/}}, a framework for 
-development of programming languages and domain-specific languages, while
-the static type-checking relies on Xsemantics\footnote{\url{http://xsemantics.sourceforge.net/}}, a DSL for writing type systems for languages implemented in Xtext.
+\subsection{Diogenes}
+\cite{visser2003model}, \cite{lerda2001addressing}
+
+
+
+
+

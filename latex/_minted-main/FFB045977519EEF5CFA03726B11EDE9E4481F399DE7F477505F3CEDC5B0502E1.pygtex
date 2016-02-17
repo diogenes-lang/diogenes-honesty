@@ -1,0 +1,7 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{error} \PYG{n}{details}\PYG{o}{:} \PYG{n}{MyException}\PYG{o}{:}
+    \PYG{n}{This} \PYG{n}{exception} \PYG{n}{is} \PYG{n}{thrown} \PYG{n}{by} \PYG{n}{the} \PYG{n}{honesty} \PYG{n}{checker}\PYG{o}{.} \PYG{n}{Please} \PYG{k}{catch} \PYG{n}{it}\PYG{o}{!}
+        \PYG{n}{at} \PYG{n}{it}\PYG{o}{.}\PYG{n+na}{unica}\PYG{o}{.}\PYG{n+na}{co2}\PYG{o}{.}\PYG{n+na}{store}\PYG{o}{.}\PYG{n+na}{Store\PYGZdl{}Phonest}\PYG{o}{.}\PYG{n+na}{getOrderAmount}\PYG{o}{(}\PYG{n}{Store}\PYG{o}{.}\PYG{n+na}{java}\PYG{o}{:}\PYG{l+m+mi}{166}\PYG{o}{)}
+        \PYG{n}{at} \PYG{n}{it}\PYG{o}{.}\PYG{n+na}{unica}\PYG{o}{.}\PYG{n+na}{co2}\PYG{o}{.}\PYG{n+na}{store}\PYG{o}{.}\PYG{n+na}{Store\PYGZdl{}Phonest}\PYG{o}{.}\PYG{n+na}{run}\PYG{o}{(}\PYG{n}{Store}\PYG{o}{.}\PYG{n+na}{java}\PYG{o}{:}\PYG{l+m+mi}{129}\PYG{o}{)}
+        \PYG{n}{at} \PYG{n}{it}\PYG{o}{.}\PYG{n+na}{unica}\PYG{o}{.}\PYG{n+na}{co2}\PYG{o}{.}\PYG{n+na}{honesty}\PYG{o}{.}\PYG{n+na}{HonestyChecker}\PYG{o}{.}\PYG{n+na}{runProcess}\PYG{o}{(}\PYG{n}{HonestyChecker}\PYG{o}{.}\PYG{n+na}{java}\PYG{o}{:}\PYG{l+m+mi}{182}\PYG{o}{)}
+\end{Verbatim}

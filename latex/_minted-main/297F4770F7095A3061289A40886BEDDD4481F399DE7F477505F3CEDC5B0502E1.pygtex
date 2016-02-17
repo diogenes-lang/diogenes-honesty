@@ -1,0 +1,4 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nd}{@SkipMethod}
+\PYG{k+kd}{public} \PYG{k+kt}{int} \PYG{n+nf}{getOrderAmount}\PYG{o}{(}\PYG{n}{String} \PYG{n}{order}\PYG{o}{)} \PYG{k+kd}{throws} \PYG{n}{MyException} \PYG{o}{\PYGZob{}} \PYG{o}{...} \PYG{o}{\PYGZcb{}}
+\end{Verbatim}

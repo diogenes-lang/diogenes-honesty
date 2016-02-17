@@ -590,7 +590,7 @@ public class Co2Listener extends ListenerAdapter {
 		case Types.T_BOOLEAN:
 			if (ai!=null) {
 				//set the return value
-				boolean returnValue = Boolean.parseBoolean(ai.valueAsString());
+				boolean returnValue = ai.valueAsString().isEmpty()? true: Boolean.parseBoolean(ai.valueAsString());
 				log.info("[skip] setting BOOLEAN return value: "+returnValue);
 				ti.getModifiableTopFrame().push(returnValue? 1:0);
 			}
@@ -600,7 +600,7 @@ public class Co2Listener extends ListenerAdapter {
 		case Types.T_CHAR: 
 			if (ai!=null) {
 				//set the return value
-				char returnValue = ai.valueAsString().charAt(0);
+				char returnValue = ai.valueAsString().isEmpty()? 'a': ai.valueAsString().charAt(0);
 				log.info("[skip] setting INT return value: "+returnValue);
 				ti.getModifiableTopFrame().push(returnValue);
 			}
@@ -612,7 +612,7 @@ public class Co2Listener extends ListenerAdapter {
 		case Types.T_INT:
 			if (ai!=null) {
 				//set the return value
-				int returnValue = Integer.parseInt(ai.valueAsString());
+				int returnValue = ai.valueAsString().isEmpty()? 0 : Integer.parseInt(ai.valueAsString());
 				log.info("[skip] setting INT return value: "+returnValue);
 				ti.getModifiableTopFrame().push(returnValue);
 			}
@@ -622,7 +622,7 @@ public class Co2Listener extends ListenerAdapter {
 		case Types.T_LONG:
 			if (ai!=null) {
 				//set the return value
-				long returnValue = Long.parseLong(ai.valueAsString());
+				long returnValue = ai.valueAsString().isEmpty()? 0: Long.parseLong(ai.valueAsString());
 				log.info("[skip] setting LONG return value: "+returnValue);
 				ti.getModifiableTopFrame().pushLong(returnValue);
 			}
@@ -632,7 +632,7 @@ public class Co2Listener extends ListenerAdapter {
 		case Types.T_FLOAT:
 			if (ai!=null) {
 				//set the return value
-				float returnValue = Float.parseFloat(ai.valueAsString());
+				float returnValue = ai.valueAsString().isEmpty()? 0: Float.parseFloat(ai.valueAsString());
 				log.info("[skip] setting FLOAT return value: "+returnValue);
 				ti.getModifiableTopFrame().pushFloat(returnValue);
 			}
@@ -642,7 +642,7 @@ public class Co2Listener extends ListenerAdapter {
 		case Types.T_DOUBLE:
 			if (ai!=null) {
 				//set the return value
-				double returnValue = Double.parseDouble(ai.valueAsString());
+				double returnValue = ai.valueAsString().isEmpty()? 0: Double.parseDouble(ai.valueAsString());
 				log.info("[skip] setting DOUBLE return value: "+returnValue);
 				ti.getModifiableTopFrame().pushDouble(returnValue);
 			}

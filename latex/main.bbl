@@ -1,5 +1,16 @@
 \begin{thebibliography}{1}
 
+\bibitem{xsemantics-site}
+Xsemantics - a dsl for writing rules for xtext languages.
+\newblock \url{http://xsemantics.sourceforge.net/}.
+\newblock Accessed: 2016-02.
+
+\bibitem{xtext-site}
+Xtext - a framework for development of programming languages and
+  domain-specific languages.
+\newblock \url{http://www.eclipse.org/Xtext/}.
+\newblock Accessed: 2016-02.
+
 \bibitem{CO2middleware}
 M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
 \newblock A contract-oriented middleware.
@@ -10,5 +21,16 @@ M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
 M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
 \newblock Verifiable abstractions for contract-oriented systems.
 \newblock 2015.
+
+\bibitem{lerda2001addressing}
+F.~Lerda and W.~Visser.
+\newblock Addressing dynamic issues of program model checking.
+\newblock In {\em Proceedings of the 8th international SPIN workshop on Model
+  checking of software}, pages 80--102. Springer-Verlag New York, Inc., 2001.
+
+\bibitem{visser2003model}
+W.~Visser, K.~Havelund, G.~Brat, S.~Park, and F.~Lerda.
+\newblock Model checking programs.
+\newblock {\em Automated Software Engineering}, 10(2):203--232, 2003.
 
 \end{thebibliography}

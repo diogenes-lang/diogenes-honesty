@@ -48,51 +48,8 @@ between participants whose contracts are compliant. %
 The interaction is \textit{monitored} by the middleware, %
 which can blame a participant responsible of
 a contract violation, and then suitably punish it. 
-% The notion of \emph{reputation} can
-% be used to punish a blamed service: whenever a contract is violated,
-% the culprit is sanctioned by decreasing its reputation and
-% consequently its chances to establish new sessions.
-
-\hidden{
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.8\textwidth]{primitive-schema.png}
-  \caption{A schema of the primitive behaviours (from~\cite{CO2}).} 
-  \label{fig:primitives}
-\end{figure}
-
-\Cref{fig:primitives} illustrates the main features of the middleware
-presented in~\cite{CO2middleware}. %
-In (1), the participant $\pmv A$ advertises its contract to the middleware, %
-making it available to other participants.
 %
-In (2), the middleware determines that the contracts of 
-$\pmv A$ and $\pmv B$ are compliant,
-and then it establishes a session through which
-the two participants can interact. %
-This interaction consists in sending and receiving messages, 
-similarly to a standard message-oriented middleware (MOM)~\cite{Banavar99dc}: % 
-for instance, in (3) participant $\pmv A$ delivers to the middleware a message for $\pmv B$,
-% with the primitive $\send$,
-which can then collect it from the middleware.
-
-%The interaction between participants consists in sending and receiving messages, similarly to a standard message-oriented middleware (MOM)\cite{Banavar99dc}: in a established session, a message is delivered to the middleware by a participant and can be collected by the other one. 
-Unlike standard MOMs, the interaction happening in each session is monitored by the middleware, 
-which checks whether contracts are respected or not. 
-In particular, the execution monitor verifies that 
-actions can only occur when prescribed by their contracts, %
-and it detects when some expected action is missing.
-
-For instance, in (4) the execution monitor has detected  
-an attempt of participant $\pmv B$ to do some illegal action. %
-}
-In~\cite{CO2middleware} is presented a contract-oriented middleware
-that punishes the culprit %
-by suitably decreasing its \emph{reputation}. 
-This is a measure of the trustworthiness of a participant
-in its past interactions: the lower is the reputation,
-the lower is the probability of being able to establish new sessions with it.
-
+In particular, we focus on the middleware presented in \cite{CO2middleware}.
 
 
 \subsection*{Analysing contract-oriented services}
@@ -124,7 +81,8 @@ or even because of malicious behaviour.
 To study honesty at the specification level we can use \coco, 
 a core process calculus for contract-oriented 
 computing~\cite{BZ10lics,BTZ12sacs}.
-
+%
+\hidden{
 In \coco we formalize services 
 as processes that can advertise contracts with the $\tell{}{}$ primitive,
 and realize them with the $\fact{}{}$ primitive. %
@@ -254,7 +212,8 @@ the $\fact y {\atomOut{b}}$ cannot be reached
 Second, also in those contexts where both sessions are created,
 if the other participant at session $x$ never sends the $\atom{a}$ message,
 then $\fact y {\atomOut{b}}$ cannot be reached.
-
+}
+%
 The problem of verifying honesty is not trivial, 
 also because one must consider \emph{all} possible execution contexts, 
 which are infinite. %
@@ -270,7 +229,7 @@ A further issue is that,
 even if we assume an honest \coco specification, 
 it is still possible that honesty no longer holds 
 when refining the specification into an actual implementation 
-(e.g.\ a Java program using the middleware APIs of~\cite{CO2}). %
+(e.g.\ a Java program using the middleware APIs of~\cite{CO2middleware}). %
 % the risk of incurring a sanction at runtime, so preserving the reputation.
 % we still need to verify that the corresponding implementation is honest, too. %
 % reducing 

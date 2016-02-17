@@ -1,0 +1,15 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{public} \PYG{k+kt}{int} \PYG{n+nf}{getOrderAmount}\PYG{o}{(}\PYG{n}{String} \PYG{n}{order}\PYG{o}{)} \PYG{k+kd}{throws} \PYG{n}{MyException} \PYG{o}{\PYGZob{}}
+    \PYG{n}{File} \PYG{n}{f} \PYG{o}{=} \PYG{k}{new} \PYG{n}{File}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}/orders/\PYGZdq{}}\PYG{o}{+}\PYG{n}{order}\PYG{o}{);}
+
+    \PYG{k}{try} \PYG{o}{(}
+            \PYG{n}{BufferedReader} \PYG{n}{br} \PYG{o}{=} \PYG{k}{new} \PYG{n}{BufferedReader}\PYG{o}{(} \PYG{k}{new} \PYG{n}{FileReader}\PYG{o}{(}\PYG{n}{f}\PYG{o}{)} \PYG{o}{)}
+            \PYG{o}{)} \PYG{o}{\PYGZob{}}
+        \PYG{n}{String} \PYG{n}{line} \PYG{o}{=} \PYG{n}{br}\PYG{o}{.}\PYG{n+na}{readLine}\PYG{o}{();}
+        \PYG{k}{return} \PYG{n}{Integer}\PYG{o}{.}\PYG{n+na}{valueOf}\PYG{o}{()[}\PYG{l+m+mi}{1}\PYG{o}{]);}
+    \PYG{o}{\PYGZcb{}}
+    \PYG{k}{catch} \PYG{o}{(}\PYG{n}{IOException} \PYG{n}{e}\PYG{o}{)} \PYG{o}{\PYGZob{}}
+        \PYG{k}{throw} \PYG{k}{new} \PYG{n}{MyException}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}Error: cannot read the order\PYGZdq{}}\PYG{o}{,} \PYG{n}{e}\PYG{o}{);}
+    \PYG{o}{\PYGZcb{}}
+\PYG{o}{\PYGZcb{}}
+\end{Verbatim}
