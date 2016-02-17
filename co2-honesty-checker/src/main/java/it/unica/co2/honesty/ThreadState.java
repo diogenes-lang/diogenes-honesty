@@ -25,7 +25,6 @@ import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.RetractDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
-import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
 
 /**
  * this class gather CO2 'execution informations' of a thread
@@ -84,11 +83,15 @@ class ThreadState {
 	}
 	
 	public String getWaitForReceiveChoiceGeneratorName () {
-		return "waitForReceive_"+this.co2ProcessesStack.peek().sumStack.size();
+		return "waitForReceiveCG_"+this.co2ProcessesStack.peek().sumStack.size();
 	}
 	
 	public String getWaitForSessionChoiceGeneratorName () {
-		return "waitForSession_"+this.co2ProcessesStack.peek().sumStack.size();
+		return "waitForSessionCG_"+this.co2ProcessesStack.peek().sumStack.size();
+	}
+	
+	public String getSkipMethodRuntimeExceptionGeneratorName () {
+		return "skipMethodCG_"+this.co2ProcessesStack.peek().ifElseStack.size();
 	}
 	
 	/**
@@ -247,24 +250,7 @@ class ThreadState {
 		
 		Set<String> toReceive = new HashSet<>();
 		
-		for (PrefixDS p : sum.prefixes) {
-			
-			if (p instanceof TauDS) {
-				if(!toReceive.add("t"))
-					throw new IllegalStateException("the set already contain a tau");
-			}
-			else if (p instanceof TellDS) {
-				if(!toReceive.add("tell"))
-					throw new IllegalStateException("the set already contain a tell");
-			}
-			else if (p instanceof AskDS) {
-				if(!toReceive.add("ask"))
-					throw new IllegalStateException("the set already contain an ask");
-			}
-			else if (p instanceof DoReceiveDS) {
-				toReceive.add(((DoReceiveDS) p).action);
-			}
-		}
+		assert sum.prefixes.size()==0;
 		
 		toReceive.addAll(Arrays.asList(prefixes));
 		

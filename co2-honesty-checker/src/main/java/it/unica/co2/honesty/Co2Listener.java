@@ -1,15 +1,16 @@
 package it.unica.co2.honesty;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ import gov.nasa.jpf.jvm.bytecode.LRETURN;
 import gov.nasa.jpf.jvm.bytecode.RETURN;
 import gov.nasa.jpf.jvm.bytecode.SwitchInstruction;
 import gov.nasa.jpf.search.Search;
+import gov.nasa.jpf.vm.AnnotationInfo;
 import gov.nasa.jpf.vm.ArrayFields;
 import gov.nasa.jpf.vm.BooleanChoiceGenerator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
@@ -138,7 +140,7 @@ public class Co2Listener extends ListenerAdapter {
 	private MethodInfo LoggerFactory_getLogger;
 	
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
-	private HashSet<MethodInfo> methodsToSkip = new HashSet<>();
+	private Map<MethodInfo, AnnotationInfo> methodsToSkip = new HashMap<>();
 	
 	private Map<String, Boolean> contractsDelay = new HashMap<>();
 	private Map<String, Integer> contractsCount = new HashMap<>();
@@ -153,9 +155,11 @@ public class Co2Listener extends ListenerAdapter {
 			
 		for (MethodInfo m : ci.getDeclaredMethodInfos() ) {
 			
-			if (m.getAnnotation(SkipMethod.class.getName())!=null) {
+			AnnotationInfo ai = m.getAnnotation(SkipMethod.class.getName());
+			
+			if (ai!=null) {
 				log.info("[SKIP] adding method "+m.getFullName());
-				methodsToSkip.add(m);
+				methodsToSkip.put(m, ai);
 			}
 		}
 		
@@ -198,8 +202,8 @@ public class Co2Listener extends ListenerAdapter {
 			if (Session_sendIfAllowedInt==null)
 				Session_sendIfAllowedInt = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
 			
-			methodsToSkip.add(ci.getMethod("amIOnDuty", "()Ljava/lang/Boolean;", false));
-			methodsToSkip.add(ci.getMethod("amICulpable", "()Ljava/lang/Boolean;", false));
+			methodsToSkip.put(ci.getMethod("amIOnDuty", "()Ljava/lang/Boolean;", false), null);
+			methodsToSkip.put(ci.getMethod("amICulpable", "()Ljava/lang/Boolean;", false), null);
 		}
 		
 		if (ci.getName().equals(Message.class.getName())) {
@@ -209,8 +213,8 @@ public class Co2Listener extends ListenerAdapter {
 		}
 		
 		if (ci.getName().equals(TST.class.getName())) {
-			methodsToSkip.add(ci.getMethod("setFromString", "(Ljava/lang/String;)V", false));
-			methodsToSkip.add(ci.getMethod("setContext", "(Ljava/lang/String;)V", false));
+			methodsToSkip.put(ci.getMethod("setFromString", "(Ljava/lang/String;)V", false), null);
+			methodsToSkip.put(ci.getMethod("setContext", "(Ljava/lang/String;)V", false), null);
 		}
 		
 		if (ci.getName().equals(LoggerFactory.class.getName())) {
@@ -270,8 +274,8 @@ public class Co2Listener extends ListenerAdapter {
 		else if (LoggerFactory_getLogger!=null && insn==LoggerFactory_getLogger.getFirstInsn()) {
 			handle_LoggerFactory_getLogger(ti, insn);
 		}
-		else if (methodsToSkip.contains(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
-			handleSkipMethod(ti, insn);
+		else if (methodsToSkip.containsKey(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
+			handleSkipMethod(tstate, ti, insn);
 		}
 	}
 	
@@ -475,9 +479,104 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 
-	private void handleSkipMethod(ThreadInfo ti, Instruction insn) {
+	private void handleSkipMethod(ThreadState tstate, ThreadInfo ti, Instruction insn) {
 		log.info("");
 		log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
+		
+
+		AnnotationInfo ai = methodsToSkip.get(insn.getMethodInfo());
+		String[] exceptions = insn.getMethodInfo().getThrownExceptionClassNames();
+		
+		if (ai!=null && exceptions!=null) {	// the method contains the @SkipMethod annotation
+			
+			log.info("declared exceptions: "+Arrays.toString(exceptions));
+			
+			//remove empty strings (default case)
+			exceptions = Arrays.stream(exceptions).filter(x -> !x.isEmpty()).toArray(String[]::new);
+			
+			int[] choiceSet = new int[exceptions.length+1];
+			for (int i=0; i<exceptions.length; i++) {
+				choiceSet[i] = i;
+				try {
+					Class.forName(exceptions[i]);
+				}
+				catch (ClassNotFoundException e) {
+					throw new IllegalStateException("cannot find the class '"+exceptions[i]+"'");
+				}
+			}
+			choiceSet[exceptions.length] = exceptions.length;
+			
+			if (exceptions.length>0) {
+				// add a new boolean choice generator
+				
+				if (!ti.isFirstStepInsn()) {
+					
+					log.info("[skip] TOP HALF");
+					
+					SumDS sum = new SumDS();
+					
+					tstate.setCurrentProcess(sum);		//set the current process
+					tstate.printInfo();
+					tstate.pushSum(sum, Stream.concat(Stream.of("$norm"), Arrays.stream(choiceSet).mapToObj(Integer::toString).map(x-> "$ex".concat(x))).toArray(String[]::new));
+					
+					IntChoiceFromList cg = new IntChoiceFromList(tstate.getSkipMethodRuntimeExceptionGeneratorName(), choiceSet);
+					
+					boolean cgSetOk = ti.getVM().getSystemState().setNextChoiceGenerator(cg);
+					
+					assert cgSetOk : "error setting the choice generator";
+					
+					ti.skipInstruction(insn);
+					log.info("re-executing: "+insnToString(insn));
+					
+					return;				
+				}
+				else {
+					log.info("[skip] BOTTOM HALF");
+					
+					// bottom half - reexecution at the beginning of the next
+					// transition
+					IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(tstate.getSkipMethodRuntimeExceptionGeneratorName(), IntChoiceFromList.class);
+					
+					assert cg != null : "no 'skipMethod_booleanGenerator' BooleanChoiceGenerator found";
+					
+					int myChoice = cg.getNextChoice();
+					
+					if (myChoice!=exceptions.length){
+						/*
+						 * throw corresponding Exception
+						 */
+						String exception = exceptions[myChoice];
+						log.info("[skip] throwing a "+exception);
+						
+						SumDS sum = tstate.getSum();
+						TauDS tau = new TauDS();
+						sum.prefixes.add(tau);
+						
+						tstate.popSum("$ex"+myChoice);
+						tstate.setCurrentPrefix(tau);
+						tstate.printInfo();
+						
+						ti.createAndThrowException(exception, "This exception is thrown by the honesty checker. Please handle it!");
+						
+						return;
+					}
+					else {
+						/*
+						 * continue normally
+						 */
+						log.info("[skip] continue normally");
+						
+						SumDS sum = tstate.getSum();
+						TauDS tau = new TauDS();
+						sum.prefixes.add(tau);
+						
+						tstate.popSum("$norm");
+						tstate.setCurrentPrefix(tau);
+						tstate.printInfo();
+					}
+				}
+			}
+		}
 		
 		Instruction nextInsn = null;
 		
@@ -508,7 +607,7 @@ public class Co2Listener extends ListenerAdapter {
 			nextInsn = new ARETURN();
 			break;
 			
-
+			
 		case Types.T_VOID:
 		default: nextInsn = new RETURN();
 		}
@@ -860,7 +959,8 @@ public class Co2Listener extends ListenerAdapter {
 					ClassInfo ci = ClassInfo.getInitializedClassInfo(ContractExpiredException.class.getName(), ti);
 					
 					// create the new exception and push on the top stack
-					ti.getModifiableTopFrame().push(ti.getHeap().newObject(ci, ti).getObjectRef());
+					StackFrame sf = ti.getModifiableTopFrame(); 
+					sf.push(ti.getHeap().newObject(ci, ti).getObjectRef());
 					ATHROW athrow = new ATHROW();
 					
 					//schedule the next instruction
@@ -1210,7 +1310,7 @@ public class Co2Listener extends ListenerAdapter {
 				}
 				
 				log.info("[SKIP] [T-ID "+tstate.getId()+"] adding method "+enteredMethod.getFullName());
-				methodsToSkip.add(enteredMethod);
+				methodsToSkip.put(enteredMethod, null);
 			}
 			else {
 				log.info("NOT recursive call AND NOT already built");

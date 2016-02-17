@@ -1,0 +1,15 @@
+\section{Conclusion}
+
+\subsection{Limitations}
+- JPF: non è possibile dare in pasto qualunque codice a JPF (scritture su DB, librerie esterne, metodi nativi, etc..), per non sempre è possibile estrarre il modello co2 dal codice Java. È possibile utilizzare l'annotazione @SkipMethod per evitare l'esecuzione da parte di JPF. Perciò, se il codice è adeguatamente modularizzato, lo si piò comunque dare in pasto al tool. Lo svantaggio è che non sappiamo cosa può succedere a runtime durante l'invocazione al medoto (eccezioni in genere), magari rendendoci disonesto.
+
+- time constrains
+
+- action types
+
+\subsection{Future works}
+
+\paragraph{Eclipse plugin}
+- graphical editor (You can combine the text-based formats created with Xtext with many graphical editing frameworks, e.g. Sirius or Graphiti. Xtext offers this flexibility by supporting EMF as common data layer. An Xtext language can be used as storage format for another primary editor, and you can even embed text editors inside a graphical editor.)
+
+\paragraph{Diogenes}

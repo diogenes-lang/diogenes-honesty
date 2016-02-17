@@ -2,14 +2,14 @@
 
 In this section we show the main features of our tools.
 %
-Firstly, we give an overview of possible \coco processes
+Firstly, we give an overview of the possible \coco processes
 that you can write within Eclipse. 
-Then, we present the verification tool for java programs.
+Then, we present Diogenes, our verification tool for java programs.
 
 The plugin supports the full \coco syntax and you can check
 the honesty of any valid process (if decidable); however,
 only a subset of processes can be translated to a java program, 
-so the following examples are limited to this subset.
+so the following examples are limited to a language's subset.
 
 \paragraph{Contracts}
 A contract describes the intended behaviour of \emph{one} of the two
@@ -19,8 +19,8 @@ of a process algebra featuring internal/external choice, and
 recursion.
 
 Suppose we are modelling a store: it waits for receive
-an \atom{order}, then it answers \atom{amount} or \atom{abort}.
-The answer depends on another service, \ie an insurance service,
+an \atom{order}, then it answers sending the \atom{amount} or an \atom{abort} message.
+The answer may depend on another service, \ie an insurance service,
 which waits for a \atom{req}est, then it responds \atom{ok} or \atom{no}.
 
 The two contracts can be written as follows:
@@ -30,7 +30,7 @@ contract C { order? string . ( amount! int (+) abort! ) }
 contract D { req! string . ( ok? + no? ) }
 \end{lstlisting}
 External actions are followed by the question mark (\code{?}) and grouped
-with the symbols \code{+}; similarly we use the
+with the symbol \code{+}; similarly we use the
 exclamation mark (\code{!}) and the symbol \code{(+)} for
 internal actions and choices.
 
@@ -188,11 +188,41 @@ The timeout \inlineCoco{t} corresponds to a \code{waitForReceived} with a timeou
 The method blocks until a message with label \code{"ok"} or \code{"no"} is received,
 or throws a \code{TimeExpiredException} if the timeout expires.
 
+\paragraph{Refining the skeleton}
+The order amount is still hardcoded, so we decide to externalize its computation
+in a separated method, \eg
+\begin{mdframed}
+\begin{minted}[
+    fontsize=\scriptsize
+%    ,linenos
+    ]{java}
+public int getOrderAmount(String order) {
+    File f = new File("/orders/"+order);
+    
+    try (
+            BufferedReader br = new BufferedReader( new FileReader(f) )
+            ) {
+        String line = br.readLine();
+        return Integer.valueOf()[1]);        
+    }
+    catch (Exception e) {
+        throw new RuntimeException(e);
+    }
+    
+}
+\end{minted}
+\end{mdframed}
 
-\paragraph{Honesty verification}
-Diogenes allows to verify the honesty of Java programs. 
-The only constrains that have to be respected are
+\paragraph{Diogenes}
+Diogenes allows to verify the honesty of Java programs.
+The honesty of a class extending \code{it.unica.co2.api.process.Participant} 
+can be verified using the static method \code{HonestyChecker.isHonest(Phonest.class)}.
+
+It returns the enumeration \code{HonestyResult} that can be
 \begin{itemize}
-\item extends the 
+\item \code{HONEST}: the tool was able to extract a \coco model and verify that it is honest;
+\item \code{DISHONEST}: as above, but the model was dishonest;
+\item \code{UNKNOWN}: the tool was unable to extract a model. It can be caused by several issues, such as an error of the tool or unhandled exceptions within the class under test.
 \end{itemize}
 
+Consider for example the refinement provided above.
