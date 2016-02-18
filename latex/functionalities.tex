@@ -14,15 +14,16 @@ so the following examples are limited to a language's subset.
 \paragraph{Contracts}
 A contract describes the intended behaviour of \emph{one} of the two
 participants involved in a session.  We use binary session
-types~\cite{Honda98esop} to define contracts.  Session types are terms
-of a process algebra featuring internal/external choice, and
-recursion.
+types~\cite{Honda98esop} to define contracts. 
+% Session types are terms
+%of a process algebra featuring internal/external choice, and
+%recursion.
 
 Suppose we are modelling a store: it waits for receive
-an \atom{order}, then it answers sending the \atom{amount} or an \atom{abort} message.
+an \atom{order}, then it sends the corresponding \atom{amount} or an \atom{abort} message.
 The answer may depend on another service, \ie an insurance service,
 which waits for a \atom{req}est, then it responds \atom{ok} or \atom{no}.
-
+%
 The two contracts can be written as follows:
 %
 \begin{lstlisting}[language=coco,basicstyle=\scriptsize\ttfamily]
@@ -41,18 +42,12 @@ The corresponding java contract is
     %,linenos
     ]{java}
 ContractDefinition C = def("C").setContract(
-    externalSum()
-    .add("order", Sort.string(), 
-        internalSum()
-        .add("amount", Sort.integer())
-        .add("abort", Sort.unit())));
+    externalSum().add("order", Sort.string(), internalSum()
+                                              .add("amount", Sort.integer())
+                                              .add("abort")));
         
 ContractDefinition D = def("D").setContract(
-    internalSum()
-    .add("req", Sort.string(), 
-        externalSum()
-        .add("ok", Sort.unit())
-        .add("no", Sort.unit())));
+    internalSum().add("req", Sort.string(), externalSum().add("ok").add("no")));
 \end{minted}
 \end{mdframed}
 where \code{def()}, \code{externalSum()}, \code{internalSum()} 
@@ -199,15 +194,10 @@ in a separated method, \eg
 public int getOrderAmount(String order) throws MyException {
     File f = new File("/orders/"+order);
     
-    try (
-            BufferedReader br = new BufferedReader( new FileReader(f) )
-            ) {
-        String line = br.readLine();
-        return Integer.valueOf()[1]);        
+    try (BufferedReader br = new BufferedReader( new FileReader(f) )) {
+        return Integer.valueOf(br.readLine());        
     }
-    catch (IOException e) {
-        throw new MyException("Error: cannot read the order", e);
-    }    
+    catch (IOException e) { throw new MyException("Error: cannot read the order", e); }    
 }
 \end{minted}
 \end{mdframed}
@@ -238,7 +228,7 @@ Diogenes treats annotated methods in this way:
 3) symbolically considers both the case of a normal termination of the method
 (returning the value specified in the annotation, if provided),
 and all the possible exceptional terminations, 
-independently from what the method really do.
+independently from the method's instructions.
 
 Annotating the code as follows
 \begin{mdframed}
@@ -265,8 +255,8 @@ error details: MyException:
         at it.unica.co2.honesty.HonestyChecker.runProcess(HonestyChecker.java:182)
 \end{minted}
 \end{mdframed}
-Finally, executing \code{x.sendIfAllowed("abort")} on catching the exception,
-the come back \emph{honest}.
+Finally, adding \code{x.sendIfAllowed("abort")} when catching the exception,
+the program come back \emph{honest}.
 
 
 

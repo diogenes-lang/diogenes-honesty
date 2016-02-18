@@ -243,115 +243,12 @@ and then by to apply there the model-checking tool of~\cite{verifiable}. %
 Analysis techniques for checking honesty at the level of of implementation
 are therefore needed in order to develop secure contract-oriented applications.
 
-%He can only check its \coco specification with the model-checker provided in \cite{verifiable}, writing a representation in the Maude language\footnote{Maude is a programming language supporting both equational and rewriting logic specification\cite{Maude01}}.
-
 \subsection*{Contributions}
-%Praticamente qui ci va la roba che hai scritto a partire da "This Master’s
-%thesis want...". Questa e' la parte piu' importante di tutto il lavoro,
-%quindi va fatta con estrema cura. Intanto cerca di omettere le parti piu'
-%tecniche (ad es. la roba sul parser non fa parte del contributo
-%scientifico del lavoro, quindi andrebbe spostata nei capitoli dove dai i
-%dettagli tecnici). Focalizzati invece su quelle metodologiche: 
 
-%Cosa ci guadagna lo sviluppatore nell'usare i tuoi tool? Come li hai validati? 
-%Il paradigma e' abbastanza generale da essere utile in scenari concreti? 
-%Gli strumenti di analisi sono sufficientemente precisi? (qui devi rimarcare che li hai testati on successo su una suite di casi di studio).
-%Sono sufficientemente efficienti? 
-%Insomma, tutto quello che si puo' dire di positivo su quello che hai fatto, va scritto qui.
+We support programmers on the development of contract-oriented 
+applications, providing:
+1) an Eclipse plugin that allows to write a \coco specification of the service,
+to verify its honesty, and generate a skeletal Java program;
+2) Diogenes, the tool to verify that the honesty has not been compromised
+by the refinement of the specification.
 
-We provide a support to programmers on the development of contract-oriented 
-applications. In particular, we target on two kind of user:
-\begin{itemize}
-\item \emph{expert user}: it masters the \coco syntax and semantics, and it knows the formal notion of honesty and culpability; 
-
-\item \emph{normal user}: it is familiar with contract-oriented computing but ignore
-the formal aspects behind this paradigm. We can consider each (java) developer as
-a normal user, considering the learning curve of the main aspects is generally low.
-\niconote{probabilmente l'affermazione precedente è inappropriata, 
-però gli studenti di FS sono riusciti a capire il paradigma e utilizzare
- il middleware con facilità.}
-\end{itemize}
-
-We develop an Eclipse plugin that allows expert users to focus on writing
-\coco processes (without carrying about its maude representation) and verify their honesty.
-Static checks help to avoid common
-mistakes immediately, unlike what happens writing maude programs.
-Moreover, the plugin removes the prerequisite to know the maude language.
-
-Furthermore, the plugin automatically generate skeletons of java programs that
-can be adapted to fill implementation specific constraints or add any further 
-logic to it, maybe making it \emph{dishonest}.
-
-Finally, we provide a verification technique that allows normal users
-to directly write distributed contract-oriented application whose
-honesty can be checked from the implementation.
-
-\hidden{
-The possibility of auto-generating Java code from a \coco process simplifies and speeds up the development of a distributed application.
-Without using our tools, a possible approach can be:
-\begin{enumerate}[(i),topsep=5pt,itemsep=1pt,parsep=0pt]
-	\item\label{step:1} write the \coco process that models the application;
-	\item\label{step:2} write the Maude program to model-check the specification;
-	\item\label{step:3} repeat steps \textit{\ref{step:1}} and \textit{\ref{step:2}} until the process becomes honest;
-	\item\label{step:4} implement the process using an high-level language (\eg Java).
-\end{enumerate}
-Considering that there is not any tool to support steps \textit{\ref{step:1}} and \textit{\ref{step:2}}, this methodology is tedious and wasteful. For example, consider the case in which a specification changes: the first three steps must be repeated and the implementation modified accordingly. 
-Since software specifications change quite often, 
-this leads to poor maintainability of any non trivial application. %
-Furthermore, there is no check that validates the implementation 
-resulting from step \textit{\ref{step:4}}.
-
-We simplify the overall process. %
-Our plugin speeds up the writing of \coco processes, 
-reducing the time spent on step \textit{\ref{step:1}}. 
-Step \textit{\ref{step:2}} is completely removed (the Maude program is auto-generated, so the knowledge of another language is not needed), 
-and step \textit{\ref{step:3}} changes accordingly. %
-
-The main contribution is made on step \textit{\ref{step:4}}: the Java application is automatically generated, 
-and it can be modified by the programmer to add any further logic to it, 
-maybe making it dishonest. 
-We provide a verification technique that allows to skip steps \textit{\ref{step:1}}\textit{\ref{step:2}}\textit{\ref{step:3}} and to directly write distributed contract-oriented application whose
-honesty can be checked from the implementation.
-}
-
-
-
-\hidden{
-Our methodology is validated against three use cases:
-\begin{description}
-
-\item[Online store:] 
-  a store advertise a contract to interact with buyers. 
-  This example, deliberately simple to explain in detail 
-  all the verification phases, 
-  shows how a \coco specification is translated to Maude and in Java, 
-  and how honesty of the Java application is checked.
-  
-\item[Voucher distribution system:] this example involves multiple sessions 
-  and demonstrate the benefit of our work. 
-  First, we provide an honest specification of the process, 
-  showing that both Maude and Java programs respond in the same way. 
-  Then, we change our specification into a dishonest one:
-  our verification technique correctly detects that 
-  the corresponding Java program is dishonest as well.
-	
-\item[Blackjack:] the last example shows how a specification can be difficult to write and maintain. The advertised contracts are both recursive and the specification is split into different parts due to its complexity. There are also multiple sessions, parallel processes, if-then-else selection and recursive behaviour.
-\end{description}
-
-Our tool allows to change the specifications \emph{on-the-fly} and immediately verify if the changes are good or not. 
-Also, considering the total time spent to check the honesty is in the order of few hundred of milliseconds, there is no additional overhead on development.
-}
-
-\hidden{
-\subsection*{Structure of the paper}
-
-The paper is organised as follows: \Cref{sec:back} presents a brief overview of the background theory and tools already presents;
-%  describe the Eclipse plugin and the verification strategy adopted for Java programs.
-\Cref{sec:co2-to-java} shows the transformation from \coco processes
-to Java programs and it presents the \coco Eclipse plugin;
-\Cref{sec:java-honesty} explains how we verify honesty of Java
-programs;  \Cref{sec:validation} validates the effectiveness of out
-tools, by applying them to some use cases; finally,
-\Cref{sec:conclusions} summarizes the reached goals and proposes
-possible evolutions of our work.
-}
