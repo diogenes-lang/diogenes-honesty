@@ -1,11 +1,12 @@
 \section{Architecture}
 
 \Cref{fig:data-flow} shows the data-flow through our tools.
-The Eclipse plugin has not dependencies,
+
+The Eclipse plugin has no dependencies,
 but integrates a way to directly call the Maude model-checker.
 %
 Instead, Diogenes strongly depends on
-the Maude model-checker, whose configuration is mandatory before using it.
+the Maude model-checker.
 
 
 \begin{figure}[t]
@@ -44,7 +45,6 @@ to catch specific method invocations representing I/O actions
 directed to the middleware~\cite{CO2middleware},
 and simulate \emph{all} the possible response that 
 the application can receive from it.
-
 Once the \coco model is extracted, we verify its honesty
 with the model checking technique of~\cite{verifiable}.
 

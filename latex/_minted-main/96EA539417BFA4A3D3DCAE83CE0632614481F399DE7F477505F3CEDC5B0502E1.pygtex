@@ -15,7 +15,6 @@
 
             \PYG{k}{try} \PYG{o}{\PYGZob{}}
                 \PYG{n}{Message} \PYG{n}{msg\PYGZus{}1} \PYG{o}{=} \PYG{n}{y}\PYG{o}{.}\PYG{n+na}{waitForReceive}\PYG{o}{(}\PYG{l+m+mi}{10000}\PYG{o}{,} \PYG{l+s}{\PYGZdq{}ok\PYGZdq{}}\PYG{o}{,} \PYG{l+s}{\PYGZdq{}no\PYGZdq{}}\PYG{o}{);}
-
                 \PYG{k}{switch} \PYG{o}{(}\PYG{n}{msg\PYGZus{}1}\PYG{o}{.}\PYG{n+na}{getLabel}\PYG{o}{())} \PYG{o}{\PYGZob{}}
                     \PYG{k}{case} \PYG{l+s}{\PYGZdq{}ok\PYGZdq{}}\PYG{o}{:} \PYG{n}{x}\PYG{o}{.}\PYG{n+na}{sendIfAllowed}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}amount\PYGZdq{}}\PYG{o}{,} \PYG{l+m+mi}{100}\PYG{o}{);} \PYG{k}{break}\PYG{o}{;}
                     \PYG{k}{case} \PYG{l+s}{\PYGZdq{}no\PYGZdq{}}\PYG{o}{:} \PYG{n}{x}\PYG{o}{.}\PYG{n+na}{sendIfAllowed}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}abort\PYGZdq{}}\PYG{o}{);} \PYG{k}{break}\PYG{o}{;}
