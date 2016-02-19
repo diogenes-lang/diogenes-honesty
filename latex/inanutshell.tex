@@ -57,7 +57,7 @@ A naïve \coco specification of our store is the following
     basicstyle=\scriptsize\ttfamily,
     numbers=left,
     numbersep=12pt]
-specification Pdishonest {
+specification StoreDishonest {
     tellAndWait x C .
     receive x [
         order? v:string . (
@@ -99,7 +99,7 @@ A possible way to fix the above specification is the following:
     basicstyle=\scriptsize\ttfamily,
     numbers=left,
     numbersep=12pt]
-specification Phonest {
+specification StoreHonest {
     tellAndWait x C .
     receive x [
         order? v:string . (
@@ -148,7 +148,7 @@ Diogenes generates a skeleton that looks like as follows
     fontsize=\scriptsize
     ,linenos
     ]{java}
-public class Phonest extends Participant { 
+public class StoreHonest extends Participant { 
    public void run() {
       Session<TST> x = tellAndWait(C);           // tellAndWait x C
        
@@ -187,7 +187,7 @@ The timeout \inlineCoco{t} corresponds to a \code{waitForReceived} with a timeou
 The method blocks until a message with label \code{"ok"} or \code{"no"} is received,
 or throws a \code{TimeExpiredException} if the timeout expires.}
 
-\paragraph{Refining the skeleton.}
+%\paragraph{Refining the skeleton.}
 The order amount is still hardcoded, so we decide to separate its computation
 in a separated method, \eg
 \begin{mdframed}
@@ -195,56 +195,42 @@ in a separated method, \eg
     fontsize=\scriptsize
 %    ,linenos
     ]{java}
-public int getOrderAmount(String order) throws MyException {
-    File f = new File("/orders/"+order);
-    try (BufferedReader br = new BufferedReader( new FileReader(f) )) {
-        return Integer.valueOf(br.readLine());        
-    }
-    catch (IOException e) { throw new MyException("Error: cannot read the order", e); }    
-}
+public int getOrderAmount(String order) throws MyException {...}
 \end{minted}
 \end{mdframed}
-and change the number 100 in line \lineno{19} with \code{getOrderAmount(v)}.
+and change the number 100 at line \lineno{19} with \code{getOrderAmount(v)}.
+The method could read the order's amount from a file or database,
+and suppose that each possible exception
+is caught and hidden behind \code{MyException}. 
 
-\paragraph{Diogenes.}
-Diogenes allows to verify the honesty of Java programs.
-The honesty of a class extending \code{it.unica.co2.api.process.Participant} 
-can be verified using the static method 
-\code{HonestyChecker.isHonest(Class<? extends Participant>)}.
-
-It returns the enumeration \code{HonestyResult} that can be
+\paragraph{Verification.}
+Diogenes allows to verify the honesty of our store
+invoking the static method
+\code{HonestyChecker.isHonest(StoreHonest.class)}.
+%
+It returns a value from the enumeration \code{HonestyResult}, that can be
 \begin{itemize}
-\item \code{HONEST}: the tool was able to extract a \coco model and verify that it is honest;
+\item \code{HONEST}: the tool was able to extract a \coco model and verify that is honest;
 \item \code{DISHONEST}: as above, but the model was dishonest;
 \item \code{UNKNOWN}: the tool was unable to extract a model. 
 It can be caused by several issues, such as an error of the 
 tool or unhandled exceptions within the class under test.
 \end{itemize}
 
-Consider for example the refinement provided above.
-What happens if the method throws \code{MyException} at runtime?
-The user wants to be sure that its application covers all possible scenarios,
-so we provide the annotation \code{@SkipMethod (value="<value>")}.
-Diogenes treats annotated methods in this way:
+Considering \code{StoreHonest} after the refinement provided above,
+we need to specify how the method have to be examined by the tool.
+The method must be annotated with \code{@SkipMethod (value="<value>")}.
+%What happens if the method throws \code{MyException} at runtime.
+%The user wants to be sure that its application covers all possible scenarios,
+%so we provide the annotation \code{@SkipMethod (value="<value>")}.
+Diogenes treats it as follows:
 1) retrieves all the declared exceptions;
 2) inspects the return type;
 3) symbolically considers both the case of a normal termination of the method
 (returning the value specified in the annotation, if provided),
-and all the possible exceptional terminations, 
-independently from the method's instructions.
+and all the possible exceptional terminations.
 
-Annotating the code as follows
-\begin{mdframed}
-\begin{minted}[
-    fontsize=\scriptsize
-%    ,linenos
-    ]{java}
-@SkipMethod
-public int getOrderAmount(String order) throws MyException { ... }
-\end{minted}
-\end{mdframed}
-
-and invoking \code{HonestyChecker.isHonest(Phonest.class)},
+Once the method is annotated,
 Diogenes answers \code{UNKNOWN} and prints the following information
 \begin{mdframed}
 \begin{minted}[
@@ -258,6 +244,8 @@ error details: MyException:
         at it.unica.co2.honesty.HonestyChecker.runProcess(HonestyChecker.java:182)
 \end{minted}
 \end{mdframed}
+It means that in the case of a method failure,
+the program is terminated and the store may be culpable.
 Finally, adding \code{x.sendIfAllowed("abort")} when catching the exception,
 the program come back \emph{honest}.
 
