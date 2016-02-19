@@ -1,14 +1,19 @@
 \section{Conclusions}\label{sec:conclusions}
 
+The Eclipse plugin is still under development and can evolve very quickly,
+maybe not ensuring backward compatibility.
+In our future plans, we are considering to combine
+the text-based formats with one graphical editing framework, e.g. 
+Sirius~\cite{sirius-site} or Graphiti~\cite{graphiti-site}, 
+exploiting the EMF (Eclipse Modelling Framework)
+as common data layer.
 
-\paragraph{Eclipse plugin}
-- graphical editor (You can combine the text-based formats created with Xtext with many graphical editing frameworks, e.g. Sirius or Graphiti. Xtext offers this flexibility by supporting EMF as common data layer. An Xtext language can be used as storage format for another primary editor, and you can even embed text editors inside a graphical editor.)
-
-\paragraph{Diogenes}
-- time constrains
-- action types
-
-
+Regarding to Diogenes, we are trying to extend
+the verification technique to \emph{timed} session
+types~\cite{Bartoletti15forte}, already supported by the contract-oriented middleware of \cite{CO2middleware}. 
+Future versions of Diogenes may also provide 
+better output informations, \eg indicating what part of the program made it
+dishonest.
 
 \endinput
 

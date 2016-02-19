@@ -1,20 +1,5 @@
 \section{Architecture}
 
-\Cref{fig:data-flow} shows the data-flow through our tools.
-
-The Eclipse plugin has no dependencies,
-but integrates a way to directly call the Maude model-checker.
-%
-Instead, Diogenes strongly depends on
-the Maude model-checker.
-
-
-\begin{figure}[t]
-    \includegraphics[width=\textwidth]{img/diogenes-arch.png}
-    \caption{Data flow schema}
-    \label{fig:data-flow}
-\end{figure}
-
 \paragraph{Eclipse plugin.}
 The development of the Eclipse plugin mainly depends on
 two framework: Xtext~\cite{xtext-site}, a framework for 
@@ -27,7 +12,7 @@ used to define the language's grammar, \coco in our case.
 We implement the grammar focusing on~\cite{verifiable},
 and we extend it
 in order to allow a complete mapping between \coco and Java.
-
+%
 The translation from \coco to Java and Maude code
 takes place with two generators, that explore the abstract syntax tree. 
 
@@ -47,4 +32,15 @@ and simulate \emph{all} the possible response that
 the application can receive from it.
 Once the \coco model is extracted, we verify its honesty
 with the model checking technique of~\cite{verifiable}.
+Therefore, Diogenes strongly depends on the Maude model-checker,
+as shown by the data-flow in \Cref{fig:data-flow}.
 
+On the contrary, the Eclipse plugin has no dependencies,
+it integrates the possibility to directly call 
+the Maude model-checker, reporting its output into the Eclipse console.
+
+\begin{figure}[t]
+    \includegraphics[width=\textwidth]{img/diogenes-arch.png}
+    \caption{Data flow schema}
+    \label{fig:data-flow}
+\end{figure}

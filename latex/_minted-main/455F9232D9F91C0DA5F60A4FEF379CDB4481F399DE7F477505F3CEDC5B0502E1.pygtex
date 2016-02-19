@@ -1,6 +1,5 @@
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{k+kd}{public} \PYG{k+kd}{class} \PYG{n+nc}{Phonest} \PYG{k+kd}{extends} \PYG{n}{Participant} \PYG{o}{\PYGZob{}}
-
     \PYG{k+kd}{public} \PYG{k+kt}{void} \PYG{n+nf}{run}\PYG{o}{()} \PYG{o}{\PYGZob{}}
         \PYG{n}{Session}\PYG{o}{\PYGZlt{}}\PYG{n}{TST}\PYG{o}{\PYGZgt{}} \PYG{n}{x} \PYG{o}{=} \PYG{n}{tellAndWait}\PYG{o}{(}\PYG{n}{C}\PYG{o}{);}
         \PYG{n}{Message} \PYG{n}{msg} \PYG{o}{=} \PYG{n}{x}\PYG{o}{.}\PYG{n+na}{waitForReceive}\PYG{o}{(}\PYG{l+s}{\PYGZdq{}order\PYGZdq{}}\PYG{o}{);}

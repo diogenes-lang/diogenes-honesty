@@ -44,8 +44,7 @@ The corresponding java contract is
 ContractDefinition C = def("C").setContract(
     externalSum().add("order", Sort.string(), internalSum()
                                               .add("amount", Sort.integer())
-                                              .add("abort")));
-        
+                                              .add("abort")));     
 ContractDefinition D = def("D").setContract(
     internalSum().add("req", Sort.string(), externalSum().add("ok").add("no")));
 \end{minted}
@@ -140,8 +139,7 @@ Considering the honest specification describe above, the skeleton looks like
     fontsize=\scriptsize
     ,linenos
     ]{java}
-public class Phonest extends Participant {
-            
+public class Phonest extends Participant { 
     public void run() {
         Session<TST> x = tellAndWait(C);    
         Message msg = x.waitForReceive("order");
@@ -192,7 +190,6 @@ in a separated method, \eg
     ]{java}
 public int getOrderAmount(String order) throws MyException {
     File f = new File("/orders/"+order);
-    
     try (BufferedReader br = new BufferedReader( new FileReader(f) )) {
         return Integer.valueOf(br.readLine());        
     }

@@ -1,5 +1,15 @@
 \begin{thebibliography}{10}
 
+\bibitem{graphiti-site}
+{Graphiti} -- a framework to create graphical modelling.
+\newblock \url{https://eclipse.org/graphiti/}.
+\newblock Accessed: 2016-02.
+
+\bibitem{sirius-site}
+{Sirius} -- a framework to create graphical modelling.
+\newblock \url{https://eclipse.org/sirius/}.
+\newblock Accessed: 2016-02.
+
 \bibitem{xsemantics-site}
 {Xsemantics} -- a {DSL} for writing rules for {Xtext} languages.
 \newblock \url{http://xsemantics.sourceforge.net/}.
@@ -10,6 +20,11 @@
   domain-specific languages.
 \newblock \url{http://www.eclipse.org/Xtext/}.
 \newblock Accessed: 2016-02.
+
+\bibitem{Bartoletti15forte}
+M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
+\newblock Compliance and subtyping in timed session types.
+\newblock In {\em Proc. {FORTE}}, pages 161--177, 2015.
 
 \bibitem{CO2middleware}
 M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
