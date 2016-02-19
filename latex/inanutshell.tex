@@ -80,9 +80,9 @@ Then, the store advertises the contract \code{D}, waits to establish a session
 \code{y} (line \lineno{5}) and send a \atom{req}uest (line \lineno{6}) with
 the value \code{v}.
 Finally, the store waits to receive a response \atom{ok} or \atom{no},
-and responds \atom{amount} or \atom{abort} on \code{x}. 
+and responds \atom{amount} or \atom{abort} on \code{x} (line \lineno{7}-\lineno{9}). 
 The action \inlineCoco{t} models a timeout 
-that covers the case of no response (lines \lineno{7}-\lineno{10}).
+that covers the case of no response (line \lineno{10}).
 
 Our tool correctly detecteds that the above specification is \emph{dishonest}.
 Indeed, if the session \code{y}
@@ -136,11 +136,11 @@ The \cref{fig:outline} shows the outline derived from the above specification.
 \end{figure}
 }
 
-\paragraph{Code generation.}
+\paragraph{Code generation and refinement.}
 The plugin automatically generates corresponding Maude and Java files.
 The former can be used directly within Eclipse to verify its honesty,
 exploiting the model-checking tool of~\cite{verifiable};
-the latter represents a working java skeleton. 
+the latter represents a Java skeleton. 
 Considering the honest specification describe above,
 Diogenes generates a skeleton that looks like as follows
 \begin{mdframed}
@@ -198,40 +198,45 @@ in a separated method, \eg
 public int getOrderAmount(String order) throws MyException {...}
 \end{minted}
 \end{mdframed}
-and change the number 100 at line \lineno{19} with \code{getOrderAmount(v)}.
+and change the number \code{100} at line \lineno{19} with \code{getOrderAmount(v)}.
 The method could read the order's amount from a file or database,
 and suppose that each possible exception
 is caught and hidden behind \code{MyException}. 
+The failure of this method can be considered not deterministic,
+so we need to ``instruct'' our verification tool
+in order to consider all the possible method terminations.
+%
+Therefore, we provide the annotation \code{@SkipMethod(value="<value>")}, that
+is interpreted by the checker as follows:
+
+\begin{itemize}[noitemsep,topsep=0pt]
+\item ignore what the method really do\footnote{This point impose
+that an annotated method does not perform any action
+directed to the middleware.};
+\item consider \code{"<value>"} as the returning value on success;
+\item consider the declared exceptions as possible exit points on failure.
+\end{itemize}
+
+Now Diogenes can symbolically consider both the case of a normal 
+termination of the method
+(returning the value specified in the annotation, if provided),
+and all the possible exceptional terminations.
 
 \paragraph{Verification.}
-Diogenes allows to verify the honesty of our store
+The honesty of our store can be verified
 invoking the static method
 \code{HonestyChecker.isHonest(StoreHonest.class)}.
 %
 It returns a value from the enumeration \code{HonestyResult}, that can be
-\begin{itemize}
+
+\begin{itemize}[noitemsep,topsep=0pt]
 \item \code{HONEST}: the tool was able to extract a \coco model and verify that is honest;
-\item \code{DISHONEST}: as above, but the model was dishonest;
-\item \code{UNKNOWN}: the tool was unable to extract a model. 
-It can be caused by several issues, such as an error of the 
-tool or unhandled exceptions within the class under test.
+\item \code{DISHONEST}: as above, but the model is dishonest;
+\item \code{UNKNOWN}: the tool was unable to extract a model,
+\eg due to unhandled exceptions within the class under test.
 \end{itemize}
 
-Considering \code{StoreHonest} after the refinement provided above,
-we need to specify how the method have to be examined by the tool.
-The method must be annotated with \code{@SkipMethod (value="<value>")}.
-%What happens if the method throws \code{MyException} at runtime.
-%The user wants to be sure that its application covers all possible scenarios,
-%so we provide the annotation \code{@SkipMethod (value="<value>")}.
-Diogenes treats it as follows:
-1) retrieves all the declared exceptions;
-2) inspects the return type;
-3) symbolically considers both the case of a normal termination of the method
-(returning the value specified in the annotation, if provided),
-and all the possible exceptional terminations.
-
-Once the method is annotated,
-Diogenes answers \code{UNKNOWN} and prints the following information
+In our example, it returns \code{UNKNOWN} and prints the following information
 \begin{mdframed}
 \begin{minted}[
     fontsize=\scriptsize
@@ -244,9 +249,9 @@ error details: MyException:
         at it.unica.co2.honesty.HonestyChecker.runProcess(HonestyChecker.java:182)
 \end{minted}
 \end{mdframed}
-It means that in the case of a method failure,
-the program is terminated and the store may be culpable.
-Finally, adding \code{x.sendIfAllowed("abort")} when catching the exception,
+It means that if the method \code{getOrderAmount} will fail,
+the program will be terminated abruptly and the store may be culpable.
+Finally, catching \code{MyException} with \code{x.sendIfAllowed("abort")},
 the program come back \emph{honest}.
 
 
