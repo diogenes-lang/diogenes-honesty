@@ -13,7 +13,7 @@ xtend-gen
 
 **local.properties
 
-
+**_minted*
 *.aux
 *.log
 *.orig
