@@ -8,7 +8,7 @@ Instead, Diogenes strongly depends on
 the Maude model-checker, whose configuration is mandatory before using it.
 
 
-\begin{figure}
+\begin{figure}[t]
     \includegraphics[width=\textwidth]{img/diogenes-arch.png}
     \caption{Data flow schema}
     \label{fig:data-flow}
@@ -16,14 +16,14 @@ the Maude model-checker, whose configuration is mandatory before using it.
 
 \paragraph{Eclipse plugin.}
 The development of the Eclipse plugin mainly depends on
-two framework: Xtext\cite{xtext-site}, a framework for 
+two framework: Xtext~\cite{xtext-site}, a framework for 
 development of programming languages and domain-specific languages, and
-Xsemantics\cite{xsemantics-site}, a DSL for writing type systems
+Xsemantics~\cite{xsemantics-site}, a DSL for writing type systems
 for languages implemented in Xtext.
 
 The term Xtext also refers to the DSL language
 used to define the language's grammar, \coco in our case.
-We implement the grammar focusing on \cite{verifiable},
+We implement the grammar focusing on~\cite{verifiable},
 and we extend it
 in order to allow a complete mapping between \coco and Java.
 
@@ -41,7 +41,7 @@ and \emph{state backtracking}, allowing multiple state exploration.
 We exploit its capabilities in order to extract a \coco model
 from a Java program. We implement a \emph{listener} that allow us
 to catch specific method invocations representing I/O actions
-directed to the middleware (\cite{CO2middleware}),
+directed to the middleware~\cite{CO2middleware},
 and simulate \emph{all} the possible response that 
 the application can receive from it.
 

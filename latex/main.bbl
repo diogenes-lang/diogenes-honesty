@@ -1,12 +1,12 @@
 \begin{thebibliography}{10}
 
 \bibitem{xsemantics-site}
-Xsemantics - a dsl for writing rules for xtext languages.
+{Xsemantics} -- a {DSL} for writing rules for {Xtext} languages.
 \newblock \url{http://xsemantics.sourceforge.net/}.
 \newblock Accessed: 2016-02.
 
 \bibitem{xtext-site}
-Xtext - a framework for development of programming languages and
+{Xtext} -- a framework for development of programming languages and
   domain-specific languages.
 \newblock \url{http://www.eclipse.org/Xtext/}.
 \newblock Accessed: 2016-02.
@@ -15,12 +15,13 @@ Xtext - a framework for development of programming languages and
 M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
 \newblock A contract-oriented middleware.
 \newblock In {\em Proc. {FACS}}, 2015.
-\newblock Extended version available at~\url{http://co2.unica.it}.
+\newblock \url{http://co2.unica.it}.
 
 \bibitem{verifiable}
 M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
 \newblock Verifiable abstractions for contract-oriented systems.
-\newblock 2015.
+\newblock {\em JLAMP}, 2015.
+\newblock To appear.
 
 \bibitem{BTZ12sacs}
 M.~Bartoletti, E.~Tuosto, and R.~Zunino.
@@ -30,7 +31,7 @@ M.~Bartoletti, E.~Tuosto, and R.~Zunino.
 \bibitem{BZ10lics}
 M.~Bartoletti and R.~Zunino.
 \newblock A calculus of contracting processes.
-\newblock In {\em {LICS}}, pages 332--341, 2010.
+\newblock In {\em Proc. {LICS}}, pages 332--341, 2010.
 
 \bibitem{Bartoletti15wsfm}
 M.~Bartoletti and R.~Zunino.
@@ -53,8 +54,8 @@ K.~Honda, V.~T. Vasconcelos, and M.~Kubo.
 \bibitem{lerda2001addressing}
 F.~Lerda and W.~Visser.
 \newblock Addressing dynamic issues of program model checking.
-\newblock In {\em Proceedings of the 8th international SPIN workshop on Model
-  checking of software}, pages 80--102. Springer-Verlag New York, Inc., 2001.
+\newblock In {\em SPIN workshop on Model checking of software}, pages 80--102,
+  2001.
 
 \bibitem{visser2003model}
 W.~Visser, K.~Havelund, G.~Brat, S.~Park, and F.~Lerda.

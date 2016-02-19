@@ -1,34 +1,15 @@
 \usepackage[utf8]{inputenc}
-% \usepackage[english]{babel}
+\usepackage[english]{babel}
 
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage{amsbsy}
 
-% \usepackage[left=4cm,right=4cm,top=4.5cm,bottom=4cm]{geometry}
-
 \usepackage{color}
 \usepackage[usenames,dvipsnames]{xcolor}
 
-% \usepackage[swapnames]{frontespizio}
-% \usepackage{emptypage}
-
 \usepackage{url}
-
-% \usepackage{fancyhdr}
-% \usepackage{fancyvrb}\VerbatimFootnotes
-% \usepackage{csquotes}
-
-% \usepackage[
-% 	pdftitle={\thesisTitle},
-% 	pdfauthor={\thesisAuthor},
-% 	pdfsubject={Master Thesis},
-% 	%hidelinks,
-% 	%linktocpage=true
-% 	%backref=page			%enable back references
-% ]{hyperref}
-
 \usepackage{mdframed}
 
 \usepackage{minted}
@@ -36,26 +17,8 @@
 % \patchcmd{\minted@colorbg}{\noindent}{\medskip\noindent}{}{}
 % \apptocmd{\endminted@colorbg}{\par\medskip}{}{}
 % \makeatother
-
 \usepackage{listings}
-
 \usemintedstyle{friendly}
-
-
-%\usepackage{caption}
-%\newenvironment{longlisting}{\captionsetup{type=listing}}{}
-
-% \usepackage[
-% 	backend=bibtexu,
-% 	bibencoding=utf8,
-% 	backref=true,
-% 	urldate=iso8601,
-% 	date=iso8601
-% 	]{biblatex}
-
-
-% \usepackage[nottoc,numbib]{tocbibind}		% include "List of ..." into the ToC
-
 
 %% from scaffolding
 % \usepackage{titlesec}
@@ -65,11 +28,9 @@
 
 \usepackage{pdfsync}
 \usepackage{wasysym}
-%\usepackage{chemarr}
 
 \usepackage[official]{eurosym} % Euro symbol (opts: official or gen)
-
-\usepackage{alltt} % for math mode within verbatim
+% \usepackage{alltt} % for math mode within verbatim
 
 % \usepackage{enumerate} % Fancy enumeration styles
 
@@ -77,7 +38,7 @@
 \usepackage{xspace} % Smart spaces after commands
 
 \usepackage{nicefrac}
-\usepackage{thmtools, thm-restate, thm-autoref}  % Advanced theorem handling
+% \usepackage{thmtools, thm-restate, thm-autoref}  % Advanced theorem handling
 
 %\graphicspath{{figures/}} \DeclareGraphicsExtensions{.pdf,.jpg}
 %\usepackage[center]{subfigure}
@@ -92,18 +53,6 @@
 
 %\usepackage{appendix} % conflict with LNCS style
 
-\usepackage{cleveref}
-
-\usepackage[draft,nomargin,inline,index]{fixme} % Simplified management of FIXME's
-\fxusetheme{color}
-
-\FXRegisterAuthor{nicola}{annicola}{\color{blue} {\underline{nicola}}}
-\FXRegisterAuthor{bart}{anbart}{\color{magenta} {\underline{bart}}}
-\FXRegisterAuthor{tizi}{antizi}{\color{green} {\underline{tizi}}}
-\FXRegisterAuthor{maurizio}{anmaurizio}{\color{cyan} {\underline{maurizio}}}
-
-\usepackage{fixltx2e} % Text mode subscript and superscript
-\usepackage{xspace}   % Smart spaces after commands
 \usepackage{xifthen}  % Extended conditional commands
 
 %\usepackage{tikz} % for graph of module importation --- load LAST!
@@ -114,7 +63,24 @@
 
 \usepackage{hyperref}
 
-%
+\hypersetup{
+  colorlinks   = true, %Colours links instead of ugly boxes
+  urlcolor     = blue, %Colour for external hyperlinks
+  linkcolor    = blue, %Colour of internal links
+  citecolor   = red %Colour of citations
+}
+\hypersetup{final} % Needed to generate hyperlinks even in draft mode (ERROR IN MAC)
+
+
+\usepackage{cleveref}
+
+\usepackage[draft,nomargin,inline,index]{fixme} % Simplified management of FIXME's
+\fxusetheme{color}
+
+\FXRegisterAuthor{nicola}{annicola}{\color{blue} {\underline{nicola}}}
+\FXRegisterAuthor{bart}{anbart}{\color{magenta} {\underline{bart}}}
+
+
 % Packages initialization
 %
 \lstset{
