@@ -1,6 +1,5 @@
 # Installation notes #
-## Eclipse projects ##
-* `co2-fake-api`: fake implementation of co2 low-level api (`CO2ServerConnection.java`)
+## Eclipse project ##
 * `co2-honesty-checker`: core project that test the honesty of java processes
 
 Import as "Existing projects into Workspace". There isn't any build management at the moment.
@@ -11,22 +10,9 @@ You must set two mandatory properties into [co2.properties](/co2-honesty-checker
 * `honesty.maude.co2-maude` : the absolute path to the co2 maude files that check the honesty
 * `honesty.maude.exec` : the absolute path to the maude executable
 
-# Examples #
-All examples are into [`src/examples`](co2-honesty-checker/src/examples/).
-
 ## SimpleBuyer process ##
 ```
 #!java
-package it.unica.co2.examples;
-
-import static it.unica.co2.model.ContractFactory.*;
-import it.unica.co2.api.Session2;
-import it.unica.co2.model.contract.Contract;
-import it.unica.co2.model.process.Participant;
-import co2api.ContractException;
-import co2api.Message;
-import co2api.TST;
-
 
 public class SimpleBuyer extends Participant {
 
@@ -54,7 +40,7 @@ public class SimpleBuyer extends Participant {
 	public void run() {
 		
 		try {
-			Session2<TST> session = tellAndWait(contract);
+			Session<TST> session = tellAndWait(contract);
 			
 			session.send("item", "01234");
 			
@@ -89,7 +75,6 @@ HonestyChecker.isHonest(SimpleBuyer.class);
 
 #Maven
 ```
-mvn install:install-file -Dfile=co2apiHL.jar -DgroupId=co2.unica.it -DartifactId=co2apiHL -Dversion=1.0.0 -Dpackaging=jar
 mvn install:install-file -Dfile=jpf.jar -DgroupId=jpf -DartifactId=jpf -Dversion=1.0.0 -Dpackaging=jar
 mvn install:install-file -Dfile=jpf-classes.jar -DgroupId=jpf-classes -DartifactId=jpf-classes -Dversion=1.0.0 -Dpackaging=jar
 mvn install:install-file -Dfile=jpf-annotations.jar -DgroupId=jpf-annotations -DartifactId=jpf-annotations -Dversion=1.0.0 -Dpackaging=jar
