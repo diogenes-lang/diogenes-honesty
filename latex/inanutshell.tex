@@ -27,8 +27,8 @@ We write these two contracts as the following
 binary session types~\cite{Honda98esop}:
 % 
 \begin{lstlisting}[language=coco,basicstyle=\scriptsize\ttfamily]
-  contract C { order? string . ( amount! int (+) abort! ) }
-  contract D { req! string . ( ok? + no? ) }
+contract C { order? string . ( amount! int (+) abort! ) }
+contract D { req! string . ( ok? + no? ) }
 \end{lstlisting}
 Receive actions are followed by the question mark (\code{?}) and grouped
 with the symbol \code{+}; similarly, we use the
@@ -62,17 +62,17 @@ A naïve \coco specification of our store is the following:
   basicstyle=\scriptsize\ttfamily,
   numbers=left,
   numbersep=12pt]
-  specification StoreDishonest {
+specification StoreDishonest {
     tellAndWait x C .
     receive x [
-    order? v:string . (
-    tellAndWait y D . (
-    send y req! v .
-    receive y [
-    ok? . send x amount! 100
-    + no? . send x abort!
-    + t . send x abort!]))]
-  }
+        order? v:string . (
+            tellAndWait y D . (
+                send y req! v .
+                receive y [
+                    ok? . send x amount! 100
+                    + no? . send x abort!
+                    + t . send x abort!]))]
+}
 \end{lstlisting}
 
 At line \lineno{2}, the store advertises the contract \code{C},
@@ -84,7 +84,7 @@ At this point the store advertises the contract \code{D} to
 waits to establish a session
 \code{y} (line \lineno{5}) and sends a \atom{req}uest (line \lineno{6}) with
 the value \code{v}.
-Finally, the store waits to receive a response \atom{ok} or \atom{no} from the bank,
+Finally, the store waits to receive a response \atom{ok} or \atom{no} from the distributor,
 and accordingly responds \atom{amount} or \atom{abort} on \code{x} 
 (lines \lineno{7}-\lineno{9}). 
 The action \inlineCoco{t} models a timeout, 
@@ -92,7 +92,7 @@ fired in case no response is received (line \lineno{10}).
 
 Our tool correctly detects that the above specification is \emph{dishonest}.
 Indeed, if the session \code{y}
-is never established (which may happen when no insurance company is available), 
+is never established (which may happen when no distributor is available), 
 the store is stuck at line \lineno{5} 
 and cannot fulfil the contract \code{C} at session \code{x}.
 Furthermore, what happens if the client response arrives after the timeout?
@@ -107,18 +107,18 @@ A possible way to fix the above specification is the following:
     basicstyle=\scriptsize\ttfamily,
     numbers=left,
     numbersep=12pt]
-    specification StoreHonest {
-      tellAndWait x C .
-      receive x [
-      order? v:string . (
-      tellRetract y D . (
-      send y req! v .
-      receive y [
-      ok? . send x amount! 100
-      + no? . send x abort!
-      + t . (send x abort! | receive y [ok? + no?])]) 
-      : send x abort!)]
-    }
+specification StoreHonest {
+    tellAndWait x C .
+    receive x [
+        order? v:string . (
+            tellRetract y D . (
+                send y req! v .
+                receive y [
+                    ok? . send x amount! 100
+                    + no? . send x abort!
+                    + t . (send x abort! | receive y [ok? + no?])]) 
+            : send x abort!)]
+}
   \end{lstlisting}
 }
 
@@ -157,34 +157,34 @@ Diogenes generates the following skeleton:
     fontsize=\scriptsize
     ,linenos
     ]{java}
-    public class StoreHonest extends Participant { 
-      public void run() {
-        Session<TST> x = tellAndWait(C);           // tellAndWait x C
-        
-        Message msg = x.waitForReceive("order");   // receive c [ order? v:string ]
-        String v = msg.getStringValue();
-        
-        try {
-          Session<TST> y = tellAndWait(D, 10000); // tellRetract y D
-          y.sendIfAllowed("req", v);
-          
-          try {                                   // receive y [ok? + no? + t]
-            Message msg_1 = y.waitForReceive(10000, "ok", "no");
-            switch (msg_1.getLabel()) {                    
-              case "ok": x.sendIfAllowed("amount", 100); break;
-              case "no": x.sendIfAllowed("abort"); break;                    
-            }
-          }
-          catch (TimeExpiredException e) {        // send x abort! | receive y [ok? + no?] 
-            parallel(()->{ x.sendIfAllowed("abort"); });
-            parallel(()->{ y.waitForReceive("ok", "no"); });
-          }            
+public class StoreHonest extends Participant { 
+  public void run() {
+    Session<TST> x = tellAndWait(C);           // tellAndWait x C
+    
+    Message msg = x.waitForReceive("order");   // receive c [ order? v:string ]
+    String v = msg.getStringValue();
+    
+    try {
+      Session<TST> y = tellAndWait(D, 10000); // tellRetract y D
+      y.sendIfAllowed("req", v);
+      
+      try {                                   // receive y [ok? + no? + t]
+        Message msg_1 = y.waitForReceive(10000, "ok", "no");
+        switch (msg_1.getLabel()) {                    
+          case "ok": x.sendIfAllowed("amount", 100); break;
+          case "no": x.sendIfAllowed("abort"); break;                    
         }
-        catch(ContractExpiredException e) {
-          x.sendIfAllowed("abort");               // : send x abort (line 11)
-        } 
       }
+      catch (TimeExpiredException e) {        // send x abort! | receive y [ok? + no?] 
+        parallel(()->{ x.sendIfAllowed("abort"); });
+        parallel(()->{ y.waitForReceive("ok", "no"); });
+      }            
     }
+    catch(ContractExpiredException e) {
+      x.sendIfAllowed("abort");               // : send x abort (line 11)
+    } 
+  }
+}
   \end{minted}
 \end{mdframed}
 
