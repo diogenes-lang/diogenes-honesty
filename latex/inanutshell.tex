@@ -3,27 +3,23 @@
 In this section we show the main features of our tools
 with the help of a small example.
 Suppose we want to implement an online store which 
-interacts with customers and insurance companies.
-waits
-% 
-\bartnote{elaborare un po' meglio cosa deve fare il servizio!}
-
-\hidden{Firstly, we give an overview of the possible \coco processes
-  that you can write within Eclipse. 
-  Then, we present Diogenes, our verification tool for java programs.}
-
-
+receives orders from customers,
+and relies upon external distributors to retrieve items.
 
 \paragraph{Contracts.}
-A contract describes the intended behaviour of a
-participant involved in a session.
+% A contract describes the intended behaviour of a
+% participant involved in a session.
 % Session types are terms
 % of a process algebra featuring internal/external choice, and
 % recursion.
-
-Suppose we want to model a store which waits for an \atom{order},
-then sends either the corresponding \atom{amount} or an \atom{abort} message.
-The answer may depend on an external service, \eg an insurance company,
+The store has two contracts:
+\code{C} to interact with customers, and
+\code{D} to interact with distributors.
+In \code{C}, the store declares that it will wait for an \atom{order},
+and then send either the corresponding \atom{amount} or an \atom{abort} message
+(\eg, in case the ordered item is not available).
+\bartnote{revise below}
+The answer may depend on an external service, 
 which waits for a \atom{req}est, then it answers \atom{ok} or \atom{no}.
 % 
 We write these two contracts as the following 
