@@ -33,8 +33,12 @@ contract D { req! string . ( ok? + no? ) }
 Receive actions are followed by the question mark (\code{?}) and grouped
 with the symbol \code{+}; similarly, we use the
 exclamation mark (\code{!}) and the symbol \code{(+)} for
-send actions. If omitted, the type of an action is \code{unit}.
-\bartnote{unclear}
+send actions. 
+In order to specify the sort of a message, 
+an action can be associated to a type
+\inlineCoco{int}, \inlineCoco{string} or \inlineCoco{unit}.
+If omitted, \inlineCoco{unit} is used.
+\bartnote{unclear} \niconote{changed}
 
 \hidden{The corresponding java contract is
   \begin{mdframed}
@@ -56,7 +60,6 @@ send actions. If omitted, the type of an action is \code{unit}.
 
 \paragraph{Specification.}
 A naïve \coco specification of our store is the following:
-\bartnote{indentare meglio?}
 \begin{lstlisting}[
   language=coco,
   basicstyle=\scriptsize\ttfamily,
@@ -159,9 +162,9 @@ Diogenes generates the following skeleton:
     ]{java}
 public class StoreHonest extends Participant { 
   public void run() {
-    Session<TST> x = tellAndWait(C);           // tellAndWait x C
+    Session<TST> x = tellAndWait(C);          // tellAndWait x C
     
-    Message msg = x.waitForReceive("order");   // receive c [ order? v:string ]
+    Message msg = x.waitForReceive("order");  // receive c [ order? v:string ]
     String v = msg.getStringValue();
     
     try {
@@ -251,7 +254,7 @@ In our example, it returns \code{UNKNOWN} and prints the following information
     fontsize=\scriptsize
     % ,linenos
     ]{java}
-    error details: MyException: 
+error details: MyException: 
     This exception is thrown by the honesty checker. Please catch it!
     at it.unica.co2.store.Store$Phonest.getOrderAmount(Store.java:166)
     at it.unica.co2.store.Store$Phonest.run(Store.java:129)
@@ -263,7 +266,7 @@ the program will be terminated abruptly and the store may be culpable.
 Finally, catching \code{MyException} with \code{x.sendIfAllowed("abort")},
 the program come back \emph{honest}.
 \bartnote{+dettaglio}
-
+\niconote{che genere? output del chcker?}
 
 
 

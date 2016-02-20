@@ -31,20 +31,27 @@ The Java honesty checker is developed on top of \emph{Java PathFinder}
 (JPF, \cite{lerda2001addressing,visser2003model}).
 The JPF core is a Virtual Machine for Java bytecode
 that can be configured to act as a model-checker.
-It provides the concept of \emph{execution choice}
-and \emph{state backtracking}, allowing multiple state exploration.
 %
-We exploit its capabilities to extract a \coco model
-from a Java program. We implement a \emph{listener} that allow us
-to catch specific method invocations representing I/O actions
+\niconote{ho cambiato qualcosa qua sotto}
+A \emph{listener} allows us to catch specific method invocations, 
+which represent I/O actions
 directed to the middleware~\cite{CO2middleware},
-and simulate \emph{all} the possible response that 
+and to simulate \emph{all} the possible responses that 
 the application can receive from it.
-Once the \coco model is extracted, we verify its honesty
-with the model checking technique of~\cite{BCPZ15jlamp}.
-Therefore, the analysis strongly depends on the Maude model-checker,
-as shown by the data-flow in \Cref{fig:architecture}.
+%
+JPF creates a \emph{choice generator} and explore all of these,
+backtracking when the state exploration is done.
+%
+Therefore, the program is executed and backtracked multiple times,
+and we are able to obtain a \coco model that represents its behaviour.
+Then, the verification relies to the model checking technique of~\cite{BCPZ15jlamp}.
+%
 \bartnote{+ commento sulla tecnica di analisi: ad esempio, sotto quali ipotesi e' corretta?}
+However, if the \code{@SkipMethod} presented in the previous section
+is abused, some discrepancies between the program and the model
+can occur, \eg annotating a method that never returns.
+\niconote{non so se intendeva qualcosa del genere}
+
 
 The Eclipse plugin \bartnote{dire prima cosa fa, e poi dare qualche insight}
 % On the contrary, the Eclipse plugin has no dependencies, and
