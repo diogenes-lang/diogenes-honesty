@@ -27,7 +27,8 @@ since they usually need to inspect the code of the whole application,
 while under the given assumptions one can only % 
 reason about the services under their control. %
 
-\subsection*{Contract-oriented computing}
+
+\paragraph{Contract-oriented computing.}
 %Dire che parte dei problemi sopra possono essere affrontati usando i
 %contratti. Illustrare concisamente cosa fa un contract-oriented
 %middleware. Parlare della reputazione.
@@ -52,7 +53,7 @@ a contract violation, and then suitably punish it.
 In particular, we focus on the middleware presented in \cite{CO2middleware}.
 
 
-\subsection*{Analysing contract-oriented services}
+\paragraph{Analysing contract-oriented services.}
 %Dire che questo paradigma rende possibile degli attacchi (paragrafi a
 %partire da "When the SOC middleware detects contract violations..." in
 %50-shades-of-honesty). Concludere dicendo che allo stato attuale manca la
@@ -67,8 +68,7 @@ the promised and the actual behaviour of that service. %
 A crucial problem is then
 how to avoid such attacks \emph{before} deploying a service. %
 
-When services behave in the as specified in all the contracts
-they advertise,
+When services respect all the contracts they advertise,
 they are called \emph{honest}. %
 Instead, when services are \emph{not} honest,
 they do \emph{not} always respect the contracts they advertise,
@@ -79,8 +79,7 @@ or even because of malicious behaviour.
 %However, designing an \emph{honest} service which always respects its contracts requires one to fulfil its obligations also in adversarial contexts which play against.
 
 To study honesty at the specification level we can use \coco, 
-a core process calculus for contract-oriented 
-computing~\cite{BZ10lics,BTZ12sacs}.
+a core process calculus for contract-oriented computing~\cite{BTZ12sacs}.
 %
 \hidden{
 In \coco we formalize services 
@@ -217,13 +216,15 @@ then $\fact y {\atomOut{b}}$ cannot be reached.
 The problem of verifying honesty is not trivial, 
 also because one must consider \emph{all} possible execution contexts, 
 which are infinite. %
-Indeed, honesty of \coco processes is \emph{not} decidable, as shown 
-in~\cite{Bartoletti15wsfm}. %
+Indeed, honesty of \coco processes is \emph{not} decidable, 
+as shown in~\cite{Bartoletti15wsfm}. 
+\bartnote{revise} %
 Verifying honesty is only possible in non Turing-powerful fragments of \coco,
 for instance the one where processes are essentially finite-state,
 i.e.\ they have neither delimitation nor parallel under process definitions. %
 In this case, it is possible to verify honesty 
-by using the model-checking technique of~\cite{verifiable}. %
+by using the model-checking technique of~\cite{BCPZ15jlamp}. %
+\bartnote{not here!}
 
 A further issue is that, 
 even if we assume an honest \coco specification, 
@@ -238,16 +239,17 @@ With the existing techniques developed for \coco,
 one can only check honesty at the level of specification:
 this requires a developer to
 write a \coco process in the Maude language~\cite{Maude01},
-and then by to apply there the model-checking tool of~\cite{verifiable}. %
+\bartnote{not here!}
+and then by to apply there the model-checking tool of~\cite{BCPZ15jlamp}. %
 % However, this is not enough, because errors could be introduced in the implementation, which could break the property.
 Analysis techniques for checking honesty at the level of of implementation
 are therefore needed in order to develop secure contract-oriented applications.
 
-\subsection*{Contributions}
+\paragraph{Contributions.}
 
 We support programmers on the development of contract-oriented 
 applications, providing:
 1) an Eclipse plugin that allows to write a \coco specification of the service,
 to verify its honesty, and generate a skeletal Java program;
 2) a tool to verify the honesty of a Java program.
-
+\bartnote{il tool funziona anche su esempi piu' grossi, e che posso effettivamente eseguire i programmi Java usando il middleware}

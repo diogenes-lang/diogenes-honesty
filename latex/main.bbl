@@ -1,15 +1,5 @@
 \begin{thebibliography}{10}
 
-\bibitem{graphiti-site}
-{Graphiti} -- a framework to create graphical modelling.
-\newblock \url{https://eclipse.org/graphiti/}.
-\newblock Accessed: 2016-02.
-
-\bibitem{sirius-site}
-{Sirius} -- a framework to create graphical modelling.
-\newblock \url{https://eclipse.org/sirius/}.
-\newblock Accessed: 2016-02.
-
 \bibitem{xsemantics-site}
 {Xsemantics} -- a {DSL} for writing rules for {Xtext} languages.
 \newblock \url{http://xsemantics.sourceforge.net/}.
@@ -21,32 +11,22 @@
 \newblock \url{http://www.eclipse.org/Xtext/}.
 \newblock Accessed: 2016-02.
 
-\bibitem{Bartoletti15forte}
-M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
-\newblock Compliance and subtyping in timed session types.
-\newblock In {\em Proc. {FORTE}}, pages 161--177, 2015.
-
 \bibitem{CO2middleware}
 M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
 \newblock A contract-oriented middleware.
 \newblock In {\em Proc. {FACS}}, 2015.
 \newblock \url{http://co2.unica.it}.
 
-\bibitem{verifiable}
-M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
-\newblock Verifiable abstractions for contract-oriented systems.
-\newblock {\em JLAMP}, 2015.
-\newblock To appear.
+\bibitem{BCPZ15jlamp}
+M.~Bartoletti, T.~Cimoli, G.~M. Pinna, and R.~Zunino.
+\newblock Contracts as games on event structures.
+\newblock {\em {JLAMP}}, 2015.
+\newblock \; (to appear).
 
 \bibitem{BTZ12sacs}
 M.~Bartoletti, E.~Tuosto, and R.~Zunino.
 \newblock Contract-oriented computing in \coco.
 \newblock {\em Sci. Ann. Comp. Sci.}, 22(1):5--60, 2012.
-
-\bibitem{BZ10lics}
-M.~Bartoletti and R.~Zunino.
-\newblock A calculus of contracting processes.
-\newblock In {\em Proc. {LICS}}, pages 332--341, 2010.
 
 \bibitem{Bartoletti15wsfm}
 M.~Bartoletti and R.~Zunino.
@@ -59,6 +39,11 @@ M.~Clavel, F.~Dur{\'a}n, S.~Eker, P.~Lincoln, N.~Mart{\'\i}-Oliet, J.~Meseguer,
   and J.~F. Quesada.
 \newblock {Maude}: Specification and programming in rewriting logic.
 \newblock {\em TCS}, 2001.
+
+\bibitem{Eker02maude}
+S.~Eker, J.~Meseguer, and A.~Sridharanarayanan.
+\newblock The {Maude} {LTL} model checker.
+\newblock {\em Electr. Notes Theor. Comput. Sci.}, 71:162--187, 2002.
 
 \bibitem{Honda98esop}
 K.~Honda, V.~T. Vasconcelos, and M.~Kubo.
