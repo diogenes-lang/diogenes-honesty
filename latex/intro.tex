@@ -3,35 +3,22 @@
 %- cappello introduttivo sulle applicazioni distribuite, e su quali sono i
 %rischi correlati (in pratica, i primi due paragrafi in co2-middleware)
 
-Modern distributed applications are often composed 
-by loosely-coupled services, 
-which can dynamically discover and invoke other services
-in order to adapt to changing needs and conditions,
-and can appear and disappear from the network. %
+Developing modern distributed applications 
+is a challenging task:
+programmers have to reliably compose loosely-coupled services
+which can dynamically discover and invoke other services,
+and may be subject to failures and attacks.
 These services may be under the governance of mutually distrusting providers 
 (possibly competing among each other), 
 and interact through open networks, %
 where attackers can try to exploit their vulnerabilities. %
-
-In the setting outlined above, % in the previous paragraph, 
-developing trustworthy services and applications 
-can be a quite challenging task:
-the problem fits within the area of computer security,
-since we have \emph{adversaries} (in our setting, third-party services),
-whose exact number and nature is unknown 
-(because of openness and dynamicity). %
 %
-Further, standard analysis techniques for programming languages
-(like \eg, type systems) cannot be applied, 
+To guarantee the reliability and security of these applications,
+one cannot directly apply standard analysis techniques for programming languages
+(like \eg, type systems), 
 since they usually need to inspect the code of the whole application,
 while under the given assumptions one can only % 
 reason about the services under their control. %
-
-
-\paragraph{Contract-oriented computing.}
-%Dire che parte dei problemi sopra possono essere affrontati usando i
-%contratti. Illustrare concisamente cosa fa un contract-oriented
-%middleware. Parlare della reputazione.
 
 A possible countermeasure to these issues is to discipline the interaction
 between services through \emph{contracts}.
@@ -41,15 +28,16 @@ and of what it requires in exchange.
 Services \emph{advertise} contracts when they want to offer 
 (or sell) some features to clients over the network, or when 
 they want to delegate the implementation of some features to some other services.
-
-The communication is managed by a \emph{contract-oriented middleware}
+%
+The communication is managed by a middleware
 that plays the role of a trusted party collecting
 all the advertised contracts and establishing a \textit{session}
 between participants whose contracts are compliant. %
-The interaction is \textit{monitored} by the middleware, %
+The interaction is monitored by the middleware, %
 which can blame a participant responsible of
 a contract violation, and then suitably punish it. 
 %
+\bartnote{revise}
 In particular, we focus on the middleware presented in \cite{CO2middleware}.
 
 
