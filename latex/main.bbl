@@ -63,6 +63,11 @@ F.~Lerda and W.~Visser.
 \newblock In {\em SPIN workshop on Model checking of software}, pages 80--102,
   2001.
 
+\bibitem{Mukhija2007qos}
+A.~Mukhija, A.~Dingwall-Smith, and D.~Rosenblum.
+\newblock Qos-aware service composition in {Dino}.
+\newblock In {\em {ECOWS}}, pages 3--12, 2007.
+
 \bibitem{visser2003model}
 W.~Visser, K.~Havelund, G.~Brat, S.~Park, and F.~Lerda.
 \newblock Model checking programs.

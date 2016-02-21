@@ -20,52 +20,48 @@ since they usually need to inspect the code of the whole application,
 while under the given assumptions one can only % 
 reason about the services under their control. %
 
-A possible countermeasure to these issues is to discipline the interaction
+A possible countermeasure to these issues is to regulate the interaction
 between services through \emph{contracts}.
-A contract specifies an abstraction of the intended behaviour of a service,
-both from the point of view of what it offers to the other services, 
-and of what it requires in exchange.
-Services \emph{advertise} contracts when they want to offer 
-(or sell) some features to clients over the network, or when 
-they want to delegate the implementation of some features to some other services.
-%
-The communication is managed by a middleware
-that plays the role of a trusted party collecting
-all the advertised contracts and establishing a \textit{session}
-between participants whose contracts are compliant. %
-The interaction is monitored by the middleware, %
-which can blame a participant responsible of
-a contract violation, and then suitably punish it. 
-%
-\bartnote{revise}
-In particular, we focus on the middleware presented in \cite{CO2middleware}.
+By advertising a contract, a service commits itself
+to stick to a given behavior when he will interact with other services.
+In this setting, the service infrastructure acts as a trusted third party, 
+which collects all the advertised contracts, and establishes sessions
+between participants with compliant ones. %
+To incentivize honest behaviour,
+the infrastructure monitors all the messages exchanged among services,
+and it sanctions those which do not respect their contracts.
+These sanctions can be pecuniary compensations,
+adaptation of the service binding~\cite{Mukhija2007qos},
+or they can decrease the service reputation~\cite{CO2middleware},
+in order to marginalize the dishonest services in the binding phase.
 
 
-\paragraph{Analysing contract-oriented services.}
+% \paragraph{Analysing contract-oriented services.}
 %Dire che questo paradigma rende possibile degli attacchi (paragrafi a
 %partire da "When the SOC middleware detects contract violations..." in
 %50-shades-of-honesty). Concludere dicendo che allo stato attuale manca la
 %possibilita' di verificare la honesty dalla specifica all'implementazione.
 
-The sanction mechanism
+The sanction mechanism of contract-oriented services
 % featured by the contract-oriented middleware
-allows for a new form of attacks: 
+allows for a new kind of attacks: 
 malicious users can try
 to make some service sanctioned by exploiting possible discrepancies between
 the promised and the actual behaviour of that service. %
-A crucial problem is then
-how to avoid such attacks \emph{before} deploying a service. %
-
-When services respect all the contracts they advertise,
-they are called \emph{honest}. %
-Instead, when services are \emph{not} honest,
-they do \emph{not} always respect the contracts they advertise,
-at least in some execution context. %
+Since these attacks may compromise the service and cause economic damage to its provider,
+it is important to detect these vulnerabilities \emph{before} deploying a service. %
+Intuitively, a service is vulnerable if, 
+in some execution context,
+it does \emph{not} respect the contracts it advertises.
 This may happen either unintentionally
 (because of errors in the service specification, or in its implementation),
 or even because of malicious behaviour.
-%However, designing an \emph{honest} service which always respects its contracts requires one to fulfil its obligations also in adversarial contexts which play against.
+Therefore, to avoid sanctions a service must be able
+to respect \emph{all} the contracts it advertises, in \emph{all} possible contexts
+--- even those populated by adversaries.
+We call this property \emph{honesty}.
 
+\bartnote{revise below}
 To study honesty at the specification level we can use \coco, 
 a core process calculus for contract-oriented computing~\cite{BTZ12sacs}.
 %
