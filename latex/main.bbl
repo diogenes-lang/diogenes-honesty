@@ -23,6 +23,12 @@ M.~Bartoletti, T.~Cimoli, G.~M. Pinna, and R.~Zunino.
 \newblock {\em {JLAMP}}, 2015.
 \newblock \; (to appear).
 
+\bibitem{BMSZ15jlamp}
+M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
+\newblock Verifiable abstractions for contract-oriented systems.
+\newblock {\em {JLAMP}}, 2015.
+\newblock {To appear}.
+
 \bibitem{BTZ12sacs}
 M.~Bartoletti, E.~Tuosto, and R.~Zunino.
 \newblock Contract-oriented computing in \coco.

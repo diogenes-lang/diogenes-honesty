@@ -211,7 +211,7 @@ Verifying honesty is only possible in non Turing-powerful fragments of \coco,
 for instance the one where processes are essentially finite-state,
 i.e.\ they have neither delimitation nor parallel under process definitions. %
 In this case, it is possible to verify honesty 
-by using the model-checking technique of~\cite{BCPZ15jlamp}. %
+by using the model-checking technique of~\cite{BMSZ15jlamp}. %
 \bartnote{not here!}
 
 A further issue is that, 
@@ -235,9 +235,27 @@ are therefore needed in order to develop secure contract-oriented applications.
 
 \paragraph{Contributions.}
 
-We support programmers on the development of contract-oriented 
-applications, providing:
-1) an Eclipse plugin that allows to write a \coco specification of the service,
-to verify its honesty, and generate a skeletal Java program;
-2) a tool to verify the honesty of a Java program.
-\bartnote{il tool funziona anche su esempi piu' grossi, e che posso effettivamente eseguire i programmi Java usando il middleware}
+To support programmers in the development of contract-oriented 
+applications, we provid a suite of tools (named \emph{Diogenes}) 
+with the following features:
+\begin{inlinelist}
+\item writing \coco specification of services within an Eclipse plugin;
+\item verifying honesty of \coco specifications;
+\item generating from them skeletal Java programs;
+\item verifying the honesty of Java programs upon refinement.
+\end{inlinelist}
+We have validated our tools by applying them to
+the case studies in~\cite{BMSZ15jlamp}:
+an online store with bank,
+a voucher distribution system,
+a car purchase financed with a loan,
+an online casino featuring blackjack,
+and a travel agency.
+We have specified each of these case studies in \coco,
+and we have (successfully) verified the honesty of 
+both the specifications and of their Java refinements.
+Overall, we can execute these verified services using the middleware in~\cite{CO2middleware}
+and be guaranteed that they will not incur in sanctions,
+and will enjoy deadlock-freedom when interacting with other honest services.
+Our verification tools, the Eclipse plugin, and an online tutorial about Diogenes
+are available at~\url{co2.unica.it/diogenes}.

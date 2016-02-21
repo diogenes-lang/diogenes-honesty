@@ -8,7 +8,7 @@ with an editor of \coco.
 We illustrate the architecture of our tools in~\Cref{fig:architecture}.
 
 The \coco honesty checker implements the  
-verification technique introduced in~\cite{BCPZ15jlamp}.
+verification technique introduced in~\cite{BMSZ15jlamp}.
 This technique is built upon an alternative semantics of \coco 
 which abstracts both values (sent, received, and in conditional expressions) 
 and the actual \emph{context} wherein a process is executed.
@@ -44,7 +44,7 @@ backtracking when the state exploration is done.
 %
 Therefore, the program is executed and backtracked multiple times,
 and we are able to obtain a \coco model that represents its behaviour.
-Then, the verification relies to the model checking technique of~\cite{BCPZ15jlamp}.
+Then, the verification relies to the model checking technique of~\cite{BMSZ15jlamp}.
 %
 \bartnote{+ commento sulla tecnica di analisi: ad esempio, sotto quali ipotesi e' corretta?}
 However, if the \code{@SkipMethod} presented in the previous section
@@ -65,7 +65,7 @@ for Xtext-based languages.
 %
 We use Xtext to define the grammar of \coco.
 \bartnote{giusto? si usa per altre cose? c'e' da dire altre cose interessanti sul plugin? mi sembra che questa parte andrebbe espanda un poco}
-% We implement an Xtext grammar focusing on~\cite{BCPZ15jlamp},
+% We implement an Xtext grammar focusing on~\cite{BMSZ15jlamp},
 % and we extend it in order to allow a complete mapping between \coco and Java.
 
 
