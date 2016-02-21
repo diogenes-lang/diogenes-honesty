@@ -17,12 +17,6 @@ M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
 \newblock In {\em Proc. {FACS}}, 2015.
 \newblock \url{http://co2.unica.it}.
 
-\bibitem{BCPZ15jlamp}
-M.~Bartoletti, T.~Cimoli, G.~M. Pinna, and R.~Zunino.
-\newblock Contracts as games on event structures.
-\newblock {\em {JLAMP}}, 2015.
-\newblock \; (to appear).
-
 \bibitem{BMSZ15jlamp}
 M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
 \newblock Verifiable abstractions for contract-oriented systems.
@@ -34,7 +28,7 @@ M.~Bartoletti, E.~Tuosto, and R.~Zunino.
 \newblock Contract-oriented computing in \coco.
 \newblock {\em Sci. Ann. Comp. Sci.}, 22(1):5--60, 2012.
 
-\bibitem{Bartoletti15wsfm}
+\bibitem{BZ15wsfm}
 M.~Bartoletti and R.~Zunino.
 \newblock On the decidability of honesty and of its variants.
 \newblock In {\em {WSFM/BEAT}}, 2015.

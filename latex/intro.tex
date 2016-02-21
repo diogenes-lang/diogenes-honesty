@@ -60,12 +60,86 @@ Therefore, to avoid sanctions a service must be able
 to respect \emph{all} the contracts it advertises, in \emph{all} possible contexts
 --- even those populated by adversaries.
 We call this property \emph{honesty}.
+\bartnote{se tutti sono onesti allora la app e' deadlock-free}
 
-\bartnote{revise below}
-To study honesty at the specification level we can use \coco, 
-a core process calculus for contract-oriented computing~\cite{BTZ12sacs}.
+Some recent works have studied honesty at the specification level, 
+using the process calculus \coco for modelling contract-oriented services~\cite{BMSZ15jlamp,BTZ12sacs,BZ15wsfm}.
+Practical modelling experience with \coco has shown that writing honest specifications
+is not an easy task, especially when a service has to juggle with multiple sessions.
+The reason of this difficulty lies in the fact that,
+to devise an honest specification, 
+a designer has to anticipate all the possible moves of the context,
+but at design time he does not yet know in which context his service will be run.
 %
-\hidden{
+Tools to automate the verification of honesty in \coco are therefore in order.
+However, we cannot expect these tools to be sound and complete,
+because of a negative result in~\cite{BZ15wsfm} which establishes that
+honesty is undecidable 
+in all possible model of contracts which are at least as expressive
+as first-order binary session types~\cite{Honda98esop}.
+% \bartnote{revise} %
+% Verifying honesty is only possible in non Turing-powerful fragments of \coco,
+% for instance the one where processes are essentially finite-state,
+% i.e.\ they have neither delimitation nor parallel under process definitions. %
+% In this case, it is possible to verify honesty 
+% by using the model-checking technique of~\cite{BMSZ15jlamp}. %
+% \bartnote{not here!}
+
+A further issue is that, 
+even if we devise an honest \coco specification, 
+it is still possible that honesty no longer holds 
+when refining the specification into an actual implementation 
+(\eg, a Java program using the middleware APIs of~\cite{CO2middleware}). %
+% the risk of incurring a sanction at runtime, so preserving the reputation.
+% we still need to verify that the corresponding implementation is honest, too. %
+% reducing 
+%
+\bartnote{revise below}
+With the existing techniques developed for \coco, 
+one can only check honesty at the level of specification:
+this requires a developer to
+write a \coco process in the Maude language~\cite{Maude01},
+\bartnote{not here!}
+and then by to apply there the model-checking tool of~\cite{BMSZ15jlamp}. %
+% However, this is not enough, because errors could be introduced in the implementation, which could break the property.
+Analysis techniques for checking honesty at the level of of implementation
+are therefore needed in order to develop secure contract-oriented applications.
+
+\paragraph{Contributions.}
+
+To support programmers in the development of contract-oriented 
+applications, we provid a suite of tools (named \emph{Diogenes}) 
+with the following features:
+\begin{inlinelist}
+\item writing \coco specification of services within an Eclipse plugin;
+\item verifying honesty of \coco specifications;
+\item generating from them skeletal Java programs;
+\item verifying the honesty of Java programs upon refinement.
+\end{inlinelist}
+We have validated our tools by applying them to
+the case studies in~\cite{BMSZ15jlamp}:
+an online store with bank,
+a voucher distribution system,
+a car purchase financed with a loan,
+an online casino featuring blackjack,
+and a travel agency.
+We have specified each of these case studies in \coco,
+and we have (successfully) verified the honesty of 
+both the specifications and of their Java refinements.
+Overall, we can execute these verified services using the middleware in~\cite{CO2middleware}
+and be guaranteed that they will not incur in sanctions,
+and will enjoy deadlock-freedom when interacting with other honest services.
+Our verification tools, the Eclipse plugin, and an online tutorial about Diogenes
+are available at~\url{co2.unica.it/diogenes}.
+
+
+
+
+
+
+
+
+\endinput 
 In \coco we formalize services 
 as processes that can advertise contracts with the $\tell{}{}$ primitive,
 and realize them with the $\fact{}{}$ primitive. %
@@ -195,63 +269,5 @@ the $\fact y {\atomOut{b}}$ cannot be reached
 Second, also in those contexts where both sessions are created,
 if the other participant at session $x$ never sends the $\atom{a}$ message,
 then $\fact y {\atomOut{b}}$ cannot be reached.
-}
-%
-The problem of verifying honesty is not trivial, 
-also because one must consider \emph{all} possible execution contexts, 
-which are infinite. %
-Indeed, honesty of \coco processes is \emph{not} decidable, 
-as shown in~\cite{Bartoletti15wsfm}. 
-\bartnote{revise} %
-Verifying honesty is only possible in non Turing-powerful fragments of \coco,
-for instance the one where processes are essentially finite-state,
-i.e.\ they have neither delimitation nor parallel under process definitions. %
-In this case, it is possible to verify honesty 
-by using the model-checking technique of~\cite{BMSZ15jlamp}. %
-\bartnote{not here!}
 
-A further issue is that, 
-even if we assume an honest \coco specification, 
-it is still possible that honesty no longer holds 
-when refining the specification into an actual implementation 
-(e.g.\ a Java program using the middleware APIs of~\cite{CO2middleware}). %
-% the risk of incurring a sanction at runtime, so preserving the reputation.
-% we still need to verify that the corresponding implementation is honest, too. %
-% reducing 
-%
-With the existing techniques developed for \coco, 
-one can only check honesty at the level of specification:
-this requires a developer to
-write a \coco process in the Maude language~\cite{Maude01},
-\bartnote{not here!}
-and then by to apply there the model-checking tool of~\cite{BCPZ15jlamp}. %
-% However, this is not enough, because errors could be introduced in the implementation, which could break the property.
-Analysis techniques for checking honesty at the level of of implementation
-are therefore needed in order to develop secure contract-oriented applications.
 
-\paragraph{Contributions.}
-
-To support programmers in the development of contract-oriented 
-applications, we provid a suite of tools (named \emph{Diogenes}) 
-with the following features:
-\begin{inlinelist}
-\item writing \coco specification of services within an Eclipse plugin;
-\item verifying honesty of \coco specifications;
-\item generating from them skeletal Java programs;
-\item verifying the honesty of Java programs upon refinement.
-\end{inlinelist}
-We have validated our tools by applying them to
-the case studies in~\cite{BMSZ15jlamp}:
-an online store with bank,
-a voucher distribution system,
-a car purchase financed with a loan,
-an online casino featuring blackjack,
-and a travel agency.
-We have specified each of these case studies in \coco,
-and we have (successfully) verified the honesty of 
-both the specifications and of their Java refinements.
-Overall, we can execute these verified services using the middleware in~\cite{CO2middleware}
-and be guaranteed that they will not incur in sanctions,
-and will enjoy deadlock-freedom when interacting with other honest services.
-Our verification tools, the Eclipse plugin, and an online tutorial about Diogenes
-are available at~\url{co2.unica.it/diogenes}.
