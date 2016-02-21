@@ -28,7 +28,7 @@ public class ExternalSum extends Sum<ExternalAction> {
 		if (actions.size()==1)
 			return actions.get(0).toString();
 		else
-			return StringUtils.join(actions, " + ")+")";
+			return "("+StringUtils.join(actions, " + ")+")";
 	}
 
 	@Override

@@ -28,7 +28,7 @@ public class InternalSum extends Sum<InternalAction> {
 		if (actions.size()==1)
 			return actions.get(0).toString();
 		else
-			return StringUtils.join(actions, " (+) ")+")";
+			return "("+StringUtils.join(actions, " (+) ")+")";
 	}
 	
 	@Override
