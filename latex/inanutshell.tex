@@ -19,8 +19,8 @@ In \code{C}, the store declares that it will wait for an \atom{order},
 and then send either the corresponding \atom{amount} or an \atom{abort} message
 (\eg, in case the ordered item is not available).
 %
-The answer may depend on an external service, 
-which waits for a \atom{req}est, then it answers \atom{ok} or \atom{no}.
+The answer may depend on an external distributor service, 
+which waits for a \atom{req}est, and then answers \atom{ok} or \atom{no}.
 % 
 We write these two contracts as the following 
 % first-order 
@@ -30,14 +30,13 @@ binary session types~\cite{Honda98esop}:
 contract C { order? string . ( amount! int (+) abort! ) }
 contract D { req! string . ( ok? + no? ) }
 \end{lstlisting}
-Receive actions are followed by the question mark (\code{?}) and grouped
+Receive actions are denoted by the question mark (\code{?}) and grouped
 with the symbol \code{+}; similarly, we use the
-exclamation mark (\code{!}) and the symbol \code{(+)} for
-send actions. 
-In order to specify the sort of a message, 
-an action can be associated to a type
-\inlineCoco{int}, \inlineCoco{string} or \inlineCoco{unit}.
-If omitted, \inlineCoco{unit} is used.
+bang (\code{!}) and the symbol \code{(+)} for send actions. 
+We specify the sort of a message 
+(\inlineCoco{int}, \inlineCoco{string} or \inlineCoco{unit})
+after the action label;
+when the sort is omitted, we assume it is \inlineCoco{unit}.
 
 \hidden{The corresponding java contract is
   \begin{mdframed}
@@ -82,17 +81,17 @@ and then waits until a session is established with some customer;
 when this happens, the variable \code{x} is bound to the session name.
 Then, the store waits to receive an \atom{order}, 
 binding it to the variable \code{v} (lines \lineno{3}-\lineno{4}).
-At this point the store advertises the contract \code{D} to 
-waits to establish a session
-\code{y} (line \lineno{5}) and sends a \atom{req}uest (line \lineno{6}) with
-the value \code{v}.
+At this point the store advertises the contract \code{D}
+to establish a session \code{y} with a distributor
+(line \lineno{5}); 
+after that, it sends a \atom{req}uest (line \lineno{6}) with the value \code{v}.
 Finally, the store waits to receive a response \atom{ok} or \atom{no} from the distributor,
-and accordingly responds \atom{amount} or \atom{abort} on \code{x} 
+and accordingly responds \atom{amount} or \atom{abort} to the customer 
 (lines \lineno{7}-\lineno{9}). 
-The action \inlineCoco{t} models a timeout, 
-fired in case no response is received (line \lineno{10}).
+The internal action \inlineCoco{t} models a timeout, 
+fired in case no response is received from the distributor (line \lineno{10}).
 
-Our tool correctly detects that the above specification is \emph{dishonest}.
+Our tool correctly detects that the above specification is \emph{dishonest}, by saying:
 \begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
 result: ("y",$ 0)(
     A[tell "y" D . ask "y" True . (...)] 
@@ -103,14 +102,14 @@ result: ($ 0,$ 1)(
     | $ 1[ready "no" ? unit . 0])
 honesty: false
 \end{lstlisting}
-The two results state that: 
-if the session \code{y}
+The tool output hints the two causes of dishonesty. 
+First, if the session \code{y}
 is never established (which may happen when no distributor is available), 
 the store is stuck at line \lineno{5}
-and cannot fulfil the contract \code{C} at session \code{x} (\code{\$0} in the output above);
-if the distributor response arrives after the timeout (line \lineno{10}),
+and cannot fulfil the contract \code{C} at session \code{x} (\code{\$0} in the output above).
+Second, if the distributor response arrives after the timeout (line \lineno{10}),
 the store does not consume the input and 
-therefore does not respect the contract~\code{D}.
+so it does not respect the contract~\code{D}.
 
 A possible way to fix the above specification is the following:
 
@@ -135,14 +134,15 @@ specification StoreHonest {
   \end{lstlisting}
 }
 
-Note that at line \lineno{5} we use the primitive \inlineCoco{tellRetract},
-which ensures that if the session \code{x} is not established
+The primitive \inlineCoco{tellRetract} at line \lineno{5}
+ensures that if the session \code{x} is not established
 within a given deadline (immaterial in the specification)
 the contract \code{D} is retracted,
 and the control passes to line \lineno{11}.
-Further, we change the specification of the timeout branch,
-adding a parallel execution of a \inlineCoco{receive}
+Further, in the timeout branch we have
+added a parallel execution of a \inlineCoco{receive}
 to consume possible inputs.
+Now the tool correctly detects that the revised specification is honest. 
 
 \hidden{The specification does not aim to be completed. On refining the implementation,
   the user must provide suitable timeout values, and 
@@ -161,9 +161,9 @@ to consume possible inputs.
 
 
 \paragraph{Code generation and refinement.}
-Diogenes translates a \coco specification
-into a Java skeleton.
-Considering the honest specification described above,
+Diogenes translates \coco specifications into Java skeletons,
+using the APIs of the contract-oriented middleware in~\cite{CO2middleware}.
+From the honest specification given above,
 it generates the following skeleton:
 \begin{mdframed}
   \begin{minted}[
@@ -202,7 +202,7 @@ public class StoreHonest extends Participant {
   \end{minted}
 \end{mdframed}
 
-We use Java exceptions to model both the \inlineCoco{tellRetract} 
+We use Java exceptions to deal with both the \inlineCoco{tellRetract} 
 and \inlineCoco{receive} primitives:
 the \code{ContractExpiredException} is thrown by line \lineno{9} if the session \code{y}
 is not established within ten seconds, while the \code{TimeExpiredException}
@@ -210,11 +210,9 @@ is thrown by line \lineno{13} if a message is not received within (again) ten se
 The \code{parallel} method at lines \lineno{20}-\lineno{21} starts a new 
 thread that will execute the passed \code{Runnable} instance.
 %
-The timeout values are predefined,
-and can be changed to better fit other requirements.
-Moreover, the order amount at line \lineno{15} is hardcoded, 
-so we decide to separate its computation
-in a separated method, \eg
+The timeout values, as well as the order amount at line \lineno{15}, are just placeholders;
+% hardcoded in the skeleton.
+in an actual implementation of the store service, we may want to delegate the computation the \code{amount} to a separated method, \eg:
 \begin{mdframed}
   \begin{minted}[
     fontsize=\scriptsize
@@ -227,7 +225,7 @@ and change the number \code{100} at line \lineno{15} with \code{getOrderAmount(v
 The method could read the order amount from a file or a database,
 and suppose that each possible exception
 is caught and hidden behind \code{MyException}. 
-The failure of this method can be considered not deterministic,
+The failure of this method can be considered non-deterministic,
 so we need to ``instruct'' our verification tool
 in order to consider all the possible ways the method can terminate.
 % 
@@ -239,25 +237,26 @@ is interpreted by the checker as follows:
 \item consider \code{<value>} as the returning value on success;
 \item consider the declared exceptions as possible exit points on failure.
 \end{inlinelist}
-
-Now Diogenes can symbolically consider both the case of a normal 
+%
+Diogenes can symbolically consider both the case of a normal 
 termination of the method
 %(returning the value specified in the annotation, if provided),
 and all the possible exceptional terminations.
 
 \paragraph{Verification.}
-Diogenes can verify the honesty of our store 
+Diogenes can verify the honesty of Java programs 
 by invoking the static method
 \code{HonestyChecker.isHonest(StoreHonest.class)},
 which returns one of the following values:
 \begin{itemize}[noitemsep,topsep=0pt]
-\item \code{HONEST}: the tool was able to extract a \coco model and verify that is honest;
-\item \code{DISHONEST}: as above, but the model is dishonest;
-\item \code{UNKNOWN}: the tool was unable to extract a model,
-  \eg due to unhandled exceptions within the class under test.
+\item \code{HONEST}: the tool has extracted a \coco specification and verified its honesty;
+\item \code{DISHONEST}: as above, but the \coco specification is dishonest;
+\item \code{UNKNOWN}: the tool has been unable to extract a \coco specification,
+  \eg because of unhandled exceptions within the class under test.
 \end{itemize}
 
-In our example, it returns \code{UNKNOWN} and prints the following information
+\noindent
+For our refined store, the Java honesty checker returns \code{UNKNOWN} and outputs:
 \begin{mdframed}
   \begin{minted}[
     fontsize=\scriptsize
@@ -270,8 +269,8 @@ error details: MyException:
     at it.unica.co2.honesty.HonestyChecker.runProcess(HonestyChecker.java:182)
   \end{minted}
 \end{mdframed}
-It means that if the method \code{getOrderAmount} will fail,
-the program will be terminated abruptly and the store may be culpable.
-Finally, catching \code{MyException} with \code{x.sendIfAllowed("abort")},
-the program come back \emph{honest}.
+This means that if the method \code{getOrderAmount} fails
+the program will be terminated abruptly, and so the store may violate the contract.
+We can recover honesty by catching \code{MyException} with \code{x.sendIfAllowed("abort")}.
+With this modification, the Java honesty checker correctly outputs \code{HONEST}.
 
