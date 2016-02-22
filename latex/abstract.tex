@@ -7,19 +7,19 @@
   The idea is a dynamic discovery and composition of services,
   where only those with compliant contracts can interact,
   and their execution is monitored to detect and sanction 
-  possible contract breaches.
+  contract breaches.
   %
   In this setting, a service is said \emph{honest} 
   if it always respects the contract it advertises.
-  Being honest is important, because it guarantees a service 
+  Being honest is crucial, because it guarantees a service 
   not to be sanctioned; %
   further, compositions of honest services enjoy deadlock-freedom. %
   %
   However, developing honest programs is not an easy task,
   because contracts must be respected even in the presence of
   failures (whether accidental or malicious) of the context.
-  In this paper we present Diogenes, a tool which supports programmers
-  in writing honest Java programs.
+  In this paper we present Diogenes, a suite of tools 
+  which supports programmers in writing honest Java programs.
   %
   Through an Eclipse plugin, programmers can
   write a \coco specification of the service,

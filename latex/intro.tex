@@ -31,9 +31,9 @@ To incentivize honest behaviour,
 the infrastructure monitors all the messages exchanged among services,
 and it sanctions those which do not respect their contracts.
 These sanctions can be pecuniary compensations,
-adaptation of the service binding~\cite{Mukhija2007qos},
-or they can decrease the service reputation~\cite{CO2middleware},
-in order to marginalize the dishonest services in the binding phase.
+adaptations of the service binding~\cite{Mukhija2007qos},
+or they can decrease the service reputation~\cite{CO2middleware}
+in order to marginalize dishonest services in the binding phase.
 
 
 % \paragraph{Analysing contract-oriented services.}
@@ -45,13 +45,13 @@ in order to marginalize the dishonest services in the binding phase.
 The sanction mechanism of contract-oriented services
 % featured by the contract-oriented middleware
 allows for a new kind of attacks: 
-malicious users can try
-to make some service sanctioned by exploiting possible discrepancies between
-the promised and the actual behaviour of that service. %
+malicious users can try to exploit possible discrepancies between
+the promised and the actual behaviour of a service
+in order to make it sanctioned. %
 Since these attacks may compromise the service and cause economic damage to its provider,
-it is important to detect these vulnerabilities \emph{before} deploying a service. %
+it is important to detect these vulnerabilities \emph{before} deployment. %
 Intuitively, a service is vulnerable if, 
-in some execution context,
+in \emph{some} execution context,
 it does \emph{not} respect the contracts it advertises.
 This may happen either unintentionally
 (because of errors in the service specification, or in its implementation),
@@ -60,9 +60,9 @@ Therefore, to avoid sanctions a service must be able
 to respect \emph{all} the contracts it advertises, in \emph{all} possible contexts
 --- even those populated by adversaries.
 We call this property \emph{honesty}.
-Further, when compliance between contracts ensures their deadlock-freedom 
-(as for the relations in~\cite{Acciai10coordination,Barbanera10ppdp,BSZ14concur,Laneve07concur,Rensink07infoco}),
-then this property is lifted at the system level:
+Whenever compliance between contracts ensures their deadlock-freedom 
+(as for the compliance relations in~\cite{Acciai10coordination,Barbanera10ppdp,BSZ14concur,Laneve07concur,Rensink07infoco}),
+then the honesty property is lifted from contracts to services:
 systems of honest services are deadlock-free~\cite{BZ15wsfm}.
 
 Some recent works have studied honesty at the specification level, 
@@ -74,39 +74,16 @@ to devise an honest specification,
 a designer has to anticipate all the possible moves of the context,
 but at design time he does not yet know in which context his service will be run.
 %
-Tools to automate the verification of honesty in \coco are therefore in order.
-However, we cannot expect these tools to be sound and complete,
-because of a negative result in~\cite{BZ15wsfm} which establishes that
-honesty is undecidable 
-in all possible model of contracts which are at least as expressive
-as first-order binary session types~\cite{Honda98esop}.
-% \bartnote{revise} %
-% Verifying honesty is only possible in non Turing-powerful fragments of \coco,
-% for instance the one where processes are essentially finite-state,
-% i.e.\ they have neither delimitation nor parallel under process definitions. %
-% In this case, it is possible to verify honesty 
-% by using the model-checking technique of~\cite{BMSZ15jlamp}. %
-% \bartnote{not here!}
+Hence, tools to automate the verification of honesty in \coco 
+may be of great help.
 
-A further issue is that, 
-even if we devise an honest \coco specification, 
-it is still possible that honesty no longer holds 
-when refining the specification into an actual implementation 
-(\eg, a Java program using the middleware APIs of~\cite{CO2middleware}). %
-% the risk of incurring a sanction at runtime, so preserving the reputation.
-% we still need to verify that the corresponding implementation is honest, too. %
-% reducing 
+A further obstacle to the development of honest services is that, 
+even if we start from an honest \coco specification, 
+it is still possible that honesty is not preserved
+when refining the specification into an actual implementation.
 %
-\bartnote{revise below}
-With the existing techniques developed for \coco, 
-one can only check honesty at the level of specification:
-this requires a developer to
-write a \coco process in the Maude language~\cite{Maude01},
-\bartnote{not here!}
-and then by to apply there the model-checking tool of~\cite{BMSZ15jlamp}. %
-% However, this is not enough, because errors could be introduced in the implementation, which could break the property.
 Analysis techniques for checking honesty at the level of of implementation
-are therefore needed in order to develop secure contract-oriented applications.
+are therefore needed in order to develop reliable contract-oriented applications.
 
 \paragraph{Contributions.}
 
@@ -116,22 +93,25 @@ with the following features:
 \begin{inlinelist}
 \item writing \coco specification of services within an Eclipse plugin;
 \item verifying honesty of \coco specifications;
-\item generating from them skeletal Java programs;
+\item generating from them skeletal Java programs which
+use the contract-oriented APIs of the middleware in~\cite{CO2middleware}; %
 \item verifying the honesty of Java programs upon refinement.
 \end{inlinelist}
 We have validated our tools by applying them to
-the case studies in~\cite{BMSZ15jlamp}:
+all the case studies in~\cite{BMSZ15jlamp}:
 an online store with bank,
 a voucher distribution system,
 a car purchase financed with a loan,
 an online casino featuring blackjack,
 and a travel agency.
 We have specified each of these case studies in \coco,
-and we have (successfully) verified the honesty of 
+and we have successfully verified the honesty of 
 both the specifications and of their Java refinements.
-Overall, we can execute these verified services using the middleware in~\cite{CO2middleware}
-and be guaranteed that they will not incur in sanctions,
-and will enjoy deadlock-freedom when interacting with other honest services.
+Overall, we can execute these verified services 
+using the middleware in~\cite{CO2middleware},
+being guaranteed that they will not incur in sanctions,
+and they will enjoy deadlock-freedom when interacting 
+with other honest services.
 Our verification tools, the Eclipse plugin, and an online tutorial about Diogenes
 are available at~\url{co2.unica.it/diogenes}.
 

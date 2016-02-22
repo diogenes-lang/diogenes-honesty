@@ -9,8 +9,8 @@ We illustrate the architecture of our tools in~\Cref{fig:architecture}.
 
 The \coco honesty checker implements the  
 verification technique introduced in~\cite{BMSZ15jlamp}.
-This technique is built upon an alternative semantics of \coco 
-which abstracts both values (sent, received, and in conditional expressions) 
+This technique is built upon an abstract semantics of \coco 
+which approximates both values (sent, received, and in conditional expressions) 
 and the actual \emph{context} wherein a process is executed.
 This abstraction is a \emph{sound} over-approximation of honesty:
 namely, if the abstraction of a process is honest,
@@ -21,10 +21,17 @@ the analysis is also \emph{complete},
 For processes without delimitation/parallel under process definitions,
 the associate abstraction is finite-state, 
 hence we can verify their honesty by model checking a (finite) state space.
+For processes outside this class the analysis is still correct, 
+but it may not terminate; indeed, a negative result in~\cite{BZ15wsfm}
+excludes the existence of algorithm for honesty that are the same time
+sound, complete, and terminating in full \coco.
+% in all possible model of contracts which are at least as expressive
+% as first-order binary session types~\cite{Honda98esop}.
 Our implementation 
 first translates a \coco process into a Maude term~\cite{Maude01}, 
 and then uses the Maude LTL model checker~\cite{Eker02maude}
 to decide honesty of its abstract semantics.
+
 
 %\paragraph{Diogenes.}
 The Java honesty checker is developed on top of \emph{Java PathFinder}
