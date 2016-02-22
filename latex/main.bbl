@@ -33,10 +33,11 @@ M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
 \newblock {\em {JLAMP}}, 2015.
 \newblock {To appear}.
 
-\bibitem{BSZ14concur}
-M.~Bartoletti, A.~Scalas, and R.~Zunino.
-\newblock A semantic deconstruction of session types.
-\newblock In {\em {CONCUR}}, 2014.
+\bibitem{BSTZ13forte}
+M.~Bartoletti, A.~Scalas, E.~Tuosto, and R.~Zunino.
+\newblock Honesty by typing.
+\newblock In {\em FMOODS/FORTE}, volume 7892 of {\em LNCS}, pages 305--320,
+  2013.
 
 \bibitem{BTZ12sacs}
 M.~Bartoletti, E.~Tuosto, and R.~Zunino.
