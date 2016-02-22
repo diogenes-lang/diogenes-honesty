@@ -7,6 +7,12 @@ and an Eclipse plugin which integrates the two analyses
 with an editor of \coco.
 We illustrate the architecture of our tools in~\Cref{fig:architecture}.
 
+\begin{figure}[t]
+    \includegraphics[width=\textwidth]{img/diogenes-arch.png}
+    \caption{Data flow schema}
+    \label{fig:architecture}
+\end{figure}
+
 The \coco honesty checker implements the  
 verification technique introduced in~\cite{BMSZ15jlamp}.
 This technique is built upon an abstract semantics of \coco 
@@ -73,10 +79,3 @@ all the semantic checks, and the scope resolution of variables.
 
 % We implement an Xtext grammar focusing on~\cite{BMSZ15jlamp},
 % and we extend it in order to allow a complete mapping between \coco and Java.
-
-
-\begin{figure}[t]
-    \includegraphics[width=\textwidth]{img/diogenes-arch.png}
-    \caption{Data flow schema}
-    \label{fig:architecture}
-\end{figure}
