@@ -45,20 +45,20 @@ The Java honesty checker is developed on top of \emph{Java PathFinder}
 The JPF core is a Virtual Machine for Java bytecode
 that can be configured to act as a model-checker.
 %
-A \emph{listener} allows us to catch specific method invocations, 
+A \emph{listener} allows us both to catch specific method invocations, 
 which represent I/O actions
 directed to the middleware~\cite{CO2middleware},
 and to simulate \emph{all} the possible responses that 
 the application can receive from it.
 %
-JPF creates a \emph{choice generator}, explores all possible choices,
-and backtracks when the state exploration is done.
+%JPF creates a \emph{choic explores all possible choices,
+%and backtracks when a state exploration is done.
 %
 Therefore, the program is executed and backtracked multiple times,
 and we are able to obtain a \coco model that represents its behaviour.
 Then, the verification relies to the model checking technique of~\cite{BMSZ15jlamp}.
 %
-The accuracy of the model partially relies on the programmer;
+The accuracy of the model partially relies on the programmer:
 the methods involved in the application logic have to be correctly annotated
 and have to declare all possible exceptions that can be thrown at runtime.
 
