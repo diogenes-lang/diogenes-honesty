@@ -60,7 +60,10 @@ Therefore, to avoid sanctions a service must be able
 to respect \emph{all} the contracts it advertises, in \emph{all} possible contexts
 --- even those populated by adversaries.
 We call this property \emph{honesty}.
-\bartnote{se tutti sono onesti allora la app e' deadlock-free}
+Further, when compliance between contracts ensures their deadlock-freedom 
+(as for the relations in~\cite{Acciai10coordination,Barbanera10ppdp,BSZ14concur,Laneve07concur,Rensink07infoco}),
+then this property is lifted at the system level:
+systems of honest services are deadlock-free~\cite{BZ15wsfm}.
 
 Some recent works have studied honesty at the specification level, 
 using the process calculus \coco for modelling contract-oriented services~\cite{BMSZ15jlamp,BTZ12sacs,BZ15wsfm}.
