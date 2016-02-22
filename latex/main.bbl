@@ -14,17 +14,17 @@
 \bibitem{Acciai10coordination}
 L.~Acciai, M.~Boreale, and G.~Zavattaro.
 \newblock Behavioural contracts with request-response operations.
-\newblock In {\em Proc. {COORDINATION}}, pages 16--30, 2010.
+\newblock In {\em {COORDINATION}}, 2010.
 
 \bibitem{Barbanera10ppdp}
 F.~Barbanera and U.~de'Liguoro.
 \newblock Two notions of sub-behaviour for session-based client/server systems.
-\newblock In {\em PPDP}, pages 155--164, 2010.
+\newblock In {\em PPDP}, 2010.
 
 \bibitem{CO2middleware}
 M.~Bartoletti, T.~Cimoli, M.~Murgia, A.~S. Podda, and L.~Pompianu.
 \newblock A contract-oriented middleware.
-\newblock In {\em Proc. {FACS}}, 2015.
+\newblock In {\em {FACS}}, 2015.
 \newblock \url{http://co2.unica.it}.
 
 \bibitem{BMSZ15jlamp}
@@ -36,7 +36,7 @@ M.~Bartoletti, M.~Murgia, A.~Scalas, and R.~Zunino.
 \bibitem{BSZ14concur}
 M.~Bartoletti, A.~Scalas, and R.~Zunino.
 \newblock A semantic deconstruction of session types.
-\newblock In {\em Proc. {CONCUR}}, pages 402--418, 2014.
+\newblock In {\em {CONCUR}}, 2014.
 
 \bibitem{BTZ12sacs}
 M.~Bartoletti, E.~Tuosto, and R.~Zunino.
@@ -64,18 +64,17 @@ S.~Eker, J.~Meseguer, and A.~Sridharanarayanan.
 K.~Honda, V.~T. Vasconcelos, and M.~Kubo.
 \newblock Language primitives and type disciplines for structured
   communication-based programming.
-\newblock In {\em ESOP}, volume 1381 of {\em LNCS}, pages 22--138, 1998.
+\newblock In {\em ESOP}, 1998.
 
 \bibitem{Laneve07concur}
 C.~Laneve and L.~Padovani.
 \newblock {T}he {\it must} {P}reorder {R}evisited.
-\newblock In {\em {CONCUR}}, pages 212--225, 2007.
+\newblock In {\em {CONCUR}}, 2007.
 
 \bibitem{lerda2001addressing}
 F.~Lerda and W.~Visser.
 \newblock Addressing dynamic issues of program model checking.
-\newblock In {\em SPIN workshop on Model checking of software}, pages 80--102,
-  2001.
+\newblock In {\em SPIN workshop on Model checking of software}, 2001.
 
 \bibitem{Mukhija2007qos}
 A.~Mukhija, A.~Dingwall-Smith, and D.~Rosenblum.
@@ -85,7 +84,7 @@ A.~Mukhija, A.~Dingwall-Smith, and D.~Rosenblum.
 \bibitem{Rensink07infoco}
 A.~Rensink and W.~Vogler.
 \newblock Fair testing.
-\newblock {\em Information and Computation}, 205(2):125--198, 2007.
+\newblock {\em Info. and Co.}, 205(2):125--198, 2007.
 
 \bibitem{visser2003model}
 W.~Visser, K.~Havelund, G.~Brat, S.~Park, and F.~Lerda.
