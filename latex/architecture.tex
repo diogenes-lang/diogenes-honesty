@@ -49,18 +49,21 @@ However, if the \code{@SkipMethod} presented in the previous section
 is abused, some discrepancies between the program and the model
 can occur, \eg annotating a method that never returns.
 
-The Eclipse plugin \bartnote{dire prima cosa fa, e poi dare qualche insight}
-% On the contrary, the Eclipse plugin has no dependencies, and
-% it integrates the possibility to directly call 
-% the Maude model-checker, reporting its output into the Eclipse console.
+The Eclipse plugin provides advanced functionalities such as
+syntax highlighting, 
+code auto-completion, 
+outline view,
+syntax/semantics checks,
+static type checking.
 %
 The plugin relies on
 Xtext~\cite{xtext-site}, a framework for developing programming languages, 
 and Xsemantics~\cite{xsemantics-site}, a domain-specific language for writing type systems
 for Xtext-based languages.
 %
-We use Xtext to define the grammar of \coco.
-\bartnote{giusto? si usa per altre cose? c'e' da dire altre cose interessanti sul plugin? mi sembra che questa parte andrebbe espanda un poco}
+We use Xtext especially to define the grammar of \coco,
+all the semantic checks, and the scope resolution of variables.
+
 % We implement an Xtext grammar focusing on~\cite{BMSZ15jlamp},
 % and we extend it in order to allow a complete mapping between \coco and Java.
 
