@@ -18,7 +18,7 @@ The store has two contracts:
 In \code{C}, the store declares that it will wait for an \atom{order},
 and then send either the corresponding \atom{amount} or an \atom{abort} message
 (\eg, in case the ordered item is not available).
-\bartnote{revise below}
+%
 The answer may depend on an external service, 
 which waits for a \atom{req}est, then it answers \atom{ok} or \atom{no}.
 % 
@@ -38,7 +38,6 @@ In order to specify the sort of a message,
 an action can be associated to a type
 \inlineCoco{int}, \inlineCoco{string} or \inlineCoco{unit}.
 If omitted, \inlineCoco{unit} is used.
-\bartnote{unclear} \niconote{changed}
 
 \hidden{The corresponding java contract is
   \begin{mdframed}
@@ -94,12 +93,23 @@ The action \inlineCoco{t} models a timeout,
 fired in case no response is received (line \lineno{10}).
 
 Our tool correctly detects that the above specification is \emph{dishonest}.
-Indeed, if the session \code{y}
+\begin{lstlisting}[basicstyle=\scriptsize\ttfamily]
+result: ("y",$ 0)(
+    A[tell "y" D . ask "y" True . (...)] 
+    | $ 0["abort" ! unit . 0(+)"amount" ! int . 0])
+result: ($ 0,$ 1)(
+    A[do $ 0 "abort" ! unit . (0).Sum] 
+    | $ 0["abort" ! unit . 0(+)"amount" ! int . 0] 
+    | $ 1[ready "no" ? unit . 0])
+honesty: false
+\end{lstlisting}
+The two results state that: 
+if the session \code{y}
 is never established (which may happen when no distributor is available), 
-the store is stuck at line \lineno{5} 
-and cannot fulfil the contract \code{C} at session \code{x}.
-Furthermore, what happens if the client response arrives after the timeout?
-The store does not consume the input and 
+the store is stuck at line \lineno{5}
+and cannot fulfil the contract \code{C} at session \code{x} (\code{\$0} in the output above);
+if the distributor response arrives after the timeout (line \lineno{10}),
+the store does not consume the input and 
 therefore does not respect the contract~\code{D}.
 
 A possible way to fix the above specification is the following:
@@ -154,7 +164,7 @@ to consume possible inputs.
 Diogenes translates a \coco specification
 into a Java skeleton.
 Considering the honest specification describe above,
-Diogenes generates the following skeleton:
+it generates the following skeleton:
 \begin{mdframed}
   \begin{minted}[
     fontsize=\scriptsize
@@ -184,6 +194,7 @@ public class StoreHonest extends Participant {
       }            
     }
     catch(ContractExpiredException e) {
+      //contract D retracted
       x.sendIfAllowed("abort");               // : send x abort (line 11)
     } 
   }
@@ -191,18 +202,18 @@ public class StoreHonest extends Participant {
   \end{minted}
 \end{mdframed}
 
-\hidden{The \inlineCoco{tellRetract} corresponds to perform a tell with
-  a delay (line \lineno{10}). The successive \code{waitForSession()} blocks until the delay is
-  expired, throwing a \code{ContractExpiredException} if the session 
-  was not fused in time (the contract has been retracted).
-  The timeout \inlineCoco{t} corresponds to a \code{waitForReceived} with a timeout.
-  The method blocks until a message with label \code{"ok"} or \code{"no"} is received,
-  or throws a \code{TimeExpiredException} if the timeout expires.}
-
-\bartnote{aggiungere commento su differenza tra specifica e implementazione}
-
-% \paragraph{Refining the skeleton.}
-The order amount at line \lineno{15} is still hardcoded, so we decide to separate its computation
+We use Java exceptions to model both the \inlineCoco{tellRetract} 
+and \inlineCoco{receive} primitives:
+the \code{ContractExpiredException} is thrown by line \lineno{9} if the session \code{y}
+is not established within ten seconds, while the \code{TimeExpiredException}
+is thrown by line \lineno{13} if a message is not received within (again) ten seconds.
+The \code{parallel} method at lines \lineno{20}-\lineno{21} starts a new 
+thread that will execute the passed \code{Runnable} instance.
+%
+The timeout values are predefined,
+and can be changed to better fit other requirements.
+Moreover, the order amount at line \lineno{15} is hardcoded, 
+so we decide to separate its computation
 in a separated method, \eg
 \begin{mdframed}
   \begin{minted}[
@@ -213,7 +224,7 @@ in a separated method, \eg
   \end{minted}
 \end{mdframed}
 and change the number \code{100} at line \lineno{15} with \code{getOrderAmount(v)}.
-The method could read the order amount from a file or database,
+The method could read the order amount from a file or a database,
 and suppose that each possible exception
 is caught and hidden behind \code{MyException}. 
 The failure of this method can be considered not deterministic,
@@ -222,18 +233,16 @@ in order to consider all the possible ways the method can terminate.
 % 
 To this purpose, we provide the annotation \code{@SkipMethod(value="<value>")}, that
 is interpreted by the checker as follows:
-\bartnote{save space}
-\begin{itemize}[noitemsep,topsep=0pt]
-\item ignore what the method really does. 
-  This point imposes that an annotated method does not perform any action
-    directed to the middleware;
-\item consider \code{"<value>"} as the returning value on success;
+\begin{inlinelist}[noitemsep,topsep=0pt]
+\item ignore what the method really does (it imposes that an annotated 
+    method does not perform any action directed to the middleware);
+\item consider \code{<value>} as the returning value on success;
 \item consider the declared exceptions as possible exit points on failure.
-\end{itemize}
+\end{inlinelist}
 
 Now Diogenes can symbolically consider both the case of a normal 
 termination of the method
-(returning the value specified in the annotation, if provided),
+%(returning the value specified in the annotation, if provided),
 and all the possible exceptional terminations.
 
 \paragraph{Verification.}
@@ -265,9 +274,4 @@ It means that if the method \code{getOrderAmount} will fail,
 the program will be terminated abruptly and the store may be culpable.
 Finally, catching \code{MyException} with \code{x.sendIfAllowed("abort")},
 the program come back \emph{honest}.
-\bartnote{+dettaglio}
-\niconote{che genere? output del chcker?}
-
-
-
 
