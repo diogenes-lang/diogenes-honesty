@@ -58,24 +58,24 @@ Therefore, the program is executed and backtracked multiple times,
 and we are able to obtain a \coco model that represents its behaviour.
 Then, the verification relies to the model checking technique of~\cite{BMSZ15jlamp}.
 %
-However, if the \code{@SkipMethod} presented in the previous section
-is abused, some discrepancies between the program and the model
-can occur, \eg annotating a method that never returns.
+The accuracy of the model partially relies on the programmer;
+the methods involved in the application logic have to be correctly annotated
+and have to declare all possible exceptions that can be thrown at runtime.
 
 The Eclipse plugin provides advanced functionalities such as
 syntax highlighting, 
 code auto-completion, 
 outline view,
 syntax/semantics checks,
-static type checking.
+and static type checking.
 %
 The plugin relies on
 Xtext~\cite{xtext-site}, a framework for developing programming languages, 
 and Xsemantics~\cite{xsemantics-site}, a domain-specific language for writing type systems
 for Xtext-based languages.
 %
-We use Xtext especially to define the grammar of \coco,
-all the semantic checks, and the scope resolution of variables.
+We use Xtext to define the grammar of \coco
+and we extend it to obtain custom semantic checks and adequate scope resolution of variables.
 
 % We implement an Xtext grammar focusing on~\cite{BMSZ15jlamp},
 % and we extend it in order to allow a complete mapping between \coco and Java.
