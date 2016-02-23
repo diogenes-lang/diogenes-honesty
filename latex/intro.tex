@@ -23,7 +23,7 @@ reason about the services under their control. %
 A possible countermeasure to these issues is to regulate the interaction
 between services through \emph{contracts}.
 By advertising a contract, a service commits itself
-to stick to a given behavior when he will interact with other services.
+to stick to a given behaviour when he will interact with other services.
 In this setting, a service infrastructure acts as a trusted third party, 
 which collects all the advertised contracts, and establishes sessions
 between participants with compliant ones. %
@@ -33,7 +33,7 @@ and it sanctions those which do not respect their contracts.
 These sanctions can be pecuniary compensations,
 adaptations of the service binding~\cite{Mukhija2007qos},
 or they can decrease the service reputation~\cite{CO2middleware}
-in order to marginalize dishonest services in the binding phase.
+in order to marginalize dishonest services in the selection phase.
 
 
 % \paragraph{Analysing contract-oriented services.}
@@ -49,10 +49,11 @@ malicious users can try to exploit possible discrepancies between
 the promised and the actual behaviour of a service
 in order to make it sanctioned. %
 Since these attacks may compromise the service and cause economic damage to its provider,
-it is important to detect these vulnerabilities \emph{before} deployment. %
+it is important to detect the underlying vulnerabilities 
+\emph{before} deployment. %
 Intuitively, a service is vulnerable if, 
 in \emph{some} execution context,
-it does \emph{not} respect the contracts it advertises.
+it does \emph{not} respect some of the contracts it advertises.
 This may happen either unintentionally
 (because of errors in the service specification, or in its implementation),
 or even because of malicious behaviour.
@@ -63,12 +64,12 @@ We call this property \emph{honesty}.
 Whenever compliance between contracts ensures their deadlock-freedom 
 (as for the compliance relations in~\cite{Acciai10coordination,Barbanera10ppdp,Laneve07concur,Rensink07infoco}),
 % removed citation to BSZ14concur to save space
-then the honesty property is lifted from contracts to services:
+the honesty property can be lifted from contracts to services:
 systems of honest services are deadlock-free~\cite{BZ15wsfm}.
 
 Some recent works have studied honesty at the specification level, 
 using the process calculus \coco for modelling contract-oriented services~\cite{BMSZ15jlamp,BTZ12sacs,BZ15wsfm}.
-Practical modelling experience with \coco has shown that writing honest specifications
+Practical experience with \coco has shown that writing honest specifications
 is not an easy task, especially when a service has to juggle with multiple sessions.
 The reason of this difficulty lies in the fact that,
 to devise an honest specification, 
@@ -89,11 +90,11 @@ are therefore needed in order to develop reliable contract-oriented applications
 \paragraph{Contributions.}
 
 To support programmers in the development of contract-oriented 
-applications, we provid a suite of tools (named \emph{Diogenes}) 
+applications, we provide a suite of tools (named \emph{Diogenes}) 
 with the following features:
 \begin{inlinelist}
-\item writing \coco specification of services within an Eclipse plugin;
-\item verifying honesty of \coco specifications;
+\item writing \coco specifications of services within an Eclipse plugin;
+\item verifying honesty of these specifications;
 \item generating from them skeletal Java programs which
 use the contract-oriented APIs of the middleware in~\cite{CO2middleware}; %
 \item verifying the honesty of Java programs upon refinement.
@@ -111,8 +112,7 @@ both the specifications and of their Java refinements.
 Overall, we can execute these verified services 
 using the middleware in~\cite{CO2middleware},
 being guaranteed that they will not incur in sanctions,
-and they will enjoy deadlock-freedom when interacting 
-with other honest services.
+and that interactions with other honest services will be deadlock-free.
 Our verification tools, the Eclipse plugin, and an online tutorial about Diogenes
 are available at~\url{co2.unica.it/diogenes}.
 
