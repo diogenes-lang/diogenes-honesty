@@ -25,11 +25,11 @@ Further, in the fragment of \coco without conditional statements
 the analysis is also \emph{complete},
 \ie if a concrete process is honest, then also its abstraction is honest.
 For processes without delimitation/parallel under process definitions,
-the associate abstraction is finite-state, 
+the associated abstraction is finite-state, 
 hence we can verify their honesty by model checking a (finite) state space.
 For processes outside this class the analysis is still correct, 
 but it may not terminate; indeed, a negative result in~\cite{BZ15wsfm}
-excludes the existence of algorithm for honesty that are at the same time
+excludes the existence of algorithms for honesty that are at the same time
 sound, complete, and terminating in full \coco.
 % in all possible model of contracts which are at least as expressive
 % as first-order binary session types~\cite{Honda98esop}.
@@ -54,8 +54,8 @@ the application can receive from it.
 %JPF creates a \emph{choic explores all possible choices,
 %and backtracks when a state exploration is done.
 %
-Through JPF we symbolically executes and backtracks the program, % multiple times,
-and eventually we obtain a \coco specification that over-approximates its behaviour.
+Through JPF we symbolically execute and backtrack the program, % multiple times,
+and eventually we infer a \coco specification that over-approximates its behaviour.
 Then, we apply the \coco honesty checker to establish the honesty of the Java program.
 %
 The accuracy of the inferred \coco specification partially relies on the programmer:
@@ -67,7 +67,7 @@ like
 syntax highlighting, 
 code auto-completion, 
 outline view,
-syntax/semantics checks,
+syntactic/semantic checks,
 and static type checking to detect errors in the use of sorts.
 %
 The plugin relies on
@@ -75,8 +75,9 @@ Xtext~\cite{xtext-site}, a framework for developing programming languages,
 and Xsemantics~\cite{xsemantics-site}, a domain-specific language for writing type systems
 for Xtext-based languages.
 %
-We use Xtext to define the grammar of \coco
-and we extend it to obtain custom semantic checks and suitable scope resolution of variables.
+We use Xtext to define the grammar of \coco,
+and we extend it to obtain custom semantic checks 
+and suitable scope resolution of variables.
 
 % We implement an Xtext grammar focusing on~\cite{BMSZ15jlamp},
 % and we extend it in order to allow a complete mapping between \coco and Java.
