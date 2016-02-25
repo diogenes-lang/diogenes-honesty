@@ -10,7 +10,6 @@ import it.unica.co2.examples.MultipleIfThenElseProcess;
 import it.unica.co2.examples.ParallelProcessExample.ParallelProcess;
 import it.unica.co2.examples.ProcessComposition2Example.Composed2Process;
 import it.unica.co2.examples.ProcessCompositionExample.ComposedProcess;
-import it.unica.co2.examples.Retract;
 import it.unica.co2.examples.SimpleBuyer;
 import it.unica.co2.examples.blackjack.Dealer;
 import it.unica.co2.examples.blackjack.DeckService;
@@ -143,12 +142,4 @@ public class HonestyTest {
 		assertTrue(honesty==HonestyResult.HONEST);
 	}
 	
-	
-	@Test
-	public void retract() {
-		HonestyResult honesty;
-		
-		honesty = HonestyChecker.isHonest(Retract.P.class);
-//		assertTrue(honesty==HonestyResult.HONEST);
-	}
 }

@@ -12,6 +12,7 @@ import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.honesty.HonestyChecker;
 
 
 public class Dealer extends Participant {
@@ -314,6 +315,7 @@ public class Dealer extends Participant {
 	}
 	
 	public static void main(String args[]) {
-		new Dealer().run();
+//		new Dealer().run();
+		HonestyChecker.isHonest(Dealer.class);
 	}
 }
