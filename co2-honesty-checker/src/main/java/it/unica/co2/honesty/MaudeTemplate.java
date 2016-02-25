@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -189,12 +190,18 @@ public class MaudeTemplate {
 		List<String> eqs = new ArrayList<String>();
 		
 		eqs.add("\n    *** list of contracts");
-		for (String c : contracts.keySet()) {
+		
+		for (Entry<String, ContractDefinition> en : contracts.entrySet()) {
 
+			String oldName = en.getKey();
+			
+			ContractDefinition c = en.getValue();
+			c.setName( c.getName()+"-env" );
+			
 			eqs.add(
 					maudeEqTemplate
-					.replace("${name}", c)
-					.replace("${body}", "defToRec("+c+"-env , env)")
+					.replace("${name}", oldName)
+					.replace("${body}", "defToRec("+c.getName()+" , env)")
 			);
 			
 		}
@@ -266,9 +273,8 @@ public class MaudeTemplate {
 		sb.append("(\n");
 		
 		int i=0;
+
 		for (ContractDefinition p : contracts.values()) {
-			
-			p.setName( p.getName()+"-env" );
 			
 			if (i++>0)
 				sb.append("        &\n");

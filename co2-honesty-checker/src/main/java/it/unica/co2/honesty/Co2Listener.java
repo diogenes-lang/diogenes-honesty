@@ -50,7 +50,6 @@ import gov.nasa.jpf.vm.VM;
 import gov.nasa.jpf.vm.choice.IntChoiceFromList;
 import it.unica.co2.api.contract.Action;
 import it.unica.co2.api.contract.ContractDefinition;
-import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.contract.Sort.IntegerSort;
 import it.unica.co2.api.contract.Sort.StringSort;
@@ -1144,16 +1143,12 @@ public class Co2Listener extends ListenerAdapter {
 		ContractDefinition cDef = ObjectUtils.deserializeObjectFromStringQuietly(cserial, ContractDefinition.class);
 		contracts.put(cDef.getName(), cDef);
 		
-		log.info("contract: "+cDef.getContract().toString());
+		log.info("addind contract: "+cDef.getName());
 		
-		ContractExplorer.findAll(
-				cDef.getContract(), 
-				ContractReference.class,
-				(x)->(x.getReference()!=cDef),
-				(x)->{
-					contracts.put(x.getReference().getName(), x.getReference());
-				}
-			);
+		for (ContractDefinition ref : ContractExplorer.getAllReferences(cDef)) {
+			log.info("adding contract: "+ref.getName());
+			contracts.put(ref.getName(), ref);
+		}
 		
 		Map<String, Sort<?>> actionSortMap = new HashMap<>();
 		

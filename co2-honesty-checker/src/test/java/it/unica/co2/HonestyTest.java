@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import it.unica.co2.examples.APIExampleProcess;
 import it.unica.co2.examples.MultipleIfThenElseProcess;
 import it.unica.co2.examples.ParallelProcessExample.ParallelProcess;
 import it.unica.co2.examples.ProcessComposition2Example.Composed2Process;
@@ -30,14 +29,6 @@ import it.unica.co2.honesty.HonestyResult;
 
 public class HonestyTest {
 
-	@Test
-	public void apiExample() {
-		
-		HonestyResult honesty = HonestyChecker.isHonest(APIExampleProcess.class);
-		
-		assertTrue(honesty==HonestyResult.HONEST);
-	}
-	
 	@Test
 	public void simpleBuyer() {
 		
