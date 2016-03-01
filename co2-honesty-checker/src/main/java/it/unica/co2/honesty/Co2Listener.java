@@ -1313,7 +1313,7 @@ public class Co2Listener extends ListenerAdapter {
 					String sessionName = publicSessionName.get(pbl.toString());
 					
 					pCall.params.add("\""+sessionName+"\"");
-					log.info("param: Session2 ("+sessionName+")");
+					log.info("param: Session ("+sessionName+")");
 				}
 				else if (ei.getClassInfo().isInstanceOf(Number.class.getName())) {
 					pCall.params.add("exp");
