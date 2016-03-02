@@ -38,11 +38,11 @@ public class MultipleSessionReceiver {
 	}
 	
 	
-	public Message waitForReceive() throws TimeExpiredException {
+	public MessageWrapper waitForReceive() throws TimeExpiredException {
 		return waitForReceive(-1);
 	}
 	
-	public Message waitForReceive(int timeout) throws TimeExpiredException {
+	public MessageWrapper waitForReceive(int timeout) throws TimeExpiredException {
 		
 		long endtime = System.currentTimeMillis()+timeout;
 	
@@ -61,7 +61,8 @@ public class MultipleSessionReceiver {
 				
 				// wait for receive a message
 				try {
-					return session.waitForReceive(WAIT_RECEIVE_TIMEOUT, actions.toArray(new String[]{}));
+					Message msg = session.waitForReceive(WAIT_RECEIVE_TIMEOUT, actions.toArray(new String[]{}));
+					return new MessageWrapper(session, msg);
 				}
 				catch (TimeExpiredException e1) {
 					logger.debug("session {} does not receive any message within the given delay ({} msec)", session, WAIT_RECEIVE_TIMEOUT);
@@ -69,5 +70,23 @@ public class MultipleSessionReceiver {
 			}
 		}
 		
+	}
+	
+	public static class MessageWrapper {
+		private final Session<? extends ContractModel> session;
+		private final Message message;
+		
+		public MessageWrapper(Session<? extends ContractModel> session, Message message) {
+			this.session = session;
+			this.message = message;
+		}
+
+		public Session<? extends ContractModel> getSession() {
+			return session;
+		}
+		
+		public Message getMessage() {
+			return message;
+		}
 	}
 }

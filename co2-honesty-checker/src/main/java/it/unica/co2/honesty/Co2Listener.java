@@ -189,20 +189,22 @@ public class Co2Listener extends ListenerAdapter {
 
 		if (ci.getName().equals(Session.class.getName())) {
 			
+			log.info("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL: "+ci);
+			
 			if (Session_waitForReceive==null)
 				Session_waitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
 			
 			if (Session_sendIfAllowed==null)
-				Session_sendIfAllowed = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;)Ljava/lang/Boolean;", false);
+				Session_sendIfAllowed = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;)Z", false);
 			
 			if (Session_sendIfAllowedString==null)
-				Session_sendIfAllowedString = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/Boolean;", false);
+				Session_sendIfAllowedString = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/String;)Z", false);
 			
 			if (Session_sendIfAllowedInt==null)
-				Session_sendIfAllowedInt = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/Integer;)Ljava/lang/Boolean;", false);
+				Session_sendIfAllowedInt = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/Integer;)Z", false);
 			
-			methodsToSkip.put(ci.getMethod("amIOnDuty", "()Ljava/lang/Boolean;", false), null);
-			methodsToSkip.put(ci.getMethod("amICulpable", "()Ljava/lang/Boolean;", false), null);
+			methodsToSkip.put(ci.getMethod("amIOnDuty", "()Z", false), null);
+			methodsToSkip.put(ci.getMethod("amICulpable", "()Z", false), null);
 		}
 		
 		if (ci.getName().equals(Message.class.getName())) {
