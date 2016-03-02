@@ -70,10 +70,10 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.powermock</groupId>
-			<artifactId>powermock-mockito-release-full</artifactId>
-			<version>1.6.4</version>
-			<type>pom</type>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
+			<version>2.0.2-beta</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	

@@ -4,7 +4,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.powermock.modules.junit4.PowerMockRunner;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import co2api.ContractException;
 import co2api.ContractViolationException;
@@ -13,7 +13,7 @@ import co2api.SessionI;
 import co2api.TimeExpiredException;
 import it.unica.co2.api.process.MultipleSessionReceiver;
 
-@RunWith(PowerMockRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 public class MultipleSessionReceiverTest {
 
 	// helper class that will be mocked

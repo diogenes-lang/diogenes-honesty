@@ -37,7 +37,10 @@ public class MultipleSessionReceiver {
 		// create a map associating the given consumer with each action
 		Map<String, Consumer<Message>> newEntry =
 			    Arrays.stream(actionNames).collect(
-			    		Collectors.toMap(Function.identity(), (x)->consumer));
+			    		Collectors.toMap(
+			    				Function.identity(),	// the key is the action
+			    				(x) -> consumer, 		// the value is the consumer
+			    				(x,y)->(x)));			// if the stream contains duplicated actions, ignore the latest
 		
 		sessionActionsMap.merge(
 				session, 
@@ -71,7 +74,7 @@ public class MultipleSessionReceiver {
 				
 				// check if the timeout is expired
 				if (timeout!=-1 && System.currentTimeMillis() > endtime) {
-					logger.info("timeout expired");
+					logger.info("timeout expired: no action received from any session");
 					throw new TimeExpiredException("no action received from any session");
 				}
 				
