@@ -67,5 +67,9 @@ public abstract class CO2Process implements Runnable, Serializable {
 	}
 	
 	
+	public MultipleSessionReceiver multipleSessionReceiver() {
+		return new MultipleSessionReceiver(); 
+	}
+	
 	
 }

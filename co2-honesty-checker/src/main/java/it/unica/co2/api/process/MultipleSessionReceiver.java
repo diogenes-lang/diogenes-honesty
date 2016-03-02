@@ -1,36 +1,49 @@
 package it.unica.co2.api.process;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import co2api.ContractModel;
 import co2api.Message;
-import co2api.Session;
+import co2api.SessionI;
 import co2api.TimeExpiredException;
 
 public class MultipleSessionReceiver {
 
 	private static final Logger logger = LoggerFactory.getLogger(MultipleSessionReceiver.class);
 	
-	private Map<Session<? extends ContractModel>, List<String>> sessionActionsMap = new HashMap<>();
+	private Map<SessionI<? extends ContractModel>, Map<String, Consumer<Message>>> sessionActionsMap = new HashMap<>();
 	
 	private static final int WAIT_RECEIVE_TIMEOUT = 1000;
 	
-	public MultipleSessionReceiver add(Session<? extends ContractModel> session, String... actionNames) {
+	
+	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, String... actionNames) {
+		return add(session, (x)->{}, actionNames);
+	}
+	
+	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, final Consumer<Message> consumer, String... actionNames) {
 
-		logger.debug("adding pair {}, {}", session, actionNames);
+		logger.debug("adding pair <{}, {}>", session, actionNames);
+		
+		// create a map associating the given consumer with each action
+		Map<String, Consumer<Message>> newEntry =
+			    Arrays.stream(actionNames).collect(
+			    		Collectors.toMap(Function.identity(), (x)->consumer));
 		
 		sessionActionsMap.merge(
 				session, 
-				Arrays.asList(actionNames),
-				(x,y)-> {
-					x.addAll(y);
+				newEntry,
+				(x, y)-> {				// put all the new entries into the old map
+					x.putAll(y);
 					return x;
 				});
 		
@@ -38,17 +51,23 @@ public class MultipleSessionReceiver {
 	}
 	
 	
-	public MessageWrapper waitForReceive() throws TimeExpiredException {
-		return waitForReceive(-1);
+	public void waitForReceive() {
+		try {
+			waitForReceive(-1);
+		}
+		catch (TimeExpiredException e) {
+			// unreachable
+			throw new RuntimeException(e);
+		}
 	}
 	
-	public MessageWrapper waitForReceive(int timeout) throws TimeExpiredException {
+	public void waitForReceive(int timeout) throws TimeExpiredException {
 		
 		long endtime = System.currentTimeMillis()+timeout;
 	
 		while(true) {
 			
-			for (Entry<Session<? extends ContractModel>, List<String>> e : sessionActionsMap.entrySet()) {
+			for (Entry<SessionI<? extends ContractModel>, Map<String, Consumer<Message>>> e : sessionActionsMap.entrySet()) {
 				
 				// check if the timeout is expired
 				if (timeout!=-1 && System.currentTimeMillis() > endtime) {
@@ -56,13 +75,20 @@ public class MultipleSessionReceiver {
 					throw new TimeExpiredException("no action received from any session");
 				}
 				
-				Session<? extends ContractModel> session = e.getKey();
-				List<String> actions = e.getValue();
+				SessionI<? extends ContractModel> session = e.getKey();
+				Map<String, Consumer<Message>> consumers = e.getValue();
+				Collection<String> actions = consumers.keySet();
 				
 				// wait for receive a message
 				try {
 					Message msg = session.waitForReceive(WAIT_RECEIVE_TIMEOUT, actions.toArray(new String[]{}));
-					return new MessageWrapper(session, msg);
+					
+					String action = msg.getLabel();
+					assert actions.contains(action);
+					assert consumers.containsKey(action);
+					
+					consumers.get(action).accept(msg);
+					return;
 				}
 				catch (TimeExpiredException e1) {
 					logger.debug("session {} does not receive any message within the given delay ({} msec)", session, WAIT_RECEIVE_TIMEOUT);
@@ -72,21 +98,4 @@ public class MultipleSessionReceiver {
 		
 	}
 	
-	public static class MessageWrapper {
-		private final Session<? extends ContractModel> session;
-		private final Message message;
-		
-		public MessageWrapper(Session<? extends ContractModel> session, Message message) {
-			this.session = session;
-			this.message = message;
-		}
-
-		public Session<? extends ContractModel> getSession() {
-			return session;
-		}
-		
-		public Message getMessage() {
-			return message;
-		}
-	}
 }
