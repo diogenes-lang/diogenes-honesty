@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -16,9 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import co2api.CO2ServerConnection;
 import co2api.ContractExpiredException;
+import co2api.ContractModel;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
+import co2api.SessionI;
 import co2api.TST;
 import co2api.TimeExpiredException;
 import gov.nasa.jpf.Config;
@@ -56,6 +59,7 @@ import it.unica.co2.api.contract.Sort.StringSort;
 import it.unica.co2.api.contract.Sum;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 import it.unica.co2.api.process.CO2Process;
+import it.unica.co2.api.process.MultipleSessionReceiver;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
 import it.unica.co2.honesty.dto.CO2DataStructures.AskDS;
@@ -137,16 +141,18 @@ public class Co2Listener extends ListenerAdapter {
 	private MethodInfo Session_sendIfAllowedInt;
 	private MethodInfo Message_getStringValue;
 	private MethodInfo LoggerFactory_getLogger;
+	private MethodInfo MultipleSessionReceiver_waitForReceive;
 	
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private Map<MethodInfo, AnnotationInfo> methodsToSkip = new HashMap<>();
 	
 	private Map<String, Boolean> contractsDelay = new HashMap<>();
-	private Map<String, Integer> contractsCount = new HashMap<>();
 	private Map<String, String> publicSessionName = new HashMap<>();
-	private int sessionCount = 0;
 
 	private Map<String, Map<String, Sort<?>>> contractActionsSort = new HashMap<>();
+	
+	
+	
 	
 	@Override
 	public void classLoaded(VM vm, ClassInfo ci) {
@@ -189,8 +195,6 @@ public class Co2Listener extends ListenerAdapter {
 
 		if (ci.getName().equals(Session.class.getName())) {
 			
-			log.info("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL: "+ci);
-			
 			if (Session_waitForReceive==null)
 				Session_waitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
 			
@@ -224,6 +228,10 @@ public class Co2Listener extends ListenerAdapter {
 				LoggerFactory_getLogger = ci.getMethod("getLogger", "(Ljava/lang/String;)Lorg/slf4j/Logger;", false);
 		}
 		
+		if (ci.getName().equals(MultipleSessionReceiver.class.getName())) {
+			if (MultipleSessionReceiver_waitForReceive==null)
+				MultipleSessionReceiver_waitForReceive = ci.getMethod("_waitForReceive", "(I)V", false);
+		}
 	}
 	
 	@Override
@@ -275,6 +283,9 @@ public class Co2Listener extends ListenerAdapter {
 		else if (LoggerFactory_getLogger!=null && insn==LoggerFactory_getLogger.getFirstInsn()) {
 			handle_LoggerFactory_getLogger(ti, insn);
 		}
+		else if (MultipleSessionReceiver_waitForReceive!=null && insn==MultipleSessionReceiver_waitForReceive.getFirstInsn()) {
+			handle_MultipleSessionReceiver_waitForReceive(ti, insn);
+		}
 		else if (methodsToSkip.containsKey(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
 			handleSkipMethod(tstate, ti, insn);
 		}
@@ -293,6 +304,45 @@ public class Co2Listener extends ListenerAdapter {
 		log.info("loggerEI: "+loggerEI);
 		StackFrame frame = ti.getTopFrame();
 		frame.setReferenceResult(loggerEI.getObjectRef(), null);
+		
+		Instruction nextInsn = new ARETURN();
+		nextInsn.setMethodInfo(insn.getMethodInfo());
+		
+		ti.skipInstruction(nextInsn);
+	}
+	
+	private void handle_MultipleSessionReceiver_waitForReceive(ThreadInfo ti, Instruction insn) {
+
+		log.info("");
+		log.info("-- WAIT FOR RECEIVE (multi session) --");
+		
+		//parameters
+		boolean timeout = getArgumentInt(ti, 0)>0;
+		log.info("timeout: "+timeout);
+		
+		ElementInfo mReceiver = ti.getThisElementInfo();
+		
+		
+		String serializedSessionActionsMap = mReceiver.getStringField("serializedSessionActionsMap");
+		log.info("smap: "+serializedSessionActionsMap);
+		
+		@SuppressWarnings("unchecked")
+		Map<SessionI<? extends ContractModel>, Map<String, Consumer<Message>>> sessionActionsMap = ObjectUtils.deserializeObjectFromStringQuietly(serializedSessionActionsMap, Map.class);
+		
+		log.info("map: "+sessionActionsMap);
+		
+		log.info("sessions: "+sessionActionsMap.size());
+		
+		for (Entry<SessionI<? extends ContractModel>, Map<String, Consumer<Message>>> entry :  sessionActionsMap.entrySet()) {
+			
+			SessionI<? extends ContractModel> session = entry.getKey();
+			Map<String, Consumer<Message>> actions = entry.getValue();
+			
+			log.info("session: "+getSessionNameBySession(session));
+			log.info("actions: "+actions.keySet());
+			
+		}
+		
 		
 		Instruction nextInsn = new ARETURN();
 		nextInsn.setMethodInfo(insn.getMethodInfo());
@@ -369,6 +419,9 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 	
+	private String getSessionNameBySession(SessionI<? extends ContractModel> session) {
+		return session.getPublicContract().getUniqueID();
+	}
 	
 	private String getSessionNameBySession(ThreadInfo ti, ElementInfo session) {
 		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
@@ -376,7 +429,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 	private String getSessionNameByPublic(ElementInfo pbl) {
-		String sessionName = publicSessionName.get(pbl.toString());
+		String sessionName = publicSessionName.get(getUniqueIDByPublic(pbl));
 		assert sessionName!=null;
 		return sessionName;
 	}
@@ -1101,14 +1154,14 @@ public class Co2Listener extends ListenerAdapter {
 		ElementInfo connection = ti.getElementInfo(pvt.getReferenceField("connection"));
 		ElementInfo contract = ti.getElementInfo(pvt.getReferenceField("contract"));
 		
-		//build a unique ID for the contract (in order to handle delays appropriately when waitForSession is invoked)
-		String contractID = cserial;
-
-		Integer contractCount = contractsCount.get(contractID);
-		contractCount = contractCount==null? 0 : contractCount+1;
+		//get a unique ID for the contract (in order to handle delays appropriately when waitForSession is invoked)
+		String contractID = NameProvider.getFreeName("c_");
+		String sessionID = NameProvider.getFreeName("x");
 		
-		contractsCount.put(contractID, contractCount);
-		contractID = "n"+contractCount+"_"+contractID;
+		log.info("binding contractID with sessionID: <"+contractID+","+sessionID+">");
+		publicSessionName.put(contractID, sessionID);
+		
+		log.info("saving contract delay: <"+contractID+","+sessionID+">");
 		contractsDelay.put(contractID, delay>0);
 		
 		
@@ -1129,12 +1182,6 @@ public class Co2Listener extends ListenerAdapter {
 		
 		ti.skipInstruction(nextInsn);
 		
-		String sessionName = "x"+sessionCount;
-		sessionCount++;
-		
-		log.info("storing <"+pblEI.toString()+","+sessionName+">");
-		if (!publicSessionName.containsKey(pblEI.toString()))
-			publicSessionName.put(pblEI.toString(), sessionName);
 		
 		
 		
@@ -1181,10 +1228,10 @@ public class Co2Listener extends ListenerAdapter {
 
 		contractActionsSort.put(contractID, actionSortMap);
 		
-		sessions.add(sessionName);
+		sessions.add(sessionID);
 		
 		tell.contractName = cDef.getName();
-		tell.session = sessionName;
+		tell.session = sessionID;
 		
 		tstate.setCurrentProcess(sum);		//set the current process
 		tstate.setCurrentPrefix(tell);
@@ -1276,10 +1323,10 @@ public class Co2Listener extends ListenerAdapter {
 				}
 				
 				for (ElementInfo ei : args) {
-					if (ei.getClassInfo().getName().equals(Session.class.getName())) {
+					if (ei.getClassInfo().isInstanceOf(SessionI.class.getName())) {
 						ElementInfo pbl = currentThread.getElementInfo(ei.getReferenceField("contract"));
 						assert pbl!=null;
-						String sessionName = publicSessionName.get(pbl.toString());
+						String sessionName = getSessionNameByPublic(pbl);
 						
 						proc.freeNames.add("\""+sessionName+"\"");
 						log.info("ctor arg: Session2 ("+sessionName+")");
@@ -1309,10 +1356,10 @@ public class Co2Listener extends ListenerAdapter {
 			
 			for (ElementInfo ei : getArgumentArray(currentThread, 2)) {
 				
-				if (ei.getClassInfo().getName().equals(Session.class.getName())) {
+				if (ei.getClassInfo().isInstanceOf(SessionI.class.getName())) {
 					ElementInfo pbl = currentThread.getElementInfo(ei.getReferenceField("contract"));
 					assert pbl!=null;
-					String sessionName = publicSessionName.get(pbl.toString());
+					String sessionName = getSessionNameByPublic(pbl);
 					
 					pCall.params.add("\""+sessionName+"\"");
 					log.info("param: Session ("+sessionName+")");
@@ -1476,6 +1523,10 @@ public class Co2Listener extends ListenerAdapter {
 	
 	private Integer getArgumentInteger(ThreadInfo currentThread, int position) {
 		return (Integer) getArgumentElementInfo(currentThread, position).asBoxObject();
+	}
+	
+	private int getArgumentInt(ThreadInfo currentThread, int position) {
+		return (int) getArguments(currentThread)[position];
 	}
 	
 	private List<ElementInfo> getArgumentArray(ThreadInfo currentThread, int position) {
