@@ -1,8 +1,10 @@
 package it.unica.co2.api.process;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -20,27 +22,33 @@ public class MultipleSessionReceiver {
 
 	private static final Logger logger = LoggerFactory.getLogger(MultipleSessionReceiver.class);
 	
-	private Map<SessionI<? extends ContractModel>, Map<String, Consumer<Message>>> sessionActionsMap = new HashMap<>();
+	private Map<SessionI<? extends ContractModel>, Map<String, Integer>> sessionActionsMap = new HashMap<>();
 	
-	@SuppressWarnings("unused")
-	private String serializedSessionActionsMap;
+	private List<Consumer<Message>> consumers = new ArrayList<>();
+	
+	@SuppressWarnings("unused")	private Consumer<Message>[] consumersArray;			// used by JPF
+	@SuppressWarnings("unused")	private String serializedSessionActionsMap;			// used by JPF
 	
 	private static final int WAIT_RECEIVE_TIMEOUT = 1000;
 	
 	
 	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, String... actionNames) {
-		return add(session, (x)->{}, actionNames);
+		return add(session, (msg)->{}, actionNames);
 	}
 	
-	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, final SerializableConsumer<Message> consumer, String... actionNames) {
+	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, final Consumer<Message> consumer, String... actionNames) {
 
 		logger.debug("adding pair <{}, {}>", session, actionNames);
 		
+		int nextConsumerIndex = consumers.size();
+		consumers.add(consumer);
+		
 		// create a map associating the given consumer with each action
-		Map<String, Consumer<Message>> newEntry = new HashMap<>();
+		Map<String, Integer> newEntry = new HashMap<>();
 		
 		for (String action : actionNames) {
-			newEntry.put(action, consumer);
+			newEntry.put(action, nextConsumerIndex);
+			logger.debug("actions: <{}, {}>", action, nextConsumerIndex);
 		}
 
 		sessionActionsMap.merge(
@@ -61,18 +69,21 @@ public class MultipleSessionReceiver {
 		}
 		catch (TimeExpiredException e) {
 			// unreachable
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void waitForReceive(int timeout) throws TimeExpiredException {
 		
 		try {
 			serializedSessionActionsMap = ObjectUtils.serializeObjectToString(sessionActionsMap);
+			consumersArray = consumers.toArray(new Consumer[]{});
 		}
 		catch (IOException e2) {
 			throw new RuntimeException(e2);
 		}
+		
 		_waitForReceive(timeout);
 	}
 	
@@ -83,7 +94,7 @@ public class MultipleSessionReceiver {
 	
 		while(true) {
 			
-			for (Entry<SessionI<? extends ContractModel>, Map<String, Consumer<Message>>> e : sessionActionsMap.entrySet()) {
+			for (Entry<SessionI<? extends ContractModel>, Map<String, Integer>> e : sessionActionsMap.entrySet()) {
 				
 				// check if the timeout is expired
 				if (timeout!=-1 && System.currentTimeMillis() > endtime) {
@@ -92,8 +103,8 @@ public class MultipleSessionReceiver {
 				}
 				
 				SessionI<? extends ContractModel> session = e.getKey();
-				Map<String, Consumer<Message>> consumers = e.getValue();
-				Collection<String> actions = consumers.keySet();
+				Map<String, Integer> actionConsumersMap = e.getValue();
+				Collection<String> actions = actionConsumersMap.keySet();
 				
 				// wait for receive a message
 				try {
@@ -101,9 +112,10 @@ public class MultipleSessionReceiver {
 					
 					String action = msg.getLabel();
 					assert actions.contains(action);
-					assert consumers.containsKey(action);
+					assert actionConsumersMap.containsKey(action);
 					
-					consumers.get(action).accept(msg);
+					int consumerIndex = actionConsumersMap.get(action);
+					consumers.get(consumerIndex).accept(msg);
 					return;
 				}
 				catch (TimeExpiredException e1) {

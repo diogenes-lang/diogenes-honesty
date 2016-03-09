@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -27,6 +26,7 @@ import co2api.TimeExpiredException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
+import gov.nasa.jpf.jvm.JVMInstructionFactory;
 import gov.nasa.jpf.jvm.JVMStackFrame;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.ATHROW;
@@ -322,29 +322,46 @@ public class Co2Listener extends ListenerAdapter {
 		
 		ElementInfo mReceiver = ti.getThisElementInfo();
 		
-		
+		// get the serialized map
 		String serializedSessionActionsMap = mReceiver.getStringField("serializedSessionActionsMap");
-		log.info("smap: "+serializedSessionActionsMap);
 		
 		@SuppressWarnings("unchecked")
-		Map<SessionI<? extends ContractModel>, Map<String, Consumer<Message>>> sessionActionsMap = ObjectUtils.deserializeObjectFromStringQuietly(serializedSessionActionsMap, Map.class);
+		Map<SessionI<? extends ContractModel>, Map<String, Integer>> sessionActionsMap = ObjectUtils.deserializeObjectFromStringQuietly(serializedSessionActionsMap, Map.class);
 		
-		log.info("map: "+sessionActionsMap);
-		
+		// print some informations
 		log.info("sessions: "+sessionActionsMap.size());
 		
-		for (Entry<SessionI<? extends ContractModel>, Map<String, Consumer<Message>>> entry :  sessionActionsMap.entrySet()) {
+
+		for (Entry<SessionI<? extends ContractModel>, Map<String, Integer>> entry :  sessionActionsMap.entrySet()) {
 			
 			SessionI<? extends ContractModel> session = entry.getKey();
-			Map<String, Consumer<Message>> actions = entry.getValue();
+			Map<String, Integer> actions = entry.getValue();
 			
-			log.info("session: "+getSessionNameBySession(session));
-			log.info("actions: "+actions.keySet());
-			
+			log.info("session: "+publicSessionName.get(session.getPublicContract().getUniqueID()));
+			log.info("actions: "+actions);
 		}
 		
+		ElementInfo consumersEI = mReceiver.getObjectField("consumersArray");
+		int[] consumersRefs = consumersEI.asReferenceArray();
+
+		log.info("number of consumers: "+consumersRefs.length);
 		
-		Instruction nextInsn = new ARETURN();
+		ElementInfo consumerEI = ti.getElementInfo(consumersRefs[0]);
+		
+		// create a message
+		ElementInfo message = getMessage(ti, "foo", "foo value");
+		
+		MethodInfo consumerMI = consumerEI.getClassInfo().getMethod("accept", "(Lco2api/Message;)V", false);
+		
+		log.info(consumerEI.toString());
+		log.info(consumerMI.toString());
+		
+		// create a new frame with the message
+		ti.getModifiableTopFrame().pushRef(consumerEI.getObjectRef());	// object ref
+		ti.getModifiableTopFrame().pushRef(message.getObjectRef());		// arguments
+		
+		
+		Instruction nextInsn = JVMInstructionFactory.getFactory().invokespecial(consumerEI.getClassInfo().getName(), consumerMI.getName(), consumerMI.getSignature());
 		nextInsn.setMethodInfo(insn.getMethodInfo());
 		
 		ti.skipInstruction(nextInsn);
@@ -419,9 +436,6 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 	
-	private String getSessionNameBySession(SessionI<? extends ContractModel> session) {
-		return session.getPublicContract().getUniqueID();
-	}
 	
 	private String getSessionNameBySession(ThreadInfo ti, ElementInfo session) {
 		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
@@ -769,8 +783,6 @@ public class Co2Listener extends ListenerAdapter {
 				log.info("TOP-HALF");
 				
 				SumDS sum = new SumDS();
-				
-				log.info("pushing the sum: "+sum);
 				
 				if (timeout) {
 					String[] arr = new String[actions.size()+1];
@@ -1156,7 +1168,7 @@ public class Co2Listener extends ListenerAdapter {
 		
 		//get a unique ID for the contract (in order to handle delays appropriately when waitForSession is invoked)
 		String contractID = NameProvider.getFreeName("c_");
-		String sessionID = NameProvider.getFreeName("x");
+		String sessionID = NameProvider.getFreeName("s_");
 		
 		log.info("binding contractID with sessionID: <"+contractID+","+sessionID+">");
 		publicSessionName.put(contractID, sessionID);
