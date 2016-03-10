@@ -70,9 +70,6 @@ import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.handlers.HandlerFactory;
-import it.unica.co2.honesty.handlers.IfThenElseHandler;
-import it.unica.co2.honesty.handlers.Participant_tell_Handler;
-import it.unica.co2.honesty.handlers.Public_waitForSession_Handler;
 import it.unica.co2.util.ObjectUtils;
 
 public class Co2Listener extends ListenerAdapter {
@@ -248,15 +245,16 @@ public class Co2Listener extends ListenerAdapter {
 //		}
 		
 		if(Participant_tell!=null && insn==Participant_tell.getFirstInsn()) {
-			HandlerFactory.getHandler(Participant_tell_Handler.class).handle(this, tstate, ti, insn);
+			HandlerFactory.tellHandler().handle(this, tstate, ti, insn);
 		}
 		else if(Public_waitForSession!=null && insn==Public_waitForSession.getFirstInsn()) {
-			HandlerFactory.getHandler(Public_waitForSession_Handler.class).handle(this, tstate, ti, insn);
+			HandlerFactory.waitForSessionHandler().handle(this, tstate, ti, insn);
 		}
 		else if(Public_waitForSessionT!=null && insn==Public_waitForSessionT.getFirstInsn()) {
-			((Public_waitForSession_Handler) HandlerFactory.getHandler(Public_waitForSession_Handler.class)).handle(this, tstate, ti, insn, true);
+			HandlerFactory.waitForSessionHandler(true).handle(this, tstate, ti, insn);
 		}
 		else if(Session_waitForReceive!=null && insn==Session_waitForReceive.getFirstInsn()) {
+			
 			handle_Session_waitForReceive(tstate, ti, insn);
 		}
 		else if(Message_getStringValue!=null && insn==Message_getStringValue.getFirstInsn()) {
@@ -266,7 +264,7 @@ public class Co2Listener extends ListenerAdapter {
 			tstate.setSwitchInsn((SwitchInstruction) insn);
 		}
 		else if (insn instanceof IfInstruction && tstate.considerIfInstruction((IfInstruction) insn)) {
-			HandlerFactory.getHandler(IfThenElseHandler.class).handle(this, tstate, ti, insn);
+			HandlerFactory.ifThenElseHandler().handle(this, tstate, ti, insn);
 		}
 		else if (
 				(Session_sendIfAllowed!=null && insn==Session_sendIfAllowed.getFirstInsn()) ||

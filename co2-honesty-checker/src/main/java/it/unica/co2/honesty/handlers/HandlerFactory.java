@@ -7,7 +7,7 @@ public class HandlerFactory {
 
 	private static Map<Class<? extends IHandler>, IHandler> handlers = new HashMap<>();
 	
-	public static <T extends IHandler> IHandler getHandler(Class<T> clazz) {
+	private static <T extends IHandler> IHandler getHandler(Class<T> clazz) {
 		
 		if (!handlers.containsKey(clazz)) {
 			
@@ -22,4 +22,21 @@ public class HandlerFactory {
 		return handlers.get(clazz);
 	}
 	
+	public static IHandler tellHandler() {
+		return getHandler(Participant_tell_Handler.class);
+	}
+
+	public static IHandler waitForSessionHandler() {
+		return waitForSessionHandler(false);
+	}
+	
+	public static IHandler waitForSessionHandler(boolean hasTimeout) {
+		Public_waitForSession_Handler handler = (Public_waitForSession_Handler) getHandler(Public_waitForSession_Handler.class);
+		handler.setTimeout(hasTimeout);
+		return handler;
+	}
+	
+	public static IHandler ifThenElseHandler() {
+		return getHandler(IfThenElseHandler.class);
+	}
 }

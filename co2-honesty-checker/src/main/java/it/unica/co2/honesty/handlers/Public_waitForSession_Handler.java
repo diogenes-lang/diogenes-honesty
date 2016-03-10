@@ -24,12 +24,10 @@ import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 
 public class Public_waitForSession_Handler extends AbstractHandler {
 
+	private boolean hasTimeout = false;
+	
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {
-		handle(listener, tstate, ti, insn, false);
-	}
-	
-	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn, boolean hasTimeout) {
 
 		log.info("");
 		log.info("-- WAIT FOR SESSION --");
@@ -227,6 +225,14 @@ public class Public_waitForSession_Handler extends AbstractHandler {
 			
 			ti.skipInstruction(nextInsn);
 		}
+	}
+
+	public boolean hasTimeout() {
+		return hasTimeout;
+	}
+
+	public void setTimeout(boolean hasTimeout) {
+		this.hasTimeout = hasTimeout;
 	}
 
 }
