@@ -5,7 +5,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import it.unica.co2.honesty.Co2Listener;
 import it.unica.co2.honesty.ThreadState;
 
-public interface IHandler<T> {
+public interface IHandler {
 
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn);
 }

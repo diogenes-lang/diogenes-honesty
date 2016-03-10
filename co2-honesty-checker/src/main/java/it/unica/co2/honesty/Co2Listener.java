@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 import org.slf4j.LoggerFactory;
 
 import co2api.CO2ServerConnection;
-import co2api.ContractExpiredException;
 import co2api.ContractModel;
 import co2api.Message;
 import co2api.Public;
@@ -61,7 +60,6 @@ import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.MultipleSessionReceiver;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
-import it.unica.co2.honesty.dto.CO2DataStructures.AskDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoReceiveDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ParallelProcessesDS;
@@ -69,12 +67,12 @@ import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
-import it.unica.co2.honesty.dto.CO2DataStructures.RetractDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.handlers.HandlerFactory;
 import it.unica.co2.honesty.handlers.IfThenElseHandler;
 import it.unica.co2.honesty.handlers.Participant_tell_Handler;
+import it.unica.co2.honesty.handlers.Public_waitForSession_Handler;
 import it.unica.co2.util.ObjectUtils;
 
 public class Co2Listener extends ListenerAdapter {
@@ -253,10 +251,10 @@ public class Co2Listener extends ListenerAdapter {
 			HandlerFactory.getHandler(Participant_tell_Handler.class).handle(this, tstate, ti, insn);
 		}
 		else if(Public_waitForSession!=null && insn==Public_waitForSession.getFirstInsn()) {
-			handle_Public_waitForSession(tstate, ti, insn, false);
+			HandlerFactory.getHandler(Public_waitForSession_Handler.class).handle(this, tstate, ti, insn);
 		}
 		else if(Public_waitForSessionT!=null && insn==Public_waitForSessionT.getFirstInsn()) {
-			handle_Public_waitForSession(tstate, ti, insn, true);
+			((Public_waitForSession_Handler) HandlerFactory.getHandler(Public_waitForSession_Handler.class)).handle(this, tstate, ti, insn, true);
 		}
 		else if(Session_waitForReceive!=null && insn==Session_waitForReceive.getFirstInsn()) {
 			handle_Session_waitForReceive(tstate, ti, insn);
@@ -862,204 +860,6 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 	
-	private void handle_Public_waitForSession(ThreadState tstate, ThreadInfo ti, Instruction insn, boolean hasTimeout) {
-		log.info("");
-		log.info("-- WAIT FOR SESSION --");
-		
-		//object Public
-		ElementInfo pbl = ti.getThisElementInfo();
-		
-		String sessionName = getSessionNameByPublic(pbl);
-		
-		String contractID = pbl.getStringField("uniqueID");
-		log.info("contractID: "+contractID);
-		
-		boolean hasDelay = contractsDelay.get(contractID);
-		
-		List<Integer> choiceSet = new ArrayList<>();
-		choiceSet.add(0);
-		
-		if (hasDelay) choiceSet.add(1);
-		if (hasTimeout) choiceSet.add(2);
-		
-		if (choiceSet.size()>1) {
-			log.info("considering multiple choices");
-			
-			if (!ti.isFirstStepInsn()) {
-				
-				log.info("TOP-HALF");
-				
-				SumDS sum = new SumDS();
-				
-				tstate.setCurrentProcess(sum);		//set the current process
-				tstate.printInfo();
-				
-				/*
-				 * the co2CurrentPrefix is set in methodExited
-				 */
-				log.info("pushing the sum onto the stack");
-				
-				if (hasTimeout && hasDelay) {
-					log.info("timeout and delay");
-					tstate.pushSum(sum, "ask", "t", "retract");
-				}
-				else if (hasTimeout) {
-					log.info("timeout");
-					tstate.pushSum(sum, "ask", "t");
-				}
-				else if (hasDelay) {
-					log.info("delay");
-					tstate.pushSum(sum, "ask", "retract");
-				}
-				else {
-					throw new IllegalStateException();
-				}
-				
-				
-				
-				IntChoiceFromList cg = new IntChoiceFromList(tstate.getWaitForSessionChoiceGeneratorName(), choiceSet.stream().mapToInt(i -> i).toArray());
-				cg.setAttr(sum);
-				
-				ti.getVM().setNextChoiceGenerator(cg);
-				ti.skipInstruction(insn);
-				return;
-			}
-			else {
-				log.info("BOTTOM-HALF");
-				
-				// get the choice generator
-				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(tstate.getWaitForSessionChoiceGeneratorName(), IntChoiceFromList.class);
-
-				if (!cg.hasMoreChoices()) {
-					// this is the last choice, we can pop the sum pushed on top-half
-				}
-				
-				
-				SumDS sum = (SumDS) cg.getAttr();
-				
-				
-				
-				// take a choice
-				switch (cg.getNextChoice()) {
-				case 0:
-					
-					log.info("returning a new Session");
-					
-					AskDS ask = new AskDS();
-					ask.session = sessionName;
-					sum.prefixes.add(ask);
-					
-					log.info("setting current prefix: "+ask);
-					tstate.setCurrentPrefix(ask);
-					tstate.printInfo();
-					tstate.popSum(ask);
-
-					//build the return value
-					ClassInfo sessionCI = ClassInfo.getInitializedClassInfo(Session.class.getName(), ti);
-					ElementInfo sessionEI = ti.getHeap().newObject(sessionCI, ti);
-					
-					sessionEI.setReferenceField("connection", pbl.getReferenceField("connection"));
-					sessionEI.setReferenceField("contract", pbl.getObjectRef());
-					
-					//set the return value
-					StackFrame frame = ti.getTopFrame();
-					frame.setReferenceResult(sessionEI.getObjectRef(), null);
-					
-					Instruction nextInsn = new ARETURN();
-					nextInsn.setMethodInfo(insn.getMethodInfo());
-					
-					ti.skipInstruction(nextInsn);
-					
-					return;
-
-				case 1:
-					log.info("delay expired");
-					
-					RetractDS retract = new RetractDS();
-					retract.session = sessionName;
-					sum.prefixes.add(retract);
-					
-					log.info("setting current prefix: "+retract);
-					tstate.setCurrentPrefix(retract);
-					tstate.printInfo();
-					tstate.popSum(retract);
-					
-					log.info("delay expired, throwing a ContractExpiredException");
-					
-					// get the exception ClassInfo
-					ClassInfo ci = ClassInfo.getInitializedClassInfo(ContractExpiredException.class.getName(), ti);
-					
-					// create the new exception and push on the top stack
-					StackFrame sf = ti.getModifiableTopFrame(); 
-					sf.push(ti.getHeap().newObject(ci, ti).getObjectRef());
-					ATHROW athrow = new ATHROW();
-					
-					//schedule the next instruction
-					ti.skipInstruction(athrow);
-					return;
-
-				case 2:
-					log.info("timeout expired");
-					
-					TauDS tau = new TauDS(); 
-					sum.prefixes.add(tau);
-					
-					log.info("setting current prefix: "+tau);
-					tstate.setCurrentPrefix(tau);
-					tstate.printInfo();
-					tstate.popSum(tau);
-					
-					log.info("timeout expired, throwing a TimeExpiredException");
-					
-					// get the exception ClassInfo
-					ClassInfo ci2 = ClassInfo.getInitializedClassInfo(TimeExpiredException.class.getName(), ti);
-					
-					// create the new exception and push on the top stack
-					ti.getModifiableTopFrame().push(ti.getHeap().newObject(ci2, ti).getObjectRef());
-					ATHROW athrow2 = new ATHROW();
-					
-					//schedule the next instruction
-					ti.skipInstruction(athrow2);
-					return;
-				}
-			}
-		}
-		else {
-			log.info("single choice");
-
-			AskDS ask = new AskDS();
-			ask.session = sessionName;
-			
-			SumDS sum = new SumDS();
-			sum.prefixes.add(ask);
-			
-			log.info("setting current process: "+sum);
-			log.info("setting current prefix: "+ask);
-			tstate.setCurrentProcess(sum);		//set the current process
-			tstate.setCurrentPrefix(ask);
-			tstate.printInfo();
-			
-			log.info("returning a new Session");
-			
-			//build the return value
-			ClassInfo sessionCI = ClassInfo.getInitializedClassInfo(Session.class.getName(), ti);
-			ElementInfo sessionEI = ti.getHeap().newObject(sessionCI, ti);
-			
-			sessionEI.setReferenceField("connection", pbl.getReferenceField("connection"));
-			sessionEI.setReferenceField("contract", pbl.getObjectRef());
-			
-			//set the return value
-			StackFrame frame = ti.getTopFrame();
-			frame.setReferenceResult(sessionEI.getObjectRef(), null);
-			
-			Instruction nextInsn = new ARETURN();
-			nextInsn.setMethodInfo(insn.getMethodInfo());
-			
-			ti.skipInstruction(nextInsn);
-		}
-		
-	}
-
 	
 
 	@Override
@@ -1439,6 +1239,10 @@ public class Co2Listener extends ListenerAdapter {
 	
 	public void setContractDelay(String contractID, boolean hasDelay) {
 		contractsDelay.put(contractID, hasDelay);
+	}
+	
+	public boolean contractHasDelay(String contractID) {
+		return contractsDelay.get(contractID);
 	}
 	
 	public String getSessionID(String contractID) {
