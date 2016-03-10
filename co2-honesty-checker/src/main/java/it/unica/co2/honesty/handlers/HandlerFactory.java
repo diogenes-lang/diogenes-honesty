@@ -36,6 +36,10 @@ public class HandlerFactory {
 		return handler;
 	}
 	
+	public static IHandler waitForReceiveHandler() {
+		return getHandler(Session_waitForReceive_Handler.class);
+	}
+	
 	public static IHandler ifThenElseHandler() {
 		return getHandler(IfThenElseHandler.class);
 	}

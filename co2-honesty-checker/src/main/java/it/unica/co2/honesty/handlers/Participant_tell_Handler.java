@@ -16,7 +16,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
 import it.unica.co2.util.ObjectUtils;
 
 
-public class Participant_tell_Handler extends AbstractHandler {
+class Participant_tell_Handler extends AbstractHandler {
 
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {
@@ -24,9 +24,9 @@ public class Participant_tell_Handler extends AbstractHandler {
 		log.info("HANDLE -> TELL");
 
 		//parameters
-		String cserial = Co2Listener.getArgumentString(ti, 1);
-		ElementInfo pvt = Co2Listener.getArgumentElementInfo(ti, 2);
-		int delay = Co2Listener.getArgumentInteger(ti, 3);
+		String cserial = listener.getArgumentString(ti, 1);
+		ElementInfo pvt = listener.getArgumentElementInfo(ti, 2);
+		int delay = listener.getArgumentInteger(ti, 3);
 		
 		log.info("delay: "+delay);
 		

@@ -21,14 +21,11 @@ import co2api.Public;
 import co2api.Session;
 import co2api.SessionI;
 import co2api.TST;
-import co2api.TimeExpiredException;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.JVMInstructionFactory;
-import gov.nasa.jpf.jvm.JVMStackFrame;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
-import gov.nasa.jpf.jvm.bytecode.ATHROW;
 import gov.nasa.jpf.jvm.bytecode.DRETURN;
 import gov.nasa.jpf.jvm.bytecode.FRETURN;
 import gov.nasa.jpf.jvm.bytecode.IRETURN;
@@ -60,7 +57,6 @@ import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.MultipleSessionReceiver;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
-import it.unica.co2.honesty.dto.CO2DataStructures.DoReceiveDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ParallelProcessesDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
@@ -254,8 +250,7 @@ public class Co2Listener extends ListenerAdapter {
 			HandlerFactory.waitForSessionHandler(true).handle(this, tstate, ti, insn);
 		}
 		else if(Session_waitForReceive!=null && insn==Session_waitForReceive.getFirstInsn()) {
-			
-			handle_Session_waitForReceive(tstate, ti, insn);
+			HandlerFactory.waitForReceiveHandler().handle(this, tstate, ti, insn);
 		}
 		else if(Message_getStringValue!=null && insn==Message_getStringValue.getFirstInsn()) {
 			handle_Message_getStringValue(ti, insn);
@@ -345,7 +340,7 @@ public class Co2Listener extends ListenerAdapter {
 		ElementInfo consumerEI = ti.getElementInfo(consumersRefs[0]);
 		
 		// create a message
-		ElementInfo message = getMessage(ti, "foo", "foo value");
+//		ElementInfo message = getMessage(ti, "foo", "foo value");
 		
 		MethodInfo consumerMI = consumerEI.getClassInfo().getMethod("accept", "(Lco2api/Message;)V", false);
 		
@@ -354,7 +349,7 @@ public class Co2Listener extends ListenerAdapter {
 		
 		// create a new frame with the message
 		ti.getModifiableTopFrame().pushRef(consumerEI.getObjectRef());	// object ref
-		ti.getModifiableTopFrame().pushRef(message.getObjectRef());		// arguments
+//		ti.getModifiableTopFrame().pushRef(message.getObjectRef());		// arguments
 		
 		
 		Instruction nextInsn = JVMInstructionFactory.getFactory().invokespecial(consumerEI.getClassInfo().getName(), consumerMI.getName(), consumerMI.getSignature());
@@ -393,7 +388,7 @@ public class Co2Listener extends ListenerAdapter {
 		 */
 		ElementInfo session2 = ti.getThisElementInfo();
 		
-		String sessionName = getSessionNameBySession(ti, session2);
+		String sessionName = getSessionIDBySession(ti, session2);
 		String action = getArgumentString(ti, 0);
 		
 		DoSendDS send = new DoSendDS();
@@ -433,23 +428,23 @@ public class Co2Listener extends ListenerAdapter {
 	
 	
 	
-	private String getSessionNameBySession(ThreadInfo ti, ElementInfo session) {
+	public String getSessionIDBySession(ThreadInfo ti, ElementInfo session) {
 		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
-		return getSessionNameByPublic(pbl);
+		return getSessionIDByPublic(pbl);
 	}
 	
-	private String getSessionNameByPublic(ElementInfo pbl) {
-		String sessionName = contractSessionMap.get(getUniqueIDByPublic(pbl));
+	private String getSessionIDByPublic(ElementInfo pbl) {
+		String sessionName = contractSessionMap.get(getContractIDByPublic(pbl));
 		assert sessionName!=null;
 		return sessionName;
 	}
 	
-	private String getUniqueIDBySession(ThreadInfo ti, ElementInfo session) {
+	public String getContractIDBySession(ThreadInfo ti, ElementInfo session) {
 		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
-		return getUniqueIDByPublic(pbl);
+		return getContractIDByPublic(pbl);
 	}
 	
-	private String getUniqueIDByPublic(ElementInfo pbl) {
+	public String getContractIDByPublic(ElementInfo pbl) {
 		return pbl.getStringField("uniqueID");
 	}
 	
@@ -662,201 +657,8 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 
-	private void handle_Session_waitForReceive(ThreadState ts, ThreadInfo ti, Instruction insn) {
-		
-		log.info("");
-		log.info("-- WAIT FOR RECEIVE --");
-		
-		ElementInfo session2 = ti.getThisElementInfo();
-		
-		String sessionName = getSessionNameBySession(ti, session2);
-		String contractUniqueID = getUniqueIDBySession(ti, session2);
-		
-		//parameters
-		boolean timeout = getArgumentInteger(ti, 0)>0;
-		List<String> actions = getArgumentStringArray(ti, 1);
-		
-		assert actions.size()>=1 : "you must pass at least one action";
-		
-		log.info("timeout: "+timeout);
-		log.info("actions: "+actions);
-		
-		if (timeout || actions.size()>1) {
-			log.info("considering multiple choices");
-			
-			
-			if (!ti.isFirstStepInsn()) {
-				
-				log.info("TOP-HALF");
-				
-				SumDS sum = new SumDS();
-				
-				if (timeout) {
-					String[] arr = new String[actions.size()+1];
-					arr[0] = "t";
-					actions.stream().forEach((x)->{arr[actions.indexOf(x)+1]=x;});
-					ts.pushSum(sum, arr);		//set the current process
-				}
-				else
-					ts.pushSum(sum, actions.toArray(new String[]{}));
-					
-				ts.setCurrentProcess(sum);
-				ts.printInfo();
-				
-				List<Integer> choiceSet = new ArrayList<>();
-				
-				actions.stream().forEach((x)-> {choiceSet.add(actions.indexOf(x));});
-				if (timeout) choiceSet.add(actions.size());
-				
-				assert choiceSet.size()>1;
-
-				IntChoiceFromList cg = new IntChoiceFromList(ts.getWaitForReceiveChoiceGeneratorName(), choiceSet.stream().mapToInt(i -> i).toArray());
-				ti.getVM().setNextChoiceGenerator(cg);
-				ti.skipInstruction(insn);
-				return;
-			}
-			else {
-				
-				log.info("BOTTOM-HALF");
-				
-				SumDS sum = ts.getSum();
-				
-				// get the choice generator
-				IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(ts.getWaitForReceiveChoiceGeneratorName(), IntChoiceFromList.class);
-				
-				assert cg!=null : "choice generator not found: "+ts.getWaitForReceiveChoiceGeneratorName();
-				
-				// take a choice
-				int choice = cg.getNextChoice();
-				
-				if (choice==actions.size()) {
-					
-					log.info("timeout expired");
-					
-					TauDS tau = new TauDS();
-					sum.prefixes.add(tau);
-					
-					log.info("setting current prefix: "+tau);
-					ts.popSum(tau);
-					ts.setCurrentPrefix(tau);
-					ts.printInfo();
-					
-					log.info("timeout expired, throwing a TimeExpiredException");
-					
-					// get the exception ClassInfo
-					ClassInfo ci = ClassInfo.getInitializedClassInfo(TimeExpiredException.class.getName(), ti);
-					
-					// create the new exception and push on the top stack
-					StackFrame sf = new JVMStackFrame(insn.getMethodInfo());
-					sf.push(ti.getHeap().newObject(ci, ti).getObjectRef());
-					ti.pushFrame(sf);
-					
-					ATHROW athrow = new ATHROW();
-					
-					//schedule the next instruction
-					ti.skipInstruction(athrow);
-					return;
-				}
-				else {
-					String action = actions.get(choice);
-					Sort<?> sort = contractActionsSort.get(contractUniqueID).get(action);
-					
-					String value = getValidValue(sort);
-
-					log.info("returning message: ["+action+":"+value+"]");
-					
-					DoReceiveDS p = new DoReceiveDS(); 
-					p.session = sessionName;
-					p.action = action;
-					
-					sum.prefixes.add(p);
-					
-					log.info("setting current prefix: "+p);
-					ts.popSum(p);
-					ts.setCurrentPrefix(p);
-					ts.printInfo();
-					
-					ElementInfo message = getMessage(ti, action, value);
-					
-					StackFrame frame = ti.getTopFrame();
-					frame.setReferenceResult(message.getObjectRef(), null);
-					
-					Instruction nextInsn = new ARETURN();
-					nextInsn.setMethodInfo(insn.getMethodInfo());
-					
-					ti.skipInstruction(nextInsn);
-					return;
-				}
-			}
-		}
-		else {
-			log.info("single choice");
-			
-			String action = actions.get(0);
-			Sort<?> sort = contractActionsSort.get(contractUniqueID).get(action);
-
-			String value = getValidValue(sort);
-
-			DoReceiveDS p = new DoReceiveDS(); 
-			p.session = sessionName;
-			p.action = action;
-			
-			SumDS sum = new SumDS();
-			sum.prefixes.add(p);
-			
-			log.info("returning message: ["+action+":"+value+"]");
-			
-			log.info("setting current process: "+sum);
-			log.info("setting current prefix: "+p);
-			ts.setCurrentProcess(sum);		//set the current process
-			ts.setCurrentPrefix(p);
-			ts.printInfo();
-			
-			//build the return value
-			ElementInfo messageEI = getMessage(ti, action, value);
-			
-			//set the return value
-			StackFrame frame = ti.getTopFrame();
-			frame.setReferenceResult(messageEI.getObjectRef(), null);
-			
-			Instruction nextInsn = new ARETURN();
-			nextInsn.setMethodInfo(insn.getMethodInfo());
-			
-			ti.skipInstruction(nextInsn);
-		}
-		
-		
-	}
-
-	
-	private String getValidValue(Sort<?> sort) {
-		String value = "0";		//for backward compatibility
-
-		//get the validValue from Sort
-		if (sort instanceof StringSort) {
-			value = ((StringSort) sort).getValidValue();
-		}
-		else if (sort instanceof IntegerSort) {
-			value = ((IntegerSort) sort).getValidValue().toString();
-		}
-		return value;
-	}
 	
 	
-	private ElementInfo getMessage(ThreadInfo ti, String label, String value) {
-		
-		assert label!=null;
-		assert value!=null;
-		
-		ClassInfo messageCI = ClassInfo.getInitializedClassInfo(Message.class.getName(), ti);
-		ElementInfo messageEI = ti.getHeap().newObject(messageCI, ti);
-		
-		messageEI.setReferenceField("label", ti.getHeap().newString(label, ti).getObjectRef());
-		messageEI.setReferenceField("stringVal", ti.getHeap().newString(value, ti).getObjectRef());
-		
-		return messageEI;
-	}
-
 	
 	
 
@@ -946,7 +748,7 @@ public class Co2Listener extends ListenerAdapter {
 					if (ei.getClassInfo().isInstanceOf(SessionI.class.getName())) {
 						ElementInfo pbl = currentThread.getElementInfo(ei.getReferenceField("contract"));
 						assert pbl!=null;
-						String sessionName = getSessionNameByPublic(pbl);
+						String sessionName = getSessionIDByPublic(pbl);
 						
 						proc.freeNames.add("\""+sessionName+"\"");
 						log.info("ctor arg: Session2 ("+sessionName+")");
@@ -979,7 +781,7 @@ public class Co2Listener extends ListenerAdapter {
 				if (ei.getClassInfo().isInstanceOf(SessionI.class.getName())) {
 					ElementInfo pbl = currentThread.getElementInfo(ei.getReferenceField("contract"));
 					assert pbl!=null;
-					String sessionName = getSessionNameByPublic(pbl);
+					String sessionName = getSessionIDByPublic(pbl);
 					
 					pCall.params.add("\""+sessionName+"\"");
 					log.info("param: Session ("+sessionName+")");
@@ -1128,28 +930,28 @@ public class Co2Listener extends ListenerAdapter {
 	 * @param currentThread
 	 * @return
 	 */
-	public static Object[] getArguments(ThreadInfo currentThread) {
+	public Object[] getArguments(ThreadInfo currentThread) {
 		return currentThread.getTopFrame().getArgumentValues(currentThread);
 	}
 	
-	public static ElementInfo getArgumentElementInfo(ThreadInfo currentThread, int position) {
+	public ElementInfo getArgumentElementInfo(ThreadInfo currentThread, int position) {
 		ElementInfo eiArgument = (ElementInfo) getArguments(currentThread)[position];
 		return eiArgument;
 	}
 	
-	public static String getArgumentString(ThreadInfo currentThread, int position) {
+	public String getArgumentString(ThreadInfo currentThread, int position) {
 		return getArgumentElementInfo(currentThread, position).asString();
 	}
 	
-	public static Integer getArgumentInteger(ThreadInfo currentThread, int position) {
+	public Integer getArgumentInteger(ThreadInfo currentThread, int position) {
 		return (Integer) getArgumentElementInfo(currentThread, position).asBoxObject();
 	}
 	
-	public static int getArgumentInt(ThreadInfo currentThread, int position) {
+	public int getArgumentInt(ThreadInfo currentThread, int position) {
 		return (int) getArguments(currentThread)[position];
 	}
 	
-	public static List<ElementInfo> getArgumentArray(ThreadInfo currentThread, int position) {
+	public List<ElementInfo> getArgumentArray(ThreadInfo currentThread, int position) {
 		List<ElementInfo> elms = new ArrayList<>();
 		
 		ArrayFields af = getArgumentElementInfo(currentThread, position).getArrayFields();
@@ -1165,7 +967,7 @@ public class Co2Listener extends ListenerAdapter {
 		return elms;
 	}
 	
-	public static List<String> getArgumentStringArray(ThreadInfo currentThread, int position) {
+	public List<String> getArgumentStringArray(ThreadInfo currentThread, int position) {
 		
 		List<String> strings = new ArrayList<String>();
 		
@@ -1176,7 +978,7 @@ public class Co2Listener extends ListenerAdapter {
 		return strings;
 	}
 	
-	public static List<ElementInfo> getAllArgumentsAsElementInfo(ThreadInfo currentThread) {
+	public List<ElementInfo> getAllArgumentsAsElementInfo(ThreadInfo currentThread) {
 		List<ElementInfo> args = new ArrayList<ElementInfo>();
 		
 		for (Object obj : getArguments(currentThread)) {
@@ -1287,5 +1089,23 @@ public class Co2Listener extends ListenerAdapter {
 		contractActionsSort.put(contractID, actionSortMap);
 		
 		sessions.add(getSessionID(contractID));
+	}
+	
+	
+	public String getActionValue(String contractID, String action) {
+		return getValidValue(contractActionsSort.get(contractID).get(action));
+	}
+	
+	private String getValidValue(Sort<?> sort) {
+		String value = "0";		//for backward compatibility
+
+		//get the validValue from Sort
+		if (sort instanceof StringSort) {
+			value = ((StringSort) sort).getValidValue();
+		}
+		else if (sort instanceof IntegerSort) {
+			value = ((IntegerSort) sort).getValidValue().toString();
+		}
+		return value;
 	}
 }
