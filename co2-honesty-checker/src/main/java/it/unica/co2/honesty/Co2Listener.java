@@ -40,7 +40,6 @@ import gov.nasa.jpf.jvm.bytecode.SwitchInstruction;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.AnnotationInfo;
 import gov.nasa.jpf.vm.ArrayFields;
-import gov.nasa.jpf.vm.BooleanChoiceGenerator;
 import gov.nasa.jpf.vm.ChoiceGenerator;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -65,7 +64,6 @@ import it.unica.co2.api.process.SkipMethod;
 import it.unica.co2.honesty.dto.CO2DataStructures.AskDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoReceiveDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
-import it.unica.co2.honesty.dto.CO2DataStructures.IfThenElseDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ParallelProcessesDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
@@ -75,6 +73,8 @@ import it.unica.co2.honesty.dto.CO2DataStructures.RetractDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
+import it.unica.co2.honesty.handlers.HandlerFactory;
+import it.unica.co2.honesty.handlers.IfThenElseHandler;
 import it.unica.co2.util.ObjectUtils;
 
 public class Co2Listener extends ListenerAdapter {
@@ -268,7 +268,7 @@ public class Co2Listener extends ListenerAdapter {
 			tstate.setSwitchInsn((SwitchInstruction) insn);
 		}
 		else if (insn instanceof IfInstruction && tstate.considerIfInstruction((IfInstruction) insn)) {
-			handleIfThenElse(tstate, ti, insn);
+			HandlerFactory.getHandler(IfThenElseHandler.class).handle(tstate, ti, insn);
 		}
 		else if (
 				(Session_sendIfAllowed!=null && insn==Session_sendIfAllowed.getFirstInsn()) ||
@@ -458,95 +458,6 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 	
-	private void handleIfThenElse(ThreadState tstate, ThreadInfo ti, Instruction insn) {
-
-		IfInstruction ifInsn = (IfInstruction) insn;
-		
-		if (!ti.isFirstStepInsn()) { // top half - first execution
-
-			log.finer("TOP HALF");
-			
-			log.finer("");
-			tstate.printInfo();
-			log.finer("--IF_THEN_ELSE--");
-			
-			IfThenElseDS ifThenElse = new IfThenElseDS();
-			ifThenElse.thenStmt = new PrefixPlaceholderDS();
-			ifThenElse.elseStmt = new PrefixPlaceholderDS();
-			
-			
-			tstate.setCurrentProcess(ifThenElse);		//set the current process
-			tstate.printInfo();
-			tstate.pushIfElse(ifThenElse);
-
-			BooleanChoiceGenerator cg = new BooleanChoiceGenerator(tstate.getIfThenElseChoiceGeneratorName(), false);
-
-			boolean cgSetOk = ti.getVM().getSystemState().setNextChoiceGenerator(cg);
-			
-			assert cgSetOk : "error setting the choice generator";
-			
-			ti.skipInstruction(insn);
-			log.finer("re-executing: "+insnToString(insn));
-		}
-		else {
-
-			log.finer("BOTTOM HALF");
-			
-			// bottom half - reexecution at the beginning of the next
-			// transition
-			BooleanChoiceGenerator cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(tstate.getIfThenElseChoiceGeneratorName(), BooleanChoiceGenerator.class);
-
-			assert cg != null : "no 'ifThenElseCG' BooleanChoiceGenerator found";
-			
-			
-			ifInsn.popConditionValue(ti.getModifiableTopFrame());		//remove operands from the stack
-			
-			Boolean myChoice = cg.getNextChoice();
-			
-			
-			PrefixPlaceholderDS thenTau = tstate.getThenPlaceholder();
-			PrefixPlaceholderDS elseTau = tstate.getElsePlaceholder();
-			
-			log.finer("thenTau: "+thenTau);
-			log.finer("elseTau: "+elseTau);
-			
-			
-			if (myChoice){
-				/*
-				 * then branch
-				 */
-				log.finer("THEN branch, setting tau, choice: "+myChoice);
-				log.finer("next insn: "+ifInsn.getNext().getPosition());
-				
-				tstate.setCurrentPrefix(thenTau);		//set the current prefix
-				tstate.printInfo();
-				
-				ti.skipInstruction(ifInsn.getNext());
-				
-				tstate.setPeekThen();
-				tstate.popIfElse();
-			}
-			else {
-				/*
-				 * else branch
-				 */
-				log.finer("ELSE branch, setting tau, choice: "+myChoice);
-				log.finer("next insn: "+ifInsn.getTarget().getPosition());
-
-				tstate.setCurrentPrefix(elseTau);		//set the current prefix
-				tstate.printInfo();
-				
-				ti.skipInstruction(ifInsn.getTarget());
-				
-				tstate.setPeekElse();
-				tstate.popIfElse();
-			}
-			
-			tstate.printInfo(Level.FINER);
-		}
-	}
-
-
 	private void handleSkipMethod(ThreadState tstate, ThreadInfo ti, Instruction insn) {
 		log.info("");
 		log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());

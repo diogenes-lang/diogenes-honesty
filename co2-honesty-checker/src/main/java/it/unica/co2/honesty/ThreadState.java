@@ -29,7 +29,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 /**
  * this class gather CO2 'execution informations' of a thread
  */
-class ThreadState {
+public class ThreadState {
 	
 	public static Logger logger = JPF.getLogger(ThreadState.class.getName());
 	
