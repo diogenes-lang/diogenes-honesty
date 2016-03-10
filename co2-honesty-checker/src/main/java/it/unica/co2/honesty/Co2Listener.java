@@ -72,9 +72,9 @@ import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.RetractDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
-import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
 import it.unica.co2.honesty.handlers.HandlerFactory;
 import it.unica.co2.honesty.handlers.IfThenElseHandler;
+import it.unica.co2.honesty.handlers.Participant_tell_Handler;
 import it.unica.co2.util.ObjectUtils;
 
 public class Co2Listener extends ListenerAdapter {
@@ -147,7 +147,7 @@ public class Co2Listener extends ListenerAdapter {
 	private Map<MethodInfo, AnnotationInfo> methodsToSkip = new HashMap<>();
 	
 	private Map<String, Boolean> contractsDelay = new HashMap<>();
-	private Map<String, String> publicSessionName = new HashMap<>();
+	private Map<String, String> contractSessionMap = new HashMap<>();
 
 	private Map<String, Map<String, Sort<?>>> contractActionsSort = new HashMap<>();
 	
@@ -250,7 +250,7 @@ public class Co2Listener extends ListenerAdapter {
 //		}
 		
 		if(Participant_tell!=null && insn==Participant_tell.getFirstInsn()) {
-			handle_Participant_tell(tstate, ti, insn);
+			HandlerFactory.getHandler(Participant_tell_Handler.class).handle(this, tstate, ti, insn);
 		}
 		else if(Public_waitForSession!=null && insn==Public_waitForSession.getFirstInsn()) {
 			handle_Public_waitForSession(tstate, ti, insn, false);
@@ -268,7 +268,7 @@ public class Co2Listener extends ListenerAdapter {
 			tstate.setSwitchInsn((SwitchInstruction) insn);
 		}
 		else if (insn instanceof IfInstruction && tstate.considerIfInstruction((IfInstruction) insn)) {
-			HandlerFactory.getHandler(IfThenElseHandler.class).handle(tstate, ti, insn);
+			HandlerFactory.getHandler(IfThenElseHandler.class).handle(this, tstate, ti, insn);
 		}
 		else if (
 				(Session_sendIfAllowed!=null && insn==Session_sendIfAllowed.getFirstInsn()) ||
@@ -337,7 +337,7 @@ public class Co2Listener extends ListenerAdapter {
 			SessionI<? extends ContractModel> session = entry.getKey();
 			Map<String, Integer> actions = entry.getValue();
 			
-			log.info("session: "+publicSessionName.get(session.getPublicContract().getUniqueID()));
+			log.info("session: "+contractSessionMap.get(session.getPublicContract().getUniqueID()));
 			log.info("actions: "+actions);
 		}
 		
@@ -443,7 +443,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 	private String getSessionNameByPublic(ElementInfo pbl) {
-		String sessionName = publicSessionName.get(getUniqueIDByPublic(pbl));
+		String sessionName = contractSessionMap.get(getUniqueIDByPublic(pbl));
 		assert sessionName!=null;
 		return sessionName;
 	}
@@ -1061,107 +1061,6 @@ public class Co2Listener extends ListenerAdapter {
 	}
 
 	
-	private void handle_Participant_tell(ThreadState tstate, ThreadInfo ti, Instruction insn) {
-		
-		log.info("");
-		log.info("HANDLE -> TELL");
-
-		//parameters
-		String cserial = getArgumentString(ti, 1);
-		ElementInfo pvt = getArgumentElementInfo(ti, 2);
-		int delay = getArgumentInteger(ti, 3);
-		
-		log.info("delay: "+delay);
-		
-		//get private fields (in order to build the public object)
-		ElementInfo connection = ti.getElementInfo(pvt.getReferenceField("connection"));
-		ElementInfo contract = ti.getElementInfo(pvt.getReferenceField("contract"));
-		
-		//get a unique ID for the contract (in order to handle delays appropriately when waitForSession is invoked)
-		String contractID = NameProvider.getFreeName("c_");
-		String sessionID = NameProvider.getFreeName("s_");
-		
-		log.info("binding contractID with sessionID: <"+contractID+","+sessionID+">");
-		publicSessionName.put(contractID, sessionID);
-		
-		log.info("saving contract delay: <"+contractID+","+sessionID+">");
-		contractsDelay.put(contractID, delay>0);
-		
-		
-		//build the return value
-		ClassInfo pblCI = ClassInfo.getInitializedClassInfo(Public.class.getName(), ti);
-		ElementInfo pblEI = ti.getHeap().newObject(pblCI, ti);
-		
-		pblEI.setReferenceField("connection", connection.getObjectRef());
-		pblEI.setReferenceField("contract", contract.getObjectRef());
-		pblEI.setReferenceField("uniqueID", ti.getHeap().newString(contractID, ti).getObjectRef());
-		
-		//set the return value
-		StackFrame frame = ti.getTopFrame();
-		frame.setReferenceResult(pblEI.getObjectRef(), null);
-		
-		Instruction nextInsn = new ARETURN();
-		nextInsn.setMethodInfo(insn.getMethodInfo());
-		
-		ti.skipInstruction(nextInsn);
-		
-		
-		
-		
-		
-		TellDS tell = new TellDS();
-		SumDS sum = new SumDS(tell);
-		
-		ContractDefinition cDef = ObjectUtils.deserializeObjectFromStringQuietly(cserial, ContractDefinition.class);
-		contracts.put(cDef.getName(), cDef);
-		
-		log.info("addind contract: "+cDef.getName());
-		
-		for (ContractDefinition ref : ContractExplorer.getAllReferences(cDef)) {
-			log.info("adding contract: "+ref.getName());
-			contracts.put(ref.getName(), ref);
-		}
-		
-		Map<String, Sort<?>> actionSortMap = new HashMap<>();
-		
-		log.info("action-sort mapping");
-		ContractExplorer.findAll(
-				cDef.getContract(),
-				Sum.class,
-				(x) -> {
-					for (Object obj : x.getActions()) {
-						Action a = (Action) obj;
-						log.info(a.getName() + " - " + a.getSort().getValidValue());
-						actionSortMap.put(a.getName(), a.getSort());
-					}
-				});
-		
-		for (ContractDefinition ref : ContractExplorer.getAllReferences(cDef)) {
-			ContractExplorer.findAll(
-					ref.getContract(),
-					Sum.class,
-					(x) -> {
-						for (Object obj : x.getActions()) {
-							Action a = (Action) obj;
-							log.info(a.getName() + " - " + a.getSort().getValidValue());
-							actionSortMap.put(a.getName(), a.getSort());
-						}
-					});
-		}
-
-		contractActionsSort.put(contractID, actionSortMap);
-		
-		sessions.add(sessionID);
-		
-		tell.contractName = cDef.getName();
-		tell.session = sessionID;
-		
-		tstate.setCurrentProcess(sum);		//set the current process
-		tstate.setCurrentPrefix(tell);
-
-		tstate.printInfo();
-	}
-
 
 	@Override
 	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo exitedMethod) {
@@ -1431,28 +1330,28 @@ public class Co2Listener extends ListenerAdapter {
 	 * @param currentThread
 	 * @return
 	 */
-	private Object[] getArguments(ThreadInfo currentThread) {
+	public static Object[] getArguments(ThreadInfo currentThread) {
 		return currentThread.getTopFrame().getArgumentValues(currentThread);
 	}
 	
-	private ElementInfo getArgumentElementInfo(ThreadInfo currentThread, int position) {
+	public static ElementInfo getArgumentElementInfo(ThreadInfo currentThread, int position) {
 		ElementInfo eiArgument = (ElementInfo) getArguments(currentThread)[position];
 		return eiArgument;
 	}
 	
-	private String getArgumentString(ThreadInfo currentThread, int position) {
+	public static String getArgumentString(ThreadInfo currentThread, int position) {
 		return getArgumentElementInfo(currentThread, position).asString();
 	}
 	
-	private Integer getArgumentInteger(ThreadInfo currentThread, int position) {
+	public static Integer getArgumentInteger(ThreadInfo currentThread, int position) {
 		return (Integer) getArgumentElementInfo(currentThread, position).asBoxObject();
 	}
 	
-	private int getArgumentInt(ThreadInfo currentThread, int position) {
+	public static int getArgumentInt(ThreadInfo currentThread, int position) {
 		return (int) getArguments(currentThread)[position];
 	}
 	
-	private List<ElementInfo> getArgumentArray(ThreadInfo currentThread, int position) {
+	public static List<ElementInfo> getArgumentArray(ThreadInfo currentThread, int position) {
 		List<ElementInfo> elms = new ArrayList<>();
 		
 		ArrayFields af = getArgumentElementInfo(currentThread, position).getArrayFields();
@@ -1468,7 +1367,7 @@ public class Co2Listener extends ListenerAdapter {
 		return elms;
 	}
 	
-	private List<String> getArgumentStringArray(ThreadInfo currentThread, int position) {
+	public static List<String> getArgumentStringArray(ThreadInfo currentThread, int position) {
 		
 		List<String> strings = new ArrayList<String>();
 		
@@ -1479,8 +1378,7 @@ public class Co2Listener extends ListenerAdapter {
 		return strings;
 	}
 	
-	@SuppressWarnings("unused")
-	private List<ElementInfo> getAllArgumentsAsElementInfo(ThreadInfo currentThread) {
+	public static List<ElementInfo> getAllArgumentsAsElementInfo(ThreadInfo currentThread) {
 		List<ElementInfo> args = new ArrayList<ElementInfo>();
 		
 		for (Object obj : getArguments(currentThread)) {
@@ -1530,4 +1428,62 @@ public class Co2Listener extends ListenerAdapter {
 	
 	
 	
+	
+	/*
+	 * new public API (used by handlers)
+	 */
+	
+	public void associateContractToSession(String contractID, String sessionID) {
+		contractSessionMap.put(contractID, sessionID);
+	}
+	
+	public void setContractDelay(String contractID, boolean hasDelay) {
+		contractsDelay.put(contractID, hasDelay);
+	}
+	
+	public String getSessionID(String contractID) {
+		return contractSessionMap.get(contractID);
+	}
+	
+	public void saveContract(String contractID, ContractDefinition cDef) {
+		contracts.put(cDef.getName(), cDef);
+		
+		log.info("adding contract: "+cDef.getName());
+		
+		for (ContractDefinition ref : ContractExplorer.getAllReferences(cDef)) {
+			log.info("adding contract: "+ref.getName());
+			contracts.put(ref.getName(), ref);
+		}
+		
+		Map<String, Sort<?>> actionSortMap = new HashMap<>();
+		
+		log.info("action-sort mapping");
+		ContractExplorer.findAll(
+				cDef.getContract(),
+				Sum.class,
+				(x) -> {
+					for (Object obj : x.getActions()) {
+						Action a = (Action) obj;
+						log.info(a.getName() + " - " + a.getSort().getValidValue());
+						actionSortMap.put(a.getName(), a.getSort());
+					}
+				});
+		
+		for (ContractDefinition ref : ContractExplorer.getAllReferences(cDef)) {
+			ContractExplorer.findAll(
+					ref.getContract(),
+					Sum.class,
+					(x) -> {
+						for (Object obj : x.getActions()) {
+							Action a = (Action) obj;
+							log.info(a.getName() + " - " + a.getSort().getValidValue());
+							actionSortMap.put(a.getName(), a.getSort());
+						}
+					});
+		}
+
+		contractActionsSort.put(contractID, actionSortMap);
+		
+		sessions.add(getSessionID(contractID));
+	}
 }

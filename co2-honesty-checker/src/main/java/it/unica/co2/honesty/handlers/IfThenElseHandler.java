@@ -6,6 +6,7 @@ import gov.nasa.jpf.jvm.bytecode.IfInstruction;
 import gov.nasa.jpf.vm.BooleanChoiceGenerator;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.ThreadInfo;
+import it.unica.co2.honesty.Co2Listener;
 import it.unica.co2.honesty.ThreadState;
 import it.unica.co2.honesty.dto.CO2DataStructures.IfThenElseDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
@@ -14,7 +15,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 public class IfThenElseHandler extends AbstractHandler {
 
 	@Override
-	public void handle(ThreadState tstate, ThreadInfo ti, Instruction insn) {
+	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {
 
 		IfInstruction ifInsn = (IfInstruction) insn;
 		
