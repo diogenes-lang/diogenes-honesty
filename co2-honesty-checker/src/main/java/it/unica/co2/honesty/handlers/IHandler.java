@@ -8,4 +8,5 @@ import it.unica.co2.honesty.ThreadState;
 public interface IHandler {
 
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn);
+	
 }

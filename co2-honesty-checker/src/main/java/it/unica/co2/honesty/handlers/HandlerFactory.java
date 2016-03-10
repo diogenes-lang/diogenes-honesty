@@ -40,7 +40,19 @@ public class HandlerFactory {
 		return getHandler(Session_waitForReceive_Handler.class);
 	}
 	
+	public static IHandler messageHandler() {
+		return getHandler(Message_getStringValue_Handler.class);
+	}
+	
+	public static IHandler loggerFactoryHandler() {
+		return getHandler(LoggerFactory_getLogger_Handler.class);
+	}
+	
 	public static IHandler ifThenElseHandler() {
 		return getHandler(IfThenElseHandler.class);
+	}
+
+	public static IHandler skipMethodHandler() {
+		return getHandler(SkipMethodHandler.class);
 	}
 }

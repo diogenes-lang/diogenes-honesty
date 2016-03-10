@@ -1,7 +1,6 @@
 package it.unica.co2.honesty;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +24,7 @@ import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
 import gov.nasa.jpf.jvm.JVMInstructionFactory;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
-import gov.nasa.jpf.jvm.bytecode.DRETURN;
-import gov.nasa.jpf.jvm.bytecode.FRETURN;
-import gov.nasa.jpf.jvm.bytecode.IRETURN;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
-import gov.nasa.jpf.jvm.bytecode.LRETURN;
 import gov.nasa.jpf.jvm.bytecode.RETURN;
 import gov.nasa.jpf.jvm.bytecode.SwitchInstruction;
 import gov.nasa.jpf.search.Search;
@@ -43,9 +37,7 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
-import gov.nasa.jpf.vm.Types;
 import gov.nasa.jpf.vm.VM;
-import gov.nasa.jpf.vm.choice.IntChoiceFromList;
 import it.unica.co2.api.contract.Action;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
@@ -64,7 +56,6 @@ import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
-import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 import it.unica.co2.honesty.handlers.HandlerFactory;
 import it.unica.co2.util.ObjectUtils;
 
@@ -225,10 +216,6 @@ public class Co2Listener extends ListenerAdapter {
 		}
 	}
 	
-	@Override
-	public void instructionExecuted (VM vm, ThreadInfo ti, Instruction nextInsn, Instruction executedInsn) {
-	
-	}
 	
 	@Override
 	public void executeInstruction(VM vm, ThreadInfo ti, Instruction insn) {
@@ -253,7 +240,7 @@ public class Co2Listener extends ListenerAdapter {
 			HandlerFactory.waitForReceiveHandler().handle(this, tstate, ti, insn);
 		}
 		else if(Message_getStringValue!=null && insn==Message_getStringValue.getFirstInsn()) {
-			handle_Message_getStringValue(ti, insn);
+			HandlerFactory.messageHandler().handle(this, tstate, ti, insn);
 		}
 		else if (insn instanceof SwitchInstruction && tstate.considerSwitchInstruction((SwitchInstruction) insn)) {
 			tstate.setSwitchInsn((SwitchInstruction) insn);
@@ -272,35 +259,18 @@ public class Co2Listener extends ListenerAdapter {
 			handle_Participant_setConnection(ti, insn);
 		}
 		else if (LoggerFactory_getLogger!=null && insn==LoggerFactory_getLogger.getFirstInsn()) {
-			handle_LoggerFactory_getLogger(ti, insn);
+			HandlerFactory.loggerFactoryHandler().handle(this, tstate, ti, insn);
 		}
 		else if (MultipleSessionReceiver_waitForReceive!=null && insn==MultipleSessionReceiver_waitForReceive.getFirstInsn()) {
 			handle_MultipleSessionReceiver_waitForReceive(ti, insn);
 		}
 		else if (methodsToSkip.containsKey(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
-			handleSkipMethod(tstate, ti, insn);
+			HandlerFactory.skipMethodHandler().handle(this, tstate, ti, insn);
 		}
 	}
 	
-	
-	private void handle_LoggerFactory_getLogger(ThreadInfo ti, Instruction insn) {
+	//TODO
 
-		log.info("");
-		log.info("HANDLE -> LOGGERFACTORY GET LOGGER");
-		
-		ClassInfo loggerCI = ClassInfo.getInitializedClassInfo(org.slf4j.helpers.NOPLogger.class.getName(), ti);
-		ElementInfo loggerEI = ti.getHeap().newObject(loggerCI, ti);
-		
-		//set the return value
-		log.info("loggerEI: "+loggerEI);
-		StackFrame frame = ti.getTopFrame();
-		frame.setReferenceResult(loggerEI.getObjectRef(), null);
-		
-		Instruction nextInsn = new ARETURN();
-		nextInsn.setMethodInfo(insn.getMethodInfo());
-		
-		ti.skipInstruction(nextInsn);
-	}
 	
 	private void handle_MultipleSessionReceiver_waitForReceive(ThreadInfo ti, Instruction insn) {
 
@@ -377,7 +347,6 @@ public class Co2Listener extends ListenerAdapter {
 		ti.skipInstruction(nextInsn);
 	}
 
-
 	private void handle_Session_sendIfAllowed(ThreadState tstate, ThreadInfo ti, Instruction insn) {
 		
 		log.info("");
@@ -426,235 +395,7 @@ public class Co2Listener extends ListenerAdapter {
 		ti.skipInstruction(nextInsn);
 	}
 	
-	
-	
-	public String getSessionIDBySession(ThreadInfo ti, ElementInfo session) {
-		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
-		return getSessionIDByPublic(pbl);
-	}
-	
-	private String getSessionIDByPublic(ElementInfo pbl) {
-		String sessionName = contractSessionMap.get(getContractIDByPublic(pbl));
-		assert sessionName!=null;
-		return sessionName;
-	}
-	
-	public String getContractIDBySession(ThreadInfo ti, ElementInfo session) {
-		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
-		return getContractIDByPublic(pbl);
-	}
-	
-	public String getContractIDByPublic(ElementInfo pbl) {
-		return pbl.getStringField("uniqueID");
-	}
-	
-	
-	private void handleSkipMethod(ThreadState tstate, ThreadInfo ti, Instruction insn) {
-		log.info("");
-		log.info("SKIPPING METHOD: "+insn.getMethodInfo().getFullName());
-		
 
-		AnnotationInfo ai = methodsToSkip.get(insn.getMethodInfo());
-		String[] exceptions = insn.getMethodInfo().getThrownExceptionClassNames();
-		
-		if (ai!=null && exceptions!=null) {	// the method contains the @SkipMethod annotation
-			
-			log.info("declared exceptions: "+Arrays.toString(exceptions));
-			
-			//remove empty strings (default case)
-			exceptions = Arrays.stream(exceptions).filter(x -> !x.isEmpty()).toArray(String[]::new);
-			
-			int[] choiceSet = new int[exceptions.length+1];
-			for (int i=0; i<exceptions.length; i++) {
-				choiceSet[i] = i;
-				try {
-					Class.forName(exceptions[i]);
-				}
-				catch (ClassNotFoundException e) {
-					throw new IllegalStateException("cannot find the class '"+exceptions[i]+"'");
-				}
-			}
-			choiceSet[exceptions.length] = exceptions.length;
-			
-			if (exceptions.length>0) {
-				// add a new boolean choice generator
-				
-				if (!ti.isFirstStepInsn()) {
-					
-					log.info("[skip] TOP HALF");
-					
-					SumDS sum = new SumDS();
-					
-					tstate.setCurrentProcess(sum);		//set the current process
-					tstate.printInfo();
-					tstate.pushSum(sum, Stream.concat(
-							Stream.of("$norm"), 
-							Arrays.stream(Arrays.copyOfRange(choiceSet, 0, exceptions.length)).mapToObj(Integer::toString).map(x-> "$ex".concat(x))).toArray(String[]::new));
-					
-					IntChoiceFromList cg = new IntChoiceFromList(tstate.getSkipMethodRuntimeExceptionGeneratorName(), choiceSet);
-					
-					boolean cgSetOk = ti.getVM().getSystemState().setNextChoiceGenerator(cg);
-					
-					assert cgSetOk : "error setting the choice generator";
-					
-					ti.skipInstruction(insn);
-					log.info("re-executing: "+insnToString(insn));
-					
-					return;				
-				}
-				else {
-					log.info("[skip] BOTTOM HALF");
-					
-					// bottom half - reexecution at the beginning of the next
-					// transition
-					IntChoiceFromList cg = ti.getVM().getSystemState().getCurrentChoiceGenerator(tstate.getSkipMethodRuntimeExceptionGeneratorName(), IntChoiceFromList.class);
-					
-					assert cg != null : "no 'skipMethod_booleanGenerator' BooleanChoiceGenerator found";
-					
-					int myChoice = cg.getNextChoice();
-					
-					if (myChoice!=exceptions.length){
-						/*
-						 * throw corresponding Exception
-						 */
-						String exception = exceptions[myChoice];
-						log.info("[skip] throwing a "+exception);
-						
-						SumDS sum = tstate.getSum();
-						TauDS tau = new TauDS();
-						sum.prefixes.add(tau);
-						
-						tstate.popSum("$ex"+myChoice);
-						tstate.setCurrentPrefix(tau);
-						tstate.printInfo();
-						
-						ti.createAndThrowException(exception, "This exception is thrown by the honesty checker. Please catch it!");
-						
-						return;
-					}
-					else {
-						/*
-						 * continue normally
-						 */
-						log.info("[skip] continue normally");
-						
-						SumDS sum = tstate.getSum();
-						TauDS tau = new TauDS();
-						sum.prefixes.add(tau);
-						
-						tstate.popSum("$norm");
-						tstate.setCurrentPrefix(tau);
-						tstate.printInfo();
-						
-					}
-				}
-			}
-		}
-		
-		
-		//TODO: considera un refactoring del codice seguente
-		Instruction nextInsn = null;
-		
-		switch (insn.getMethodInfo().getReturnTypeCode()) {
-		
-		case Types.T_BOOLEAN:
-			if (ai!=null) {
-				//set the return value
-				boolean returnValue = ai.valueAsString().isEmpty()? true: Boolean.parseBoolean(ai.valueAsString());
-				log.info("[skip] setting BOOLEAN return value: "+returnValue);
-				ti.getModifiableTopFrame().push(returnValue? 1:0);
-			}
-			nextInsn = new IRETURN();
-			break;
-			
-		case Types.T_CHAR: 
-			if (ai!=null) {
-				//set the return value
-				char returnValue = ai.valueAsString().isEmpty()? 'a': ai.valueAsString().charAt(0);
-				log.info("[skip] setting INT return value: "+returnValue);
-				ti.getModifiableTopFrame().push(returnValue);
-			}
-			nextInsn = new IRETURN();
-			break;
-		
-		case Types.T_BYTE:
-		case Types.T_SHORT: 
-		case Types.T_INT:
-			if (ai!=null) {
-				//set the return value
-				int returnValue = ai.valueAsString().isEmpty()? 0 : Integer.parseInt(ai.valueAsString());
-				log.info("[skip] setting INT return value: "+returnValue);
-				ti.getModifiableTopFrame().push(returnValue);
-			}
-			nextInsn = new IRETURN();
-			break;
-			
-		case Types.T_LONG:
-			if (ai!=null) {
-				//set the return value
-				long returnValue = ai.valueAsString().isEmpty()? 0: Long.parseLong(ai.valueAsString());
-				log.info("[skip] setting LONG return value: "+returnValue);
-				ti.getModifiableTopFrame().pushLong(returnValue);
-			}
-			nextInsn = new LRETURN();
-			break;
-			
-		case Types.T_FLOAT:
-			if (ai!=null) {
-				//set the return value
-				float returnValue = ai.valueAsString().isEmpty()? 0: Float.parseFloat(ai.valueAsString());
-				log.info("[skip] setting FLOAT return value: "+returnValue);
-				ti.getModifiableTopFrame().pushFloat(returnValue);
-			}
-			nextInsn = new FRETURN();
-			break;
-			
-		case Types.T_DOUBLE:
-			if (ai!=null) {
-				//set the return value
-				double returnValue = ai.valueAsString().isEmpty()? 0: Double.parseDouble(ai.valueAsString());
-				log.info("[skip] setting DOUBLE return value: "+returnValue);
-				ti.getModifiableTopFrame().pushDouble(returnValue);
-			}
-			nextInsn = new DRETURN();
-			break;
-			
-		case Types.T_ARRAY:
-		case Types.T_REFERENCE:
-			if (ai!=null) {
-				//set the return value
-				String returnValue = ai.valueAsString();
-				log.info("[skip] setting REF return value: "+returnValue);
-				ti.getModifiableTopFrame().pushRef(ti.getHeap().newString(returnValue, ti).getObjectRef());
-			}
-			nextInsn = new ARETURN();
-			break;
-			
-			
-		case Types.T_VOID:
-		default: nextInsn = new RETURN();
-		}
-		
-		nextInsn.setMethodInfo(insn.getMethodInfo());
-		
-		ti.skipInstruction(nextInsn);
-	}
-
-
-	private void handle_Message_getStringValue(ThreadInfo ti, Instruction insn) {
-		//bypass the type check of the message
-		
-		ElementInfo message = ti.getThisElementInfo();
-		
-		//set the return value
-		StackFrame frame = ti.getTopFrame();
-		frame.setReferenceResult(message.getReferenceField("stringVal"), null);
-		
-		Instruction nextInsn = new ARETURN();
-		nextInsn.setMethodInfo(insn.getMethodInfo());
-		
-		ti.skipInstruction(nextInsn);
-	}
 
 
 	
@@ -920,8 +661,7 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 
-//	@SuppressWarnings("unused")
-	private String insnToString(Instruction insn) {
+	public static String insnToString(Instruction insn) {
 		return insn.getPosition() + " - " + insn.getMnemonic() + " ("+insn.getMethodInfo().getFullName()+")";
 	}
 	
@@ -1093,10 +833,9 @@ public class Co2Listener extends ListenerAdapter {
 	
 	
 	public String getActionValue(String contractID, String action) {
-		return getValidValue(contractActionsSort.get(contractID).get(action));
-	}
-	
-	private String getValidValue(Sort<?> sort) {
+		
+		Sort<?> sort = contractActionsSort.get(contractID).get(action);
+		
 		String value = "0";		//for backward compatibility
 
 		//get the validValue from Sort
@@ -1107,5 +846,25 @@ public class Co2Listener extends ListenerAdapter {
 			value = ((IntegerSort) sort).getValidValue().toString();
 		}
 		return value;
+	}
+	
+	public String getSessionIDBySession(ThreadInfo ti, ElementInfo session) {
+		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
+		return getSessionIDByPublic(pbl);
+	}
+	
+	private String getSessionIDByPublic(ElementInfo pbl) {
+		String sessionName = contractSessionMap.get(getContractIDByPublic(pbl));
+		assert sessionName!=null;
+		return sessionName;
+	}
+	
+	public String getContractIDBySession(ThreadInfo ti, ElementInfo session) {
+		ElementInfo pbl = ti.getElementInfo(session.getReferenceField("contract"));
+		return getContractIDByPublic(pbl);
+	}
+	
+	public String getContractIDByPublic(ElementInfo pbl) {
+		return pbl.getStringField("uniqueID");
 	}
 }
