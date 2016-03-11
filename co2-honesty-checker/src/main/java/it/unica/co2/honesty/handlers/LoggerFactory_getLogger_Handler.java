@@ -10,7 +10,7 @@ import it.unica.co2.honesty.Co2Listener;
 import it.unica.co2.honesty.ThreadState;
 
 
-class LoggerFactory_getLogger_Handler extends AbstractHandler {
+class LoggerFactory_getLogger_Handler extends InstructionHandlerA {
 
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {

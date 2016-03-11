@@ -5,66 +5,73 @@ import java.util.Map;
 
 public class HandlerFactory {
 
-	private static Map<Class<? extends IHandler>, IHandler> handlers = new HashMap<>();
+	private static Map<Class<? extends HandlerI<?>>, HandlerI<?>> handlers = new HashMap<>();
 	
-	private static <T extends IHandler> IHandler getHandler(Class<T> clazz) {
+	@SuppressWarnings("unchecked")
+	private static <T extends HandlerI<?>> T getHandler(Class<T> clazz) {
 		
 		if (!handlers.containsKey(clazz)) {
 			
 			try {
 				handlers.put(clazz, clazz.newInstance());
+				return clazz.newInstance();
 			}
 			catch (InstantiationException | IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}
 		}
 		
-		return handlers.get(clazz);
+		HandlerI<?> handler = handlers.get(clazz);
+		
+		if (clazz.isInstance(handler))	
+			return (T) handlers.get(clazz);
+		else
+			throw new IllegalStateException("seems that you store a type '"+handler.getClass()+"' instead of '"+clazz.getName()+"'");
 	}
 	
-	public static IHandler tellHandler() {
+	public static InstructionHandlerI tellHandler() {
 		return getHandler(Participant_tell_Handler.class);
 	}
 
-	public static IHandler waitForSessionHandler() {
+	public static InstructionHandlerI waitForSessionHandler() {
 		return waitForSessionHandler(false);
 	}
 	
-	public static IHandler waitForSessionHandler(boolean hasTimeout) {
+	public static InstructionHandlerI waitForSessionHandler(boolean hasTimeout) {
 		Public_waitForSession_Handler handler = (Public_waitForSession_Handler) getHandler(Public_waitForSession_Handler.class);
 		handler.setTimeout(hasTimeout);
 		return handler;
 	}
 	
-	public static IHandler waitForReceiveHandler() {
+	public static InstructionHandlerI waitForReceiveHandler() {
 		return getHandler(Session_waitForReceive_Handler.class);
 	}
 	
-	public static IHandler messageHandler() {
+	public static InstructionHandlerI messageHandler() {
 		return getHandler(Message_getStringValue_Handler.class);
 	}
 	
-	public static IHandler loggerFactoryHandler() {
+	public static InstructionHandlerI loggerFactoryHandler() {
 		return getHandler(LoggerFactory_getLogger_Handler.class);
 	}
 	
-	public static IHandler ifThenElseHandler() {
+	public static InstructionHandlerI ifThenElseHandler() {
 		return getHandler(IfThenElseHandler.class);
 	}
 
-	public static IHandler sendIfAllowedHandler() {
+	public static InstructionHandlerI sendIfAllowedHandler() {
 		return getHandler(Session_sendIfAllowed_Handler.class);
 	}
 	
-	public static IHandler setConnectionHandler() {
+	public static InstructionHandlerI setConnectionHandler() {
 		return getHandler(Participant_setConnection_Handler.class);
 	}
 	
-	public static IHandler multipleSessionReceiverHandler() {
+	public static InstructionHandlerI multipleSessionReceiverHandler() {
 		return getHandler(MultipleSessionReceiverHandler.class);
 	}
 	
-	public static IHandler skipMethodHandler() {
+	public static InstructionHandlerI skipMethodHandler() {
 		return getHandler(SkipMethodHandler.class);
 	}
 }

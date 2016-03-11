@@ -22,7 +22,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 
 
-class Public_waitForSession_Handler extends AbstractHandler {
+class Public_waitForSession_Handler extends InstructionHandlerA {
 
 	private boolean hasTimeout = false;
 	

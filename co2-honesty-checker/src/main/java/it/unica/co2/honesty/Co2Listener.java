@@ -724,4 +724,9 @@ public class Co2Listener extends ListenerAdapter {
 	public String getContractIDByPublic(ElementInfo pbl) {
 		return pbl.getStringField("uniqueID");
 	}
+
+
+	public ThreadState getThreadState(ThreadInfo ti) {
+		return threadStates.get(ti);
+	}
 }
