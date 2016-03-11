@@ -15,7 +15,7 @@ import it.unica.co2.honesty.ThreadState;
 import it.unica.co2.util.ObjectUtils;
 
 
-class MultipleSessionReceiverHandler extends InstructionHandlerA {
+class MultipleSessionReceiverHandler extends InstructionHandler {
 
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {

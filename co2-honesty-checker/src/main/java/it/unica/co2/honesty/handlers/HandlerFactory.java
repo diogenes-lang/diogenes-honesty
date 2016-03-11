@@ -29,49 +29,53 @@ public class HandlerFactory {
 			throw new IllegalStateException("seems that you store a type '"+handler.getClass()+"' instead of '"+clazz.getName()+"'");
 	}
 	
-	public static InstructionHandlerI tellHandler() {
+	public static InstructionHandler tellHandler() {
 		return getHandler(Participant_tell_Handler.class);
 	}
 
-	public static InstructionHandlerI waitForSessionHandler() {
+	public static InstructionHandler waitForSessionHandler() {
 		return waitForSessionHandler(false);
 	}
 	
-	public static InstructionHandlerI waitForSessionHandler(boolean hasTimeout) {
+	public static InstructionHandler waitForSessionHandler(boolean hasTimeout) {
 		Public_waitForSession_Handler handler = (Public_waitForSession_Handler) getHandler(Public_waitForSession_Handler.class);
 		handler.setTimeout(hasTimeout);
 		return handler;
 	}
 	
-	public static InstructionHandlerI waitForReceiveHandler() {
+	public static InstructionHandler waitForReceiveHandler() {
 		return getHandler(Session_waitForReceive_Handler.class);
 	}
 	
-	public static InstructionHandlerI messageHandler() {
+	public static InstructionHandler messageHandler() {
 		return getHandler(Message_getStringValue_Handler.class);
 	}
 	
-	public static InstructionHandlerI loggerFactoryHandler() {
+	public static InstructionHandler loggerFactoryHandler() {
 		return getHandler(LoggerFactory_getLogger_Handler.class);
 	}
 	
-	public static InstructionHandlerI ifThenElseHandler() {
+	public static InstructionHandler ifThenElseHandler() {
 		return getHandler(IfThenElseHandler.class);
 	}
 
-	public static InstructionHandlerI sendIfAllowedHandler() {
+	public static InstructionHandler sendIfAllowedHandler() {
 		return getHandler(Session_sendIfAllowed_Handler.class);
 	}
 	
-	public static InstructionHandlerI setConnectionHandler() {
+	public static InstructionHandler setConnectionHandler() {
 		return getHandler(Participant_setConnection_Handler.class);
 	}
 	
-	public static InstructionHandlerI multipleSessionReceiverHandler() {
+	public static InstructionHandler multipleSessionReceiverHandler() {
 		return getHandler(MultipleSessionReceiverHandler.class);
 	}
 	
-	public static InstructionHandlerI skipMethodHandler() {
+	public static InstructionHandler skipMethodHandler() {
 		return getHandler(SkipMethodHandler.class);
+	}
+	
+	public static MethodHandler parallelEnteredHandler() {
+		return getHandler(ParallelMethodEnteredHandler.class);
 	}
 }

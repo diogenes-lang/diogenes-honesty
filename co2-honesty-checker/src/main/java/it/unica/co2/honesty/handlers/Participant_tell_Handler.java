@@ -16,7 +16,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.TellDS;
 import it.unica.co2.util.ObjectUtils;
 
 
-class Participant_tell_Handler extends InstructionHandlerA {
+class Participant_tell_Handler extends InstructionHandler {
 
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {

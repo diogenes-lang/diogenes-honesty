@@ -45,7 +45,6 @@ import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.MultipleSessionReceiver;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
-import it.unica.co2.honesty.dto.CO2DataStructures.ParallelProcessesDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
@@ -297,27 +296,7 @@ public class Co2Listener extends ListenerAdapter {
 		ThreadState tstate = threadStates.get(currentThread);
 		
 		if (enteredMethod==CO2Process_parallel) {
-			log.info("");
-			log.info("--PARALLEL-- (method entered) -> ID:"+tstate.getId());
-			
-			ParallelProcessesDS parallel = new ParallelProcessesDS();
-			
-			SumDS sumA = new SumDS();
-			PrefixPlaceholderDS placeholderA = new PrefixPlaceholderDS();
-			sumA.prefixes.add(placeholderA);
-			
-			SumDS sumB = new SumDS();
-			PrefixPlaceholderDS placeholderB = new PrefixPlaceholderDS();
-			sumB.prefixes.add(placeholderB);
-			
-			parallel.processA = sumA;
-			parallel.processB = sumB;
-			
-			tstate.setCurrentProcess(parallel);
-			tstate.setCurrentPrefix(placeholderB);
-			
-			threadCurrentProcess = sumA;
-			threadCurrentPrefix = placeholderA;
+			HandlerFactory.parallelEnteredHandler().handle(this, tstate, currentThread, enteredMethod);
 		}
 		else if (enteredMethod==CO2Process_processCall) {
 			log.info("");
@@ -729,4 +708,13 @@ public class Co2Listener extends ListenerAdapter {
 	public ThreadState getThreadState(ThreadInfo ti) {
 		return threadStates.get(ti);
 	}
+
+	public void setCurrentThreadProcess(SumDS threadCurrentProcess) {
+		this.threadCurrentProcess = threadCurrentProcess;
+	}
+	
+	public void setCurrentThreadPrefix(PrefixPlaceholderDS threadCurrentPrefix) {
+		this.threadCurrentPrefix = threadCurrentPrefix;
+	}
+	
 }

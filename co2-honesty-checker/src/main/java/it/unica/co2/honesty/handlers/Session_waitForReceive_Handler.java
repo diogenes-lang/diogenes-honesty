@@ -20,7 +20,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.TauDS;
 
 
-class Session_waitForReceive_Handler extends InstructionHandlerA {
+class Session_waitForReceive_Handler extends InstructionHandler {
 
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {

@@ -9,7 +9,7 @@ import it.unica.co2.honesty.Co2Listener;
 import it.unica.co2.honesty.ThreadState;
 
 
-class Message_getStringValue_Handler extends InstructionHandlerA {
+class Message_getStringValue_Handler extends InstructionHandler {
 
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {

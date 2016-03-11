@@ -13,7 +13,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 
 
-class Session_sendIfAllowed_Handler extends InstructionHandlerA {
+class Session_sendIfAllowed_Handler extends InstructionHandler {
 
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {

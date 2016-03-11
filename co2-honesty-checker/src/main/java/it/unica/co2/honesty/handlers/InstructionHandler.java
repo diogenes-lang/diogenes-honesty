@@ -10,16 +10,22 @@ import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.ThreadInfo;
 import it.unica.co2.honesty.Co2Listener;
 import it.unica.co2.honesty.ThreadState;
+import it.unica.co2.honesty.handlers.InstructionHandler.InstructionWrapper;
 
-abstract class InstructionHandlerA implements InstructionHandlerI {
+public abstract class InstructionHandler implements HandlerI<InstructionWrapper> {
 
 	protected final Logger log;
 	
-	protected InstructionHandlerA() {
+	protected InstructionHandler() {
 		log = JPF.getLogger(this.getClass().getName());
 	}
 	
-	@Override
+	public static class InstructionWrapper {
+		public Co2Listener listener;
+		public ThreadInfo ti;
+		public Instruction insn;
+	}
+	
 	abstract public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn);
 	
 	@Override

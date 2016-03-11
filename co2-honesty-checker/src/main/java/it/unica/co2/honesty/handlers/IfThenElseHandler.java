@@ -12,7 +12,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.IfThenElseDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 
 
-class IfThenElseHandler extends InstructionHandlerA {
+class IfThenElseHandler extends InstructionHandler {
 
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {
