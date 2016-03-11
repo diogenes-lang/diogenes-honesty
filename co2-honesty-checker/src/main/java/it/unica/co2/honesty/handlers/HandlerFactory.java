@@ -52,6 +52,18 @@ public class HandlerFactory {
 		return getHandler(IfThenElseHandler.class);
 	}
 
+	public static IHandler sendIfAllowedHandler() {
+		return getHandler(Session_sendIfAllowed_Handler.class);
+	}
+	
+	public static IHandler setConnectionHandler() {
+		return getHandler(Participant_setConnection_Handler.class);
+	}
+	
+	public static IHandler multipleSessionReceiverHandler() {
+		return getHandler(MultipleSessionReceiverHandler.class);
+	}
+	
 	public static IHandler skipMethodHandler() {
 		return getHandler(SkipMethodHandler.class);
 	}

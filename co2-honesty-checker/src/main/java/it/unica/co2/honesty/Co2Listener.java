@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 
 import org.slf4j.LoggerFactory;
 
-import co2api.CO2ServerConnection;
-import co2api.ContractModel;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
@@ -22,10 +20,7 @@ import co2api.TST;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.ListenerAdapter;
-import gov.nasa.jpf.jvm.JVMInstructionFactory;
-import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.jvm.bytecode.IfInstruction;
-import gov.nasa.jpf.jvm.bytecode.RETURN;
 import gov.nasa.jpf.jvm.bytecode.SwitchInstruction;
 import gov.nasa.jpf.search.Search;
 import gov.nasa.jpf.vm.AnnotationInfo;
@@ -35,7 +30,6 @@ import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Instruction;
 import gov.nasa.jpf.vm.MethodInfo;
-import gov.nasa.jpf.vm.StackFrame;
 import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import it.unica.co2.api.contract.Action;
@@ -49,7 +43,6 @@ import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.MultipleSessionReceiver;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
-import it.unica.co2.honesty.dto.CO2DataStructures.DoSendDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ParallelProcessesDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
@@ -57,7 +50,6 @@ import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
 import it.unica.co2.honesty.handlers.HandlerFactory;
-import it.unica.co2.util.ObjectUtils;
 
 public class Co2Listener extends ListenerAdapter {
 	
@@ -253,153 +245,21 @@ public class Co2Listener extends ListenerAdapter {
 				(Session_sendIfAllowedInt!=null && insn==Session_sendIfAllowedInt.getFirstInsn()) ||
 				(Session_sendIfAllowedString!=null && insn==Session_sendIfAllowedString.getFirstInsn())
 				) {
-			handle_Session_sendIfAllowed(tstate, ti, insn);
+			HandlerFactory.sendIfAllowedHandler().handle(this, tstate, ti, insn);
 		}
 		else if(Participant_setConnection!=null && insn==Participant_setConnection.getFirstInsn()) {
-			handle_Participant_setConnection(ti, insn);
+			HandlerFactory.setConnectionHandler().handle(this, tstate, ti, insn);
 		}
 		else if (LoggerFactory_getLogger!=null && insn==LoggerFactory_getLogger.getFirstInsn()) {
 			HandlerFactory.loggerFactoryHandler().handle(this, tstate, ti, insn);
 		}
 		else if (MultipleSessionReceiver_waitForReceive!=null && insn==MultipleSessionReceiver_waitForReceive.getFirstInsn()) {
-			handle_MultipleSessionReceiver_waitForReceive(ti, insn);
+			HandlerFactory.multipleSessionReceiverHandler().handle(this, tstate, ti, insn);
 		}
 		else if (methodsToSkip.containsKey(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
 			HandlerFactory.skipMethodHandler().handle(this, tstate, ti, insn);
 		}
 	}
-	
-	//TODO
-
-	
-	private void handle_MultipleSessionReceiver_waitForReceive(ThreadInfo ti, Instruction insn) {
-
-		log.info("");
-		log.info("-- WAIT FOR RECEIVE (multi session) --");
-		
-		//parameters
-		boolean timeout = getArgumentInt(ti, 0)>0;
-		log.info("timeout: "+timeout);
-		
-		ElementInfo mReceiver = ti.getThisElementInfo();
-		
-		// get the serialized map
-		String serializedSessionActionsMap = mReceiver.getStringField("serializedSessionActionsMap");
-		
-		@SuppressWarnings("unchecked")
-		Map<SessionI<? extends ContractModel>, Map<String, Integer>> sessionActionsMap = ObjectUtils.deserializeObjectFromStringQuietly(serializedSessionActionsMap, Map.class);
-		
-		// print some informations
-		log.info("sessions: "+sessionActionsMap.size());
-		
-
-		for (Entry<SessionI<? extends ContractModel>, Map<String, Integer>> entry :  sessionActionsMap.entrySet()) {
-			
-			SessionI<? extends ContractModel> session = entry.getKey();
-			Map<String, Integer> actions = entry.getValue();
-			
-			log.info("session: "+contractSessionMap.get(session.getPublicContract().getUniqueID()));
-			log.info("actions: "+actions);
-		}
-		
-		ElementInfo consumersEI = mReceiver.getObjectField("consumersArray");
-		int[] consumersRefs = consumersEI.asReferenceArray();
-
-		log.info("number of consumers: "+consumersRefs.length);
-		
-		ElementInfo consumerEI = ti.getElementInfo(consumersRefs[0]);
-		
-		// create a message
-//		ElementInfo message = getMessage(ti, "foo", "foo value");
-		
-		MethodInfo consumerMI = consumerEI.getClassInfo().getMethod("accept", "(Lco2api/Message;)V", false);
-		
-		log.info(consumerEI.toString());
-		log.info(consumerMI.toString());
-		
-		// create a new frame with the message
-		ti.getModifiableTopFrame().pushRef(consumerEI.getObjectRef());	// object ref
-//		ti.getModifiableTopFrame().pushRef(message.getObjectRef());		// arguments
-		
-		
-		Instruction nextInsn = JVMInstructionFactory.getFactory().invokespecial(consumerEI.getClassInfo().getName(), consumerMI.getName(), consumerMI.getSignature());
-		nextInsn.setMethodInfo(insn.getMethodInfo());
-		
-		ti.skipInstruction(nextInsn);
-	}
-
-	private void handle_Participant_setConnection(ThreadInfo ti, Instruction insn) {
-		
-		log.info("");
-		log.info("HANDLE -> PARTICIPANT SET CONNECTION");
-		
-		//object Participant
-		ElementInfo participant = ti.getThisElementInfo().getModifiableInstance();
-		
-		ClassInfo connectionCI = ClassInfo.getInitializedClassInfo(CO2ServerConnection.class.getName(), ti);
-		ElementInfo connectionEI = ti.getHeap().newObject(connectionCI, ti);
-		
-		participant.setReferenceField("connection", connectionEI.getObjectRef());
-		
-		Instruction nextInsn = new RETURN();
-		nextInsn.setMethodInfo(insn.getMethodInfo());
-		
-		ti.skipInstruction(nextInsn);
-	}
-
-	private void handle_Session_sendIfAllowed(ThreadState tstate, ThreadInfo ti, Instruction insn) {
-		
-		log.info("");
-		log.info("-- SEND --");
-		
-		/*
-		 * collect the co2 process
-		 */
-		ElementInfo session2 = ti.getThisElementInfo();
-		
-		String sessionName = getSessionIDBySession(ti, session2);
-		String action = getArgumentString(ti, 0);
-		
-		DoSendDS send = new DoSendDS();
-		send.session = sessionName;
-		send.action = action;
-		
-		if (insn.getMethodInfo()==Session_sendIfAllowed) send.sort = Sort.unit();
-		if (insn.getMethodInfo()==Session_sendIfAllowedInt) send.sort = Sort.integer();
-		if (insn.getMethodInfo()==Session_sendIfAllowedString) send.sort = Sort.string();
-		
-		SumDS sum = new SumDS();
-		sum.prefixes.add(send);
-		
-		log.info("setting current process: "+sum);
-		
-		tstate.setCurrentProcess(sum);		//set the current process
-		tstate.setCurrentPrefix(send);		//set the current prefix
-		tstate.printInfo();
-		
-		/*
-		 * handle return value
-		 */
-		ClassInfo booleanCI = ClassInfo.getInitializedClassInfo(Boolean.class.getName(), ti);
-		ElementInfo booleanEI = ti.getHeap().newObject(booleanCI, ti);
-		
-		booleanEI.setBooleanField("value", true);
-		
-		//set the return value
-		StackFrame frame = ti.getTopFrame();
-		frame.setReferenceResult(booleanEI.getObjectRef(), null);
-		
-		Instruction nextInsn = new ARETURN();
-		nextInsn.setMethodInfo(insn.getMethodInfo());
-		
-		ti.skipInstruction(nextInsn);
-	}
-	
-
-
-
-	
-	
 	
 	
 
