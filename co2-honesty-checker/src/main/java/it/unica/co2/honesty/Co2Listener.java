@@ -90,7 +90,6 @@ public class Co2Listener extends ListenerAdapter {
 	 * env
 	 */
 	private Map<String, ProcessDefinitionDS> envProcesses = new HashMap<>();
-	private List<ProcessDefinitionDS> envProcessesList  = new ArrayList<>();
 	
 	private Map<ThreadInfo,ThreadState> threadStates = new HashMap<>();
 	private ThreadInfo mainThread;
@@ -123,7 +122,6 @@ public class Co2Listener extends ListenerAdapter {
 	
 	private Map<String, Boolean> contractsDelay = new HashMap<>();
 	private Map<String, String> contractSessionMap = new HashMap<>();
-
 	private Map<String, Map<String, Sort<?>>> contractActionsSort = new HashMap<>();
 	
 	
@@ -219,6 +217,7 @@ public class Co2Listener extends ListenerAdapter {
 //			log.info("*** "+insnToString(insn));
 //		}
 		
+		// dispatching
 		if(Participant_tell!=null && insn==Participant_tell.getFirstInsn()) {
 			HandlerFactory.tellHandler().handle(this, tstate, ti, insn);
 		}
@@ -306,7 +305,7 @@ public class Co2Listener extends ListenerAdapter {
 			String className = getArgumentString(currentThread, 1);			// the classname of the process that we want to invoke
 			List<ElementInfo> args = getArgumentArray(currentThread, 2);
 			
-			if (envProcesses.containsKey(className)) {
+			if (this.envProcessAlreadyProcessed(className)) {
 				log.info("envProcess "+className+" already exists");
 			}
 			else {
@@ -346,8 +345,7 @@ public class Co2Listener extends ListenerAdapter {
 				
 				// store the process for future retrieve (when another one1 call it)
 				log.info("saving envProcess "+className);
-				envProcesses.put(className, proc);
-				envProcessesList.add(proc);
+				this.addEnvProcess(className, proc);
 			}
 			
 			
@@ -393,7 +391,7 @@ public class Co2Listener extends ListenerAdapter {
 			/*
 			 * Check for recursive behavior
 			 */
-			ProcessDefinitionDS proc = envProcesses.get(ci.getSimpleName());
+			ProcessDefinitionDS proc = this.getEnvProcess(ci.getSimpleName());
 
 			boolean recursiveCall = tstate.checkForRecursion(proc);
 			
@@ -411,7 +409,7 @@ public class Co2Listener extends ListenerAdapter {
 				}
 				
 				log.info("[SKIP] [T-ID "+tstate.getId()+"] adding method "+enteredMethod.getFullName());
-				methodsToSkip.add(enteredMethod);
+				this.addMethodToSkip(enteredMethod);
 			}
 			else {
 				log.info("NOT recursive call AND NOT already built");
@@ -426,6 +424,9 @@ public class Co2Listener extends ListenerAdapter {
 	
 	
 	
+
+
+
 	@Override
 	public void choiceGeneratorSet (VM vm, ChoiceGenerator<?> newCG) {
 		log.info("----------------NEW---------------: "+newCG.getId()+" - idRef="+newCG.getIdRef());
@@ -589,13 +590,13 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 	public Collection<ProcessDefinitionDS> getEnvProcesses() {
-		return envProcessesList;
+		return envProcesses.values();
 	}
 	
 	public Collection<String> getEnvProcessesNames() {
 		List<String> tmp = new ArrayList<>();
 		
-		for (ProcessDefinitionDS p : envProcessesList) {
+		for (ProcessDefinitionDS p : envProcesses.values()) {
 			tmp.add(p.name);
 		}
 		
@@ -717,4 +718,19 @@ public class Co2Listener extends ListenerAdapter {
 		this.threadCurrentPrefix = threadCurrentPrefix;
 	}
 	
+	public void addMethodToSkip(MethodInfo mi) {
+		this.methodsToSkip.add(mi);
+	}
+	
+	public boolean envProcessAlreadyProcessed(String envProcessClass) {
+		return envProcesses.containsKey(envProcessClass);
+	}
+	
+	public ProcessDefinitionDS getEnvProcess(String envProcessClass) {
+		return envProcesses.get(envProcessClass);
+	}
+	
+	public void addEnvProcess(String className, ProcessDefinitionDS proc) {
+		envProcesses.put(className, proc);
+	}
 }
