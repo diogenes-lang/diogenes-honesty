@@ -3,9 +3,11 @@ package it.unica.co2.honesty;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -118,7 +120,7 @@ public class Co2Listener extends ListenerAdapter {
 	private MethodInfo MultipleSessionReceiver_waitForReceive;
 	
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
-	private Map<MethodInfo, AnnotationInfo> methodsToSkip = new HashMap<>();
+	private Set<MethodInfo> methodsToSkip = new HashSet<>();
 	
 	private Map<String, Boolean> contractsDelay = new HashMap<>();
 	private Map<String, String> contractSessionMap = new HashMap<>();
@@ -131,14 +133,13 @@ public class Co2Listener extends ListenerAdapter {
 	@Override
 	public void classLoaded(VM vm, ClassInfo ci) {
 
-			
 		for (MethodInfo m : ci.getDeclaredMethodInfos() ) {
 			
 			AnnotationInfo ai = m.getAnnotation(SkipMethod.class.getName());
 			
 			if (ai!=null) {
 				log.info("[SKIP] adding method "+m.getFullName());
-				methodsToSkip.put(m, ai);
+				methodsToSkip.add(m);
 			}
 		}
 		
@@ -181,8 +182,8 @@ public class Co2Listener extends ListenerAdapter {
 			if (Session_sendIfAllowedInt==null)
 				Session_sendIfAllowedInt = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/Integer;)Z", false);
 			
-			methodsToSkip.put(ci.getMethod("amIOnDuty", "()Z", false), null);
-			methodsToSkip.put(ci.getMethod("amICulpable", "()Z", false), null);
+			methodsToSkip.add(ci.getMethod("amIOnDuty", "()Z", false));
+			methodsToSkip.add(ci.getMethod("amICulpable", "()Z", false));
 		}
 		
 		if (ci.getName().equals(Message.class.getName())) {
@@ -192,8 +193,8 @@ public class Co2Listener extends ListenerAdapter {
 		}
 		
 		if (ci.getName().equals(TST.class.getName())) {
-			methodsToSkip.put(ci.getMethod("setFromString", "(Ljava/lang/String;)V", false), null);
-			methodsToSkip.put(ci.getMethod("setContext", "(Ljava/lang/String;)V", false), null);
+			methodsToSkip.add(ci.getMethod("setFromString", "(Ljava/lang/String;)V", false));
+			methodsToSkip.add(ci.getMethod("setContext", "(Ljava/lang/String;)V", false));
 		}
 		
 		if (ci.getName().equals(LoggerFactory.class.getName())) {
@@ -256,7 +257,7 @@ public class Co2Listener extends ListenerAdapter {
 		else if (MultipleSessionReceiver_waitForReceive!=null && insn==MultipleSessionReceiver_waitForReceive.getFirstInsn()) {
 			HandlerFactory.multipleSessionReceiverHandler().handle(this, tstate, ti, insn);
 		}
-		else if (methodsToSkip.containsKey(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
+		else if (methodsToSkip.contains(insn.getMethodInfo()) && insn == insn.getMethodInfo().getFirstInsn()) {
 			HandlerFactory.skipMethodHandler().handle(this, tstate, ti, insn);
 		}
 	}
@@ -431,7 +432,7 @@ public class Co2Listener extends ListenerAdapter {
 				}
 				
 				log.info("[SKIP] [T-ID "+tstate.getId()+"] adding method "+enteredMethod.getFullName());
-				methodsToSkip.put(enteredMethod, null);
+				methodsToSkip.add(enteredMethod);
 			}
 			else {
 				log.info("NOT recursive call AND NOT already built");
@@ -445,10 +446,6 @@ public class Co2Listener extends ListenerAdapter {
 	
 	
 	
-	@Override
-	public void objectCreated(VM vm, ThreadInfo currentThread, ElementInfo newObject) {
-		
-	}
 	
 	@Override
 	public void choiceGeneratorSet (VM vm, ChoiceGenerator<?> newCG) {
