@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.SessionI;
 import co2api.TST;
 import gov.nasa.jpf.Config;
 import gov.nasa.jpf.JPF;
@@ -46,7 +45,6 @@ import it.unica.co2.api.process.MultipleSessionReceiver;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
-import it.unica.co2.honesty.dto.CO2DataStructures.ProcessCallDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
@@ -261,33 +259,6 @@ public class Co2Listener extends ListenerAdapter {
 	}
 	
 	
-
-	@Override
-	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo exitedMethod) {
-		
-		ClassInfo ci = currentThread.getExecutingClassInfo();
-		ThreadState tstate = threadStates.get(vm.getCurrentThread());
-
-		if (
-				exitedMethod.getName().equals("run") &&
-				envProcesses.containsKey(ci.getSimpleName())
-				) {
-			/*
-			 * the process is finished
-			 */
-			log.info("");
-			tstate.printInfo();
-			log.info("--RUN ENV PROCESS-- (method exited) -> "+ci.getSimpleName());
-			
-			tstate.tryToPopFrame();
-			
-			//next flag prevent from re-build the process at each invocation
-			envProcesses.get(ci.getSimpleName()).alreadyBuilt = true;
-			
-			tstate.printInfo();
-		}
-	}
-	
 	@Override
 	public void methodEntered(VM vm, ThreadInfo currentThread, MethodInfo enteredMethod) {
 		
@@ -298,126 +269,27 @@ public class Co2Listener extends ListenerAdapter {
 			HandlerFactory.parallelEnteredHandler().handle(this, tstate, currentThread, enteredMethod);
 		}
 		else if (enteredMethod==CO2Process_processCall) {
-			log.info("");
-			tstate.printInfo();
-			log.info("--PROCESS CALL-- (method entered) -> "+ci.getSimpleName());
-			
-			String className = getArgumentString(currentThread, 1);			// the classname of the process that we want to invoke
-			List<ElementInfo> args = getArgumentArray(currentThread, 2);
-			
-			if (this.envProcessAlreadyProcessed(className)) {
-				log.info("envProcess "+className+" already exists");
-			}
-			else {
-				/*
-				 * instantiate a new env process
-				 */
-				ProcessDefinitionDS proc = new ProcessDefinitionDS();
-				proc.name = className;
-				proc.firstPrefix = new PrefixPlaceholderDS();
-				proc.process = new SumDS(proc.firstPrefix);
-				
-//				List<ElementInfo> args = getAllArgumentsAsElementInfo(currentThread);
-				
-				if (args.size()==0) {
-					//add at least one argument to make the process valid
-					proc.freeNames.add("exp");
-				}
-				
-				for (ElementInfo ei : args) {
-					if (ei.getClassInfo().isInstanceOf(SessionI.class.getName())) {
-						ElementInfo pbl = currentThread.getElementInfo(ei.getReferenceField("contract"));
-						assert pbl!=null;
-						String sessionName = getSessionIDByPublic(pbl);
-						
-						proc.freeNames.add("\""+sessionName+"\"");
-						log.info("ctor arg: Session2 ("+sessionName+")");
-					}
-					else if (ei.getClassInfo().isInstanceOf(Number.class.getName())) {
-						proc.freeNames.add("exp");
-						log.info("ctor arg: Number");
-					}
-					else if (ei.getClassInfo().isInstanceOf(String.class.getName())) {
-						proc.freeNames.add("exp");
-						log.info("ctor arg: String");
-					}
-				}
-				
-				// store the process for future retrieve (when another one1 call it)
-				log.info("saving envProcess "+className);
-				this.addEnvProcess(className, proc);
-			}
-			
-			
-			
-			ProcessCallDS pCall = new ProcessCallDS();
-
-			pCall.name = className;
-			log.info("processName: "+pCall.name);
-			
-			for (ElementInfo ei : getArgumentArray(currentThread, 2)) {
-				
-				if (ei.getClassInfo().isInstanceOf(SessionI.class.getName())) {
-					ElementInfo pbl = currentThread.getElementInfo(ei.getReferenceField("contract"));
-					assert pbl!=null;
-					String sessionName = getSessionIDByPublic(pbl);
-					
-					pCall.params.add("\""+sessionName+"\"");
-					log.info("param: Session ("+sessionName+")");
-				}
-				else if (ei.getClassInfo().isInstanceOf(Number.class.getName())) {
-					pCall.params.add("exp");
-					log.info("param: Number");
-				}
-				else if (ei.getClassInfo().isInstanceOf(String.class.getName())) {
-					pCall.params.add("exp");
-					log.info("param: String");
-				}
-			}
-			
-			tstate.setCurrentProcess(pCall);
-			tstate.setCurrentPrefix(null);
+			HandlerFactory.processCallEnteredHandler().handle(this, tstate, currentThread, enteredMethod);
 		}
 		else if (	enteredMethod.getName().equals("run") &&
 					envProcesses.containsKey(ci.getSimpleName())
 					) {
-			/*
-			 * the process is finished
-			 */
-			log.info("");
-			tstate.printInfo();
-			log.info("--RUN ENV PROCESS-- (method entered) -> "+ci.getSimpleName());
-			
-			/*
-			 * Check for recursive behavior
-			 */
-			ProcessDefinitionDS proc = this.getEnvProcess(ci.getSimpleName());
-
-			boolean recursiveCall = tstate.checkForRecursion(proc);
-			
-			if (recursiveCall || proc.alreadyBuilt) {
-				
-				if (recursiveCall) {
-					// the call is recursive: stop search
-					log.info("recursive call detected, terminating");
-				}
-				
-				if (proc.alreadyBuilt) {
-					// the process was already called
-					// the flag is set when called process returns (exit of the 'run' method)
-					log.info("process already built: "+proc.toString());
-				}
-				
-				log.info("[SKIP] [T-ID "+tstate.getId()+"] adding method "+enteredMethod.getFullName());
-				this.addMethodToSkip(enteredMethod);
-			}
-			else {
-				log.info("NOT recursive call AND NOT already built");
-			}
-			
-			log.info("adding a new process onto the stack: "+proc.toString());
-			tstate.pushNewFrame(proc);
-			tstate.printInfo();
+			HandlerFactory.runEnvProcessEnteredHandler().handle(this, tstate, currentThread, enteredMethod);
+		}
+	}
+	
+	
+	@Override
+	public void methodExited(VM vm, ThreadInfo currentThread, MethodInfo exitedMethod) {
+		
+		ClassInfo ci = currentThread.getExecutingClassInfo();
+		ThreadState tstate = threadStates.get(vm.getCurrentThread());
+		
+		if (
+				exitedMethod.getName().equals("run") &&
+				envProcesses.containsKey(ci.getSimpleName())
+				) {
+			HandlerFactory.runEnvProcessExitedHandler().handle(this, tstate, currentThread, exitedMethod);
 		}
 	}
 	
@@ -690,7 +562,7 @@ public class Co2Listener extends ListenerAdapter {
 		return getSessionIDByPublic(pbl);
 	}
 	
-	private String getSessionIDByPublic(ElementInfo pbl) {
+	public String getSessionIDByPublic(ElementInfo pbl) {
 		String sessionName = contractSessionMap.get(getContractIDByPublic(pbl));
 		assert sessionName!=null;
 		return sessionName;

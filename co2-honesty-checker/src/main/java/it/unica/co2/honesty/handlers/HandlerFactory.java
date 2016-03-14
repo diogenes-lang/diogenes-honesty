@@ -78,4 +78,17 @@ public class HandlerFactory {
 	public static MethodHandler parallelEnteredHandler() {
 		return getHandler(ParallelMethodEnteredHandler.class);
 	}
+	
+	public static MethodHandler processCallEnteredHandler() {
+		return getHandler(ProcessCallEnteredHandler.class);
+	}
+
+	public static MethodHandler runEnvProcessEnteredHandler() {
+		return getHandler(RunEnvProcessEnteredHandler.class);
+	}
+	
+	public static MethodHandler runEnvProcessExitedHandler() {
+		return getHandler(RunEnvProcessExitedHandler.class);
+	}
+	
 }
