@@ -22,42 +22,38 @@ public class MultipleSessionReceiver {
 
 	private static final Logger logger = LoggerFactory.getLogger(MultipleSessionReceiver.class);
 	
-	private Map<SessionI<? extends ContractModel>, Map<String, Integer>> sessionActionsMap = new HashMap<>();
+	private Map<SessionI<? extends ContractModel>, List<String>> sessionActionsMap = new HashMap<>();
+	private Map<String, Consumer<Message>> consumersMap = new HashMap<>();			// the key is <sessionID>$<action>
 	
-	private List<Consumer<Message>> consumers = new ArrayList<>();
-	
-	@SuppressWarnings("unused")	private Consumer<Message>[] consumersArray;			// used by JPF
 	@SuppressWarnings("unused")	private String serializedSessionActionsMap;			// used by JPF
+	
 	
 	private static final int WAIT_RECEIVE_TIMEOUT = 1000;
 	
 	
 	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, String... actionNames) {
-		return add(session, (msg)->{}, actionNames);
+		return add(session, new Consumer<Message>() {
+
+			@Override
+			public void accept(Message t) {}
+			
+		}, actionNames);
 	}
 	
 	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, final Consumer<Message> consumer, String... actionNames) {
 
+		assert session.getSessionID()!=null;
+
 		logger.debug("adding pair <{}, {}>", session, actionNames);
 		
-		int nextConsumerIndex = consumers.size();
-		consumers.add(consumer);
-		
 		// create a map associating the given consumer with each action
-		Map<String, Integer> newEntry = new HashMap<>();
 		
 		for (String action : actionNames) {
-			newEntry.put(action, nextConsumerIndex);
-			logger.debug("actions: <{}, {}>", action, nextConsumerIndex);
-		}
+			consumersMap.put(session.getSessionID()+"$"+action, consumer);
 
-		sessionActionsMap.merge(
-				session, 
-				newEntry,
-				(x, y)-> {				// put all the new entries into the old map
-					x.putAll(y);
-					return x;
-				});
+			sessionActionsMap.putIfAbsent(session, new ArrayList<>());
+			sessionActionsMap.get(session).add(action);
+		}
 		
 		return this;
 	}
@@ -73,28 +69,35 @@ public class MultipleSessionReceiver {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void waitForReceive(int timeout) throws TimeExpiredException {
 		
 		try {
 			serializedSessionActionsMap = ObjectUtils.serializeObjectToString(sessionActionsMap);
-			consumersArray = consumers.toArray(new Consumer[]{});
 		}
 		catch (IOException e2) {
 			throw new RuntimeException(e2);
 		}
 		
-		_waitForReceive(timeout);
+		Message msg = _waitForReceive(timeout);
+		
+		// dispatch to consumer
+		String action = msg.getLabel();
+		String sessionID = msg.getSessionID();
+		
+		Consumer<Message> consumer = consumersMap.get(sessionID+"$"+action);
+		assert consumer != null;
+		
+		consumer.accept(msg);
 	}
 	
-	private void _waitForReceive(int timeout) throws TimeExpiredException {
+	public Message _waitForReceive(int timeout) throws TimeExpiredException {
 		
 		
 		long endtime = System.currentTimeMillis()+timeout;
 	
 		while(true) {
 			
-			for (Entry<SessionI<? extends ContractModel>, Map<String, Integer>> e : sessionActionsMap.entrySet()) {
+			for (Entry<SessionI<? extends ContractModel>, List<String>> e : sessionActionsMap.entrySet()) {
 				
 				// check if the timeout is expired
 				if (timeout!=-1 && System.currentTimeMillis() > endtime) {
@@ -103,20 +106,12 @@ public class MultipleSessionReceiver {
 				}
 				
 				SessionI<? extends ContractModel> session = e.getKey();
-				Map<String, Integer> actionConsumersMap = e.getValue();
-				Collection<String> actions = actionConsumersMap.keySet();
+				Collection<String> actions = e.getValue();
 				
 				// wait for receive a message
 				try {
 					Message msg = session.waitForReceive(WAIT_RECEIVE_TIMEOUT, actions.toArray(new String[]{}));
-					
-					String action = msg.getLabel();
-					assert actions.contains(action);
-					assert actionConsumersMap.containsKey(action);
-					
-					int consumerIndex = actionConsumersMap.get(action);
-					consumers.get(consumerIndex).accept(msg);
-					return;
+					return msg;
 				}
 				catch (TimeExpiredException e1) {
 					logger.debug("session {} does not receive any message within the given delay ({} msec)", session, WAIT_RECEIVE_TIMEOUT);

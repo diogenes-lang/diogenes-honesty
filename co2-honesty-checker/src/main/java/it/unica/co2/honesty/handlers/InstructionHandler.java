@@ -1,5 +1,6 @@
 package it.unica.co2.honesty.handlers;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import co2api.Message;
@@ -18,6 +19,7 @@ public abstract class InstructionHandler implements HandlerI<InstructionWrapper>
 	
 	protected InstructionHandler() {
 		log = JPF.getLogger(this.getClass().getName());
+		log.setLevel(Level.ALL);
 	}
 	
 	public static class InstructionWrapper {
@@ -33,8 +35,12 @@ public abstract class InstructionHandler implements HandlerI<InstructionWrapper>
 		handle(obj.listener, obj.listener.getThreadState(obj.ti), obj.ti, obj.insn);
 	}
 	
-	
+	@Deprecated
 	protected ElementInfo getMessage(ThreadInfo ti, String label, String value) {
+		return getMessage(ti, label, value, "null");
+	}
+	
+	protected ElementInfo getMessage(ThreadInfo ti, String label, String value, String sessionID) {
 		
 		assert label!=null;
 		assert value!=null;
@@ -44,6 +50,7 @@ public abstract class InstructionHandler implements HandlerI<InstructionWrapper>
 		
 		messageEI.setReferenceField("label", ti.getHeap().newString(label, ti).getObjectRef());
 		messageEI.setReferenceField("stringVal", ti.getHeap().newString(value, ti).getObjectRef());
+		messageEI.setReferenceField("sessionID", ti.getHeap().newString(sessionID, ti).getObjectRef());
 		
 		return messageEI;
 	}

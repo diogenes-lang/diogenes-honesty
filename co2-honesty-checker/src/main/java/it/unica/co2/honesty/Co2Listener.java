@@ -200,7 +200,7 @@ public class Co2Listener extends ListenerAdapter {
 		
 		if (ci.getName().equals(MultipleSessionReceiver.class.getName())) {
 			if (MultipleSessionReceiver_waitForReceive==null)
-				MultipleSessionReceiver_waitForReceive = ci.getMethod("_waitForReceive", "(I)V", false);
+				MultipleSessionReceiver_waitForReceive = ci.getMethod("_waitForReceive", "(I)Lco2api/Message;", false);
 		}
 	}
 	
@@ -291,6 +291,9 @@ public class Co2Listener extends ListenerAdapter {
 				) {
 			HandlerFactory.runEnvProcessExitedHandler().handle(this, tstate, currentThread, exitedMethod);
 		}
+		else if (exitedMethod==MultipleSessionReceiver_waitForReceive) {
+			HandlerFactory.multipleSessionReceiverExitedHandler().handle(this, tstate, currentThread, exitedMethod);
+		}
 	}
 	
 	
@@ -371,7 +374,8 @@ public class Co2Listener extends ListenerAdapter {
 	
 
 	public static String insnToString(Instruction insn) {
-		return insn.getPosition() + " - " + insn.getMnemonic() + " ("+insn.getMethodInfo().getFullName()+")";
+		if (insn==null) return "null";
+		return insn.getMethodInfo()+" "+insn.getPosition() + " : " + insn.toString();
 	}
 	
 	/**
@@ -605,4 +609,5 @@ public class Co2Listener extends ListenerAdapter {
 	public void addEnvProcess(String className, ProcessDefinitionDS proc) {
 		envProcesses.put(className, proc);
 	}
+
 }

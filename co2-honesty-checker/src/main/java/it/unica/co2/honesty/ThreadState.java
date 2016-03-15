@@ -90,6 +90,10 @@ public class ThreadState {
 		return "waitForSessionCG_"+this.co2ProcessesStack.peek().sumStack.size();
 	}
 	
+	public String getWaitForMultipleReceiveChoiceGeneratorName () {
+		return "waitForMultipleReceiveCG_"+this.co2ProcessesStack.peek().sumStack.size();
+	}
+	
 	public String getSkipMethodRuntimeExceptionGeneratorName () {
 		return "skipMethodCG_"+this.co2ProcessesStack.peek().ifElseStack.size();
 	}

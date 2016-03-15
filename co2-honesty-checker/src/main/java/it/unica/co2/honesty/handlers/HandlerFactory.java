@@ -7,6 +7,8 @@ public class HandlerFactory {
 
 	private static Map<Class<? extends HandlerI<?>>, HandlerI<?>> handlers = new HashMap<>();
 	
+	private HandlerFactory() {}
+	
 	@SuppressWarnings("unchecked")
 	private static <T extends HandlerI<?>> T getHandler(Class<T> clazz) {
 		
@@ -14,7 +16,6 @@ public class HandlerFactory {
 			
 			try {
 				handlers.put(clazz, clazz.newInstance());
-				return clazz.newInstance();
 			}
 			catch (InstantiationException | IllegalAccessException e) {
 				throw new RuntimeException(e);
@@ -69,6 +70,10 @@ public class HandlerFactory {
 	
 	public static InstructionHandler multipleSessionReceiverHandler() {
 		return getHandler(MultipleSessionReceiverHandler.class);
+	}
+	
+	public static MethodHandler multipleSessionReceiverExitedHandler() {
+		return getHandler(MultipleSessionReceiverExitedHandler.class);
 	}
 	
 	public static InstructionHandler skipMethodHandler() {

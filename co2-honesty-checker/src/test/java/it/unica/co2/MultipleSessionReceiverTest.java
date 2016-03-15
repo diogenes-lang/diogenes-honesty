@@ -1,5 +1,6 @@
 package it.unica.co2;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -30,11 +31,19 @@ public class MultipleSessionReceiverTest {
 	@Mock private SessionI<?> y;
 	@Mock private Consumers consumers;
 	
+	@Before
+	public void before() {
+		Mockito.when(x.getSessionID()).thenReturn("x");
+		Mockito.when(y.getSessionID()).thenReturn("y");
+	}
+	
 	@Test
 	public void simple() throws ContractException, ContractViolationException, TimeExpiredException {
 		
+		System.out.println("simple()");
+		
 		//prepare
-		Message msg = new Message("a", "");
+		Message msg = new Message("a", "", "x");
 		Mockito.when(x.waitForReceive(Mockito.anyInt(), Mockito.anyVararg())).thenReturn(msg);
 		//test
 		MultipleSessionReceiver mReceiver = new MultipleSessionReceiver();
@@ -45,7 +54,7 @@ public class MultipleSessionReceiverTest {
 				
 		
 		//prepare
-		msg = new Message("b", "");
+		msg = new Message("b", "", "x");
 		Mockito.when(x.waitForReceive(Mockito.anyInt(), Mockito.anyVararg())).thenReturn(msg);
 		//test
 		mReceiver.waitForReceive();
@@ -54,7 +63,7 @@ public class MultipleSessionReceiverTest {
 				
 		
 		//prepare
-		msg = new Message("c", "");
+		msg = new Message("c", "", "x");
 		Mockito.when(x.waitForReceive(Mockito.anyInt(), Mockito.anyVararg())).thenReturn(msg);
 		//test
 		mReceiver.waitForReceive();
@@ -65,8 +74,10 @@ public class MultipleSessionReceiverTest {
 	@Test
 	public void redefineConsumer() throws ContractException, ContractViolationException, TimeExpiredException {
 		
+		System.out.println("redefineConsumer()");
+		
 		//prepare
-		Message msg = new Message("b", "");
+		Message msg = new Message("b", "", "x");
 		Mockito.when(x.waitForReceive(Mockito.anyInt(), Mockito.anyVararg())).thenReturn(msg);
 		
 		//test
@@ -87,6 +98,8 @@ public class MultipleSessionReceiverTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void exception() throws ContractException, ContractViolationException, TimeExpiredException {
+		
+		System.out.println("exception()");
 		
 		//prepare
 		Mockito.when(x.waitForReceive(Mockito.anyInt(), Mockito.anyVararg())).thenThrow(TimeExpiredException.class);
@@ -115,9 +128,12 @@ public class MultipleSessionReceiverTest {
 	@Test
 	public void multiSession() throws ContractException, ContractViolationException, TimeExpiredException {
 		
+		System.out.println("multiSession()");
+		
 		//prepare
 		Mockito.when(x.waitForReceive(Mockito.anyInt(), Mockito.anyVararg())).thenThrow(TimeExpiredException.class);
-		Message msgY = new Message("c", "");
+		
+		Message msgY = new Message("c", "", "y");
 		Mockito.when(y.waitForReceive(Mockito.anyInt(), Mockito.anyVararg())).thenReturn(msgY);
 		
 		//test

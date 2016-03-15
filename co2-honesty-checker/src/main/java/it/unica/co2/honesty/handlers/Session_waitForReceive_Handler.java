@@ -30,7 +30,7 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 		
 		ElementInfo sessionEI = ti.getThisElementInfo();
 		
-		String sessionName = listener.getSessionIDBySession(ti, sessionEI);
+		String sessionID = listener.getSessionIDBySession(ti, sessionEI);
 		String contractID = listener.getContractIDBySession(ti, sessionEI);
 		
 		//parameters
@@ -70,6 +70,7 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 				if (timeout) choiceSet.add(actions.size());
 				
 				assert choiceSet.size()>1;
+				assert choiceSet.size()==actions.size() || choiceSet.size()-1==actions.size();
 
 				IntChoiceFromList cg = new IntChoiceFromList(tstate.getWaitForReceiveChoiceGeneratorName(), choiceSet.stream().mapToInt(i -> i).toArray());
 				ti.getVM().setNextChoiceGenerator(cg);
@@ -125,7 +126,7 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 					log.info("returning message: ["+action+":"+value+"]");
 					
 					DoReceiveDS p = new DoReceiveDS(); 
-					p.session = sessionName;
+					p.session = sessionID;
 					p.action = action;
 					
 					sum.prefixes.add(p);
@@ -135,7 +136,7 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 					tstate.setCurrentPrefix(p);
 					tstate.printInfo();
 					
-					ElementInfo message = getMessage(ti, action, value);
+					ElementInfo message = getMessage(ti, action, value, sessionID);
 					
 					StackFrame frame = ti.getTopFrame();
 					frame.setReferenceResult(message.getObjectRef(), null);
@@ -155,7 +156,7 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 			String value = listener.getActionValue(contractID, action);
 
 			DoReceiveDS p = new DoReceiveDS(); 
-			p.session = sessionName;
+			p.session = sessionID;
 			p.action = action;
 			
 			SumDS sum = new SumDS();
@@ -170,7 +171,7 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 			tstate.printInfo();
 			
 			//build the return value
-			ElementInfo messageEI = getMessage(ti, action, value);
+			ElementInfo messageEI = getMessage(ti, action, value, sessionID);
 			
 			//set the return value
 			StackFrame frame = ti.getTopFrame();

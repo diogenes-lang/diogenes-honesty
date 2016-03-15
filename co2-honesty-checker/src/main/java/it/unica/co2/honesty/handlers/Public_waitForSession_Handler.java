@@ -128,6 +128,7 @@ class Public_waitForSession_Handler extends InstructionHandler {
 					
 					sessionEI.setReferenceField("connection", pbl.getReferenceField("connection"));
 					sessionEI.setReferenceField("contract", pbl.getObjectRef());
+					sessionEI.setReferenceField("sessionID", ti.getHeap().newString(sessionID, ti).getObjectRef());
 					
 					//set the return value
 					StackFrame frame = ti.getTopFrame();
@@ -215,6 +216,7 @@ class Public_waitForSession_Handler extends InstructionHandler {
 			
 			sessionEI.setReferenceField("connection", pbl.getReferenceField("connection"));
 			sessionEI.setReferenceField("contract", pbl.getObjectRef());
+			sessionEI.setReferenceField("sessionID", ti.getHeap().newString(sessionID, ti).getObjectRef());
 			
 			//set the return value
 			StackFrame frame = ti.getTopFrame();
