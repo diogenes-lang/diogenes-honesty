@@ -2,7 +2,8 @@ package it.unica.co2.honesty.handlers;
 
 import java.util.List;
 
-import co2api.SessionI;
+import co2api.Public;
+import co2api.Session;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.MethodInfo;
@@ -49,10 +50,16 @@ public class ProcessCallEnteredHandler extends MethodHandler {
 			}
 			
 			for (ElementInfo ei : args) {
-				if (ei.getClassInfo().isInstanceOf(SessionI.class.getName())) {
-					ElementInfo pbl = ti.getElementInfo(ei.getReferenceField("contract"));
-					assert pbl!=null;
-					String sessionName = listener.getSessionIDByPublic(pbl);
+				if (ei.getClassInfo().isInstanceOf(Session.class.getName())) {
+
+					String sessionName = listener.getSessionIDBySession(ti, ei);
+					
+					proc.freeNames.add("\""+sessionName+"\"");
+					log.info("ctor arg: Session ("+sessionName+")");
+				}
+				else if (ei.getClassInfo().isInstanceOf(Public.class.getName())) {
+
+					String sessionName = listener.getSessionIDByPublic(ei);
 					
 					proc.freeNames.add("\""+sessionName+"\"");
 					log.info("ctor arg: Session2 ("+sessionName+")");
@@ -81,13 +88,19 @@ public class ProcessCallEnteredHandler extends MethodHandler {
 		
 		for (ElementInfo ei : listener.getArgumentArray(ti, 2)) {
 			
-			if (ei.getClassInfo().isInstanceOf(SessionI.class.getName())) {
-				ElementInfo pbl = ti.getElementInfo(ei.getReferenceField("contract"));
-				assert pbl!=null;
-				String sessionName = listener.getSessionIDByPublic(pbl);
+			if (ei.getClassInfo().isInstanceOf(Session.class.getName())) {
+
+				String sessionName = listener.getSessionIDBySession(ti, ei);
 				
 				pCall.params.add("\""+sessionName+"\"");
 				log.info("param: Session ("+sessionName+")");
+			}
+			else if (ei.getClassInfo().isInstanceOf(Public.class.getName())) {
+
+				String sessionName = listener.getSessionIDByPublic(ei);
+				
+				pCall.params.add("\""+sessionName+"\"");
+				log.info("ctor arg: Session2 ("+sessionName+")");
 			}
 			else if (ei.getClassInfo().isInstanceOf(Number.class.getName())) {
 				pCall.params.add("exp");

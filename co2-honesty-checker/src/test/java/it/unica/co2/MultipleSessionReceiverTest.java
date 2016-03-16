@@ -11,7 +11,7 @@ import co2api.ContractException;
 import co2api.ContractViolationException;
 import co2api.Message;
 import co2api.Public;
-import co2api.SessionI;
+import co2api.Session;
 import co2api.TimeExpiredException;
 import it.unica.co2.api.process.MultipleSessionReceiver;
 
@@ -29,8 +29,8 @@ public class MultipleSessionReceiverTest {
 	}
 	
 	@Mock private Public<?> pblx;
-	@Mock private SessionI<?> x;
-	@Mock private SessionI<?> y;
+	@Mock private Session<?> x;
+	@Mock private Session<?> y;
 	@Mock private Consumers consumers;
 	
 	@Before

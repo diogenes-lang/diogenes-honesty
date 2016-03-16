@@ -43,6 +43,10 @@ public class MultipleSessionReceiver {
 		}, actionNames);
 	}
 	
+	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, String action, final Consumer<Message> consumer) {
+		return add(session, consumer, new String[]{action});
+	}
+	
 	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, final Consumer<Message> consumer, String... actionNames) {
 
 		logger.debug("adding pair <{}, {}>", session, actionNames);

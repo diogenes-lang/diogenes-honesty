@@ -1,6 +1,7 @@
 package it.unica.co2.api.contract;
 
 import it.unica.co2.api.contract.utils.ContractExplorer;
+import it.unica.co2.api.contract.utils.ContractFactory;
 
 public class Recursion extends Contract {
 
@@ -52,7 +53,7 @@ public class Recursion extends Contract {
 				cCopy, 
 				RecursionReference.class,
 				(x)->(x.getReference()==this),
-				(x)->{x.getPreceeding().next(new RecursionReference(copy));});
+				(x)->{x.getPreceeding().next(ContractFactory.recRef(copy));});
 		
 		return copy;
 	}

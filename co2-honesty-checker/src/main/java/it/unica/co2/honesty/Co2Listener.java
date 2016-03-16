@@ -35,6 +35,7 @@ import gov.nasa.jpf.vm.ThreadInfo;
 import gov.nasa.jpf.vm.VM;
 import it.unica.co2.api.contract.Action;
 import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.contract.Sort.IntegerSort;
 import it.unica.co2.api.contract.Sort.StringSort;
@@ -341,7 +342,7 @@ public class Co2Listener extends ListenerAdapter {
 		
 		log.info("contracts:");
 		for (Entry<String, ContractDefinition> entry : contracts.entrySet()) {
-			log.info("\t"+entry.getKey()+" --> "+entry.getValue().getContract().toMaude());
+			log.info("\t"+entry.getKey()+" --> "+entry.getValue().toString());
 		}
 		
 		log.info("env processes:");
@@ -499,14 +500,44 @@ public class Co2Listener extends ListenerAdapter {
 		return contractSessionMap.get(contractID);
 	}
 	
-	public void saveContract(String contractID, ContractDefinition cDef) {
-		contracts.put(cDef.getName(), cDef);
+	private void putContract(ContractDefinition cDef) {
+
+		log.info("putting: "+cDef.getName());
+		log.info(contracts.toString());
 		
-		log.info("adding contract: "+cDef.getName());
+		final ContractDefinition oldValue = contracts.get(cDef.getName());
+
+		if (oldValue==null) {
+			contracts.put(cDef.getName(), cDef);
+		}
+		else {
+			
+			for (ContractDefinition c : contracts.values()) {
+				
+				ContractExplorer.findAll(
+					c.getContract(),
+					ContractReference.class, 
+					(x) -> {
+						return x.getReference().getName().equals(cDef.getName());
+					},
+					(x)-> {
+						log.info("fixing reference: "+x);
+						x.getPreceeding().next(new ContractReference(oldValue));
+					});
+			}
+		}
+
+	}
+	
+	public void saveContract(String contractID, ContractDefinition cDef) {
+		
+		this.putContract(cDef);
+		
+		log.info("adding contract: "+cDef.toString());
 		
 		for (ContractDefinition ref : ContractExplorer.getAllReferences(cDef)) {
-			log.info("adding contract: "+ref.getName());
-			contracts.put(ref.getName(), ref);
+			log.info("adding contract: "+ref.toString());
+			this.putContract(ref);
 		}
 		
 		Map<String, Sort<?>> actionSortMap = new HashMap<>();

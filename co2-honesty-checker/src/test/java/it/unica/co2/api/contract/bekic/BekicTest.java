@@ -172,6 +172,34 @@ public class BekicTest {
 		System.out.println(C.getContract().toTST());
 	}
 	
+	@Test
+	public void test8() {
+		System.out.println("+++++++++++ TEST 8 ++++++++++++");
+		
+		ContractDefinition A = def("A").setContract(
+				externalSum()
+				.add("quote", Sort.integer(), 
+						internalSum()
+						.add("pay", 
+								externalSum()
+								.add("confirm", 
+										internalSum()
+										.add("commit")
+										.add("abort")))
+						.add("abort")));;
+		ContractDefinition B = def("B").setContract(internalSum().add("b", ref(A)));
+		ContractDefinition C = def("C").setContract(internalSum().add("c", ref(A)));
+
+		System.out.println(A.getContract().toTST());
+		System.out.println(B.getContract().toTST());
+		System.out.println(C.getContract().toTST());
+		System.out.println(A);
+		System.out.println(B);
+		System.out.println(C);
+		System.out.println(A.getContract().toMaude());
+		System.out.println(B.getContract().toMaude());
+		System.out.println(C.getContract().toMaude());
+	}
 	
 	private void checkEnv(ContractDefinition...  cDefs) {
 		
