@@ -136,7 +136,7 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 					tstate.setCurrentPrefix(p);
 					tstate.printInfo();
 					
-					ElementInfo message = getMessage(ti, action, value, sessionID);
+					ElementInfo message = getMessage(ti, action, value, sessionEI);
 					
 					StackFrame frame = ti.getTopFrame();
 					frame.setReferenceResult(message.getObjectRef(), null);
@@ -171,7 +171,7 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 			tstate.printInfo();
 			
 			//build the return value
-			ElementInfo messageEI = getMessage(ti, action, value, sessionID);
+			ElementInfo messageEI = getMessage(ti, action, value, sessionEI);
 			
 			//set the return value
 			StackFrame frame = ti.getTopFrame();

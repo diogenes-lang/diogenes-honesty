@@ -72,10 +72,6 @@ public class HandlerFactory {
 		return getHandler(MultipleSessionReceiverHandler.class);
 	}
 	
-	public static MethodHandler multipleSessionReceiverExitedHandler() {
-		return getHandler(MultipleSessionReceiverExitedHandler.class);
-	}
-	
 	public static InstructionHandler skipMethodHandler() {
 		return getHandler(SkipMethodHandler.class);
 	}

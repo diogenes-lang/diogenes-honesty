@@ -50,27 +50,31 @@ public class QuickTest extends Participant {
 			 * + t 
 			 */
 			
-//			parallel(()->{
-//				x.sendIfAllowed("X");
-//			});
-//
-//			parallel(()->{
-//				y.sendIfAllowed("Y");
-//			});
+			parallel(()->{
+				x.waitForReceive("a", "b", "c");
+			});
+
+			parallel(()->{
+				y.sendIfAllowed("Y");
+				y.sendIfAllowed("Y1");
+			});
 			
-			MultipleSessionReceiver mReceiver = 
-					multipleSessionReceiver()
-					.add(x, (msg) -> {
-							System.out.println(">>> message from X");
-						}, "a")
-					
-					.add(y, (msg) -> {
-						System.out.println(">>> message from Y");
-					}, "d")
-					;
+			parallel(()->{
+				MultipleSessionReceiver mReceiver = 
+						multipleSessionReceiver()
+						.add(x, (msg) -> {
+								System.out.println(">>> message from X");
+							}, "a")
+						
+						.add(y, (msg) -> {
+							System.out.println(">>> message from Y");
+						}, "d")
+						;
+				
+				mReceiver.waitForReceive();
+			});
 			
-			mReceiver.waitForReceive();
-			
+			x.sendIfAllowed("END");
 	}
 	
 }

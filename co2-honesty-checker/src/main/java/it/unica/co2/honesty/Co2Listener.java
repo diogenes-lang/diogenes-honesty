@@ -291,9 +291,6 @@ public class Co2Listener extends ListenerAdapter {
 				) {
 			HandlerFactory.runEnvProcessExitedHandler().handle(this, tstate, currentThread, exitedMethod);
 		}
-		else if (exitedMethod==MultipleSessionReceiver_waitForReceive) {
-			HandlerFactory.multipleSessionReceiverExitedHandler().handle(this, tstate, currentThread, exitedMethod);
-		}
 	}
 	
 	

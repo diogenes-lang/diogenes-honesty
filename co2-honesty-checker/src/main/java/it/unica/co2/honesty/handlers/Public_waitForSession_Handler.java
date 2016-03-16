@@ -113,8 +113,7 @@ class Public_waitForSession_Handler extends InstructionHandler {
 					
 					log.info("returning a new Session");
 					
-					AskDS ask = new AskDS();
-					ask.session = sessionID;
+					AskDS ask = new AskDS(sessionID);
 					sum.prefixes.add(ask);
 					
 					log.info("setting current prefix: "+ask);
@@ -196,8 +195,7 @@ class Public_waitForSession_Handler extends InstructionHandler {
 		else {
 			log.info("single choice");
 
-			AskDS ask = new AskDS();
-			ask.session = sessionID;
+			AskDS ask = new AskDS(sessionID);
 			
 			SumDS sum = new SumDS();
 			sum.prefixes.add(ask);

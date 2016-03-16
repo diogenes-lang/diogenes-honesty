@@ -10,6 +10,7 @@ import co2api.TimeExpiredException;
 import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
+import it.unica.co2.honesty.HonestyChecker;
 
 public class VoucherSeller extends Participant {
 
@@ -119,6 +120,6 @@ public class VoucherSeller extends Participant {
 	
 	
 	public static void main(String[] args) {
-		new VoucherSeller().run();
+		HonestyChecker.isHonest(VoucherSeller.class);
 	}
 }

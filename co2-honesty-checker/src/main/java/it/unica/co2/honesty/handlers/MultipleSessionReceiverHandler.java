@@ -172,7 +172,7 @@ class MultipleSessionReceiverHandler extends InstructionHandler {
 				String contractID = sessionIDMap.get(sessionID).getPublicContract().getUniqueID();
 				String value = listener.getActionValue(contractID, action);
 				
-				ElementInfo message = getMessage(ti, action, value, sessionID);
+				ElementInfo message = getMessage(ti, action, value, getSession(ti, contractID, getPublic(ti, contractID)));
 				
 				// set the corresponding CO2 data
 				log.info("returning message: ["+action+":"+value+"]");

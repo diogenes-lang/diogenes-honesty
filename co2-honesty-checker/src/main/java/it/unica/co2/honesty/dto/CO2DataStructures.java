@@ -58,7 +58,11 @@ public class CO2DataStructures {
 
 	public static class AskDS extends PrefixDS {
 
-		public String session;
+		public final String session;
+
+		public AskDS(String sessionID) {
+			session = sessionID;
+		}
 	}
 	
 	public static class RetractDS extends PrefixDS {

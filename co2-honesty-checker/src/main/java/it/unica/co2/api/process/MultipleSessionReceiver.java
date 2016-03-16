@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import co2api.ContractModel;
 import co2api.Message;
+import co2api.Public;
 import co2api.SessionI;
 import co2api.TimeExpiredException;
 import it.unica.co2.util.ObjectUtils;
@@ -23,7 +24,9 @@ public class MultipleSessionReceiver {
 	private static final Logger logger = LoggerFactory.getLogger(MultipleSessionReceiver.class);
 	
 	private Map<SessionI<? extends ContractModel>, List<String>> sessionActionsMap = new HashMap<>();
-	private Map<String, Consumer<Message>> consumersMap = new HashMap<>();			// the key is <sessionID>$<action>
+	private Map<String, Map<String, Consumer<Message>>> sessionConsumersMap = new HashMap<>();
+	
+	
 	
 	@SuppressWarnings("unused")	private String serializedSessionActionsMap;			// used by JPF
 	
@@ -42,18 +45,26 @@ public class MultipleSessionReceiver {
 	
 	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, final Consumer<Message> consumer, String... actionNames) {
 
-		assert session.getSessionID()!=null;
-
 		logger.debug("adding pair <{}, {}>", session, actionNames);
 		
 		// create a map associating the given consumer with each action
 		
+		HashMap<String, Consumer<Message>> newEntry = new HashMap<>();
+		
 		for (String action : actionNames) {
-			consumersMap.put(session.getSessionID()+"$"+action, consumer);
+			newEntry.put(action, consumer);
 
 			sessionActionsMap.putIfAbsent(session, new ArrayList<>());
 			sessionActionsMap.get(session).add(action);
 		}
+		
+		sessionConsumersMap.merge(
+				session.getContractID(),
+				newEntry, 
+				(x,y)-> {
+					x.putAll(newEntry);
+					return x;
+				});
 		
 		return this;
 	}
@@ -82,9 +93,14 @@ public class MultipleSessionReceiver {
 		
 		// dispatch to consumer
 		String action = msg.getLabel();
-		String sessionID = msg.getSessionID();
+		String contractID = msg.getSession().getContractID();
 		
-		Consumer<Message> consumer = consumersMap.get(sessionID+"$"+action);
+		logger.debug("received message on session/contract {}, action {}", contractID, action);
+		System.out.println("received message on session/contract "+contractID+", action "+action);
+		System.out.println("sessionConsumersMap: "+sessionConsumersMap);
+		
+		// get the consumer
+		Consumer<Message> consumer = sessionConsumersMap.get(contractID).get(action);
 		assert consumer != null;
 		
 		consumer.accept(msg);
@@ -95,6 +111,10 @@ public class MultipleSessionReceiver {
 		
 		long endtime = System.currentTimeMillis()+timeout;
 	
+		
+		logger.debug("sessions: {}", sessionActionsMap);
+		logger.debug("consumers: {}", sessionConsumersMap);
+		
 		while(true) {
 			
 			for (Entry<SessionI<? extends ContractModel>, List<String>> e : sessionActionsMap.entrySet()) {
@@ -108,14 +128,28 @@ public class MultipleSessionReceiver {
 				SessionI<? extends ContractModel> session = e.getKey();
 				Collection<String> actions = e.getValue();
 				
-				// wait for receive a message
-				try {
-					Message msg = session.waitForReceive(WAIT_RECEIVE_TIMEOUT, actions.toArray(new String[]{}));
-					return msg;
+				
+				// check if the session is established
+				if (
+						(session instanceof Public)
+						&& !(((Public<? extends ContractModel>) session).isFused())) {
+					logger.debug("session {} not fused yet", session);
 				}
-				catch (TimeExpiredException e1) {
-					logger.debug("session {} does not receive any message within the given delay ({} msec)", session, WAIT_RECEIVE_TIMEOUT);
+				else {
+					// if the class is Session, then the contract was already fused
+					
+					logger.debug("session {} is fused", session);
+					
+					try {
+						// wait for receive a message
+						Message msg = session.waitForReceive(WAIT_RECEIVE_TIMEOUT, actions.toArray(new String[]{}));
+						return msg;
+					}
+					catch (TimeExpiredException e1) {
+						logger.debug("session {} does not receive any message within the given delay ({} msec)", session, WAIT_RECEIVE_TIMEOUT);
+					}
 				}
+				
 			}
 		}
 		

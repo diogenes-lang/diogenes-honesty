@@ -4,6 +4,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import co2api.Message;
+import co2api.Public;
+import co2api.Session;
 import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -35,12 +37,7 @@ public abstract class InstructionHandler implements HandlerI<InstructionWrapper>
 		handle(obj.listener, obj.listener.getThreadState(obj.ti), obj.ti, obj.insn);
 	}
 	
-	@Deprecated
-	protected ElementInfo getMessage(ThreadInfo ti, String label, String value) {
-		return getMessage(ti, label, value, "null");
-	}
-	
-	protected ElementInfo getMessage(ThreadInfo ti, String label, String value, String sessionID) {
+	protected ElementInfo getMessage(ThreadInfo ti, String label, String value, ElementInfo session) {
 		
 		assert label!=null;
 		assert value!=null;
@@ -50,10 +47,33 @@ public abstract class InstructionHandler implements HandlerI<InstructionWrapper>
 		
 		messageEI.setReferenceField("label", ti.getHeap().newString(label, ti).getObjectRef());
 		messageEI.setReferenceField("stringVal", ti.getHeap().newString(value, ti).getObjectRef());
-		messageEI.setReferenceField("sessionID", ti.getHeap().newString(sessionID, ti).getObjectRef());
+		messageEI.setReferenceField("session", session.getObjectRef());
 		
 		return messageEI;
 	}
 	
+	protected ElementInfo getSession(ThreadInfo ti, String sessionID, ElementInfo pbl) {
+		
+		assert sessionID!=null;
+		
+		ClassInfo sessionCI = ClassInfo.getInitializedClassInfo(Session.class.getName(), ti);
+		ElementInfo sessionEI = ti.getHeap().newObject(sessionCI, ti);
+		
+		sessionEI.setReferenceField("sessionID", ti.getHeap().newString(sessionID, ti).getObjectRef());
+		sessionEI.setReferenceField("contract", pbl.getObjectRef());
+		
+		return sessionEI;
+	}
 	
+	protected ElementInfo getPublic(ThreadInfo ti, String contractID) {
+		
+		assert contractID!=null;
+		
+		ClassInfo sessionCI = ClassInfo.getInitializedClassInfo(Public.class.getName(), ti);
+		ElementInfo sessionEI = ti.getHeap().newObject(sessionCI, ti);
+		
+		sessionEI.setReferenceField("uniqueID", ti.getHeap().newString(contractID, ti).getObjectRef());
+		
+		return sessionEI;
+	}
 }
