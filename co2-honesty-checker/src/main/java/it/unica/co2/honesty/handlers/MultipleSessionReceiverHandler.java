@@ -1,10 +1,10 @@
 package it.unica.co2.honesty.handlers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import co2api.ContractModel;
 import co2api.SessionI;
@@ -28,10 +28,6 @@ import it.unica.co2.util.ObjectUtils;
 
 class MultipleSessionReceiverHandler extends InstructionHandler {
 	
-	private List<String> choices = new ArrayList<>();
-	private Map<String, SessionI<? extends ContractModel>> sessionIDMap = new HashMap<>();
-	private Map<SessionI<? extends ContractModel>, List<String>> sessionActionsMap;
-	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void handle(Co2Listener listener, ThreadState tstate, ThreadInfo ti, Instruction insn) {
@@ -50,31 +46,49 @@ class MultipleSessionReceiverHandler extends InstructionHandler {
 		String serializedSessionActionsMap = mReceiver.getStringField("serializedSessionActionsMap");
 		
 		
+		List<String> choices = new ArrayList<>();
+		Map<String, SessionI<? extends ContractModel>> sessionIDMap = new HashMap<>();
+		Map<SessionI<? extends ContractModel>, List<String>> sessionActionsMap;
+		
+		
+		sessionActionsMap = ObjectUtils.deserializeObjectFromStringQuietly(serializedSessionActionsMap, Map.class);
+		
+		/*
+		 * each session contains a map of <action, consumer-idx>
+		 * the consumer-idx allows to retrieve the consumer from the corresponding array
+		 */
+		choices = new ArrayList<>();
+		
+		List<SessionI<? extends ContractModel>> sessions = new ArrayList<>();
+		sessions.addAll(sessionActionsMap.keySet());
+		sessions.sort(
+				(x,y) -> {
+					String xName = listener.getSessionID(x.getPublicContract().getUniqueID());
+					String yName = listener.getSessionID(y.getPublicContract().getUniqueID()); 
+					return xName.compareTo(yName);
+				});
+		
+		for (SessionI<? extends ContractModel> session :  sessions) {
+			
+			List<String> actions = sessionActionsMap.get(session);
+			
+			String sessionID = listener.getSessionID(session.getPublicContract().getUniqueID());
+			
+			sessionIDMap.put(sessionID, session);
+			
+			for (String action : actions)
+				choices.add(sessionID+"$"+action);
+		}
+		
+		
+		log.info("choices: "+choices);
+		
+		
 		
 		if (!ti.isFirstStepInsn()) { // top half - first execution
 		
 			log.info("TOP HALF");
 			
-			sessionActionsMap = ObjectUtils.deserializeObjectFromStringQuietly(serializedSessionActionsMap, Map.class);
-
-			/*
-			 * each session contains a map of <action, consumer-idx>
-			 * the consumer-idx allows to retrieve the consumer from the corresponding array
-			 */
-			choices = new ArrayList<>();
-			
-			for (Entry<SessionI<? extends ContractModel>, List<String>> entry :  sessionActionsMap.entrySet()) {
-				
-				SessionI<? extends ContractModel> session = entry.getKey();
-				List<String> actions = entry.getValue();
-				
-				String sessionID = listener.getSessionID(session.getPublicContract().getUniqueID());
-				
-				sessionIDMap.put(sessionID, session);
-				
-				for (String action : actions)
-					choices.add(sessionID+"$"+action);
-			}
 
 			/*
 			 * choice generation
@@ -82,26 +96,33 @@ class MultipleSessionReceiverHandler extends InstructionHandler {
 			
 			SumDS sum = new SumDS();
 			
+			final String[] sumPrefixes;
 			if (timeout) {
-				String[] arr = new String[choices.size()+1];
-				arr[0] = "t";
-				choices.stream().forEach((x)->{arr[choices.indexOf(x)+1]=x;});
-				tstate.pushSum(sum, arr);		//set the current process
+				sumPrefixes = new String[choices.size()+1];
+				sumPrefixes[0] = "t";
+				
+				for (String choice : choices) {
+					sumPrefixes[choices.indexOf(choice)+1]=choice;
+				}
 			}
 			else
-				tstate.pushSum(sum, choices.toArray(new String[]{}));
+				sumPrefixes= choices.toArray(new String[]{});
 			
+			tstate.pushSum(sum, sumPrefixes);		//set the current process
 			tstate.setCurrentProcess(sum);
 			tstate.printInfo();
 			
 			List<Integer> choiceSet = new ArrayList<>();
 			
-			choices.stream().forEach((x)-> {choiceSet.add(choices.indexOf(x));});
+			for (String choice : choices) {
+				choiceSet.add(choices.indexOf(choice));
+			}
 			if (timeout) choiceSet.add(choices.size());
 			
 			assert choiceSet.size()>1;
 			assert choiceSet.size()==choices.size() || choiceSet.size()-1==choices.size();
 
+			log.info("sumPrefixies: "+Arrays.toString(sumPrefixes));
 			log.info("choiceSet: "+choiceSet);
 			
 			IntChoiceFromList cg = new IntChoiceFromList(tstate.getWaitForMultipleReceiveChoiceGeneratorName(), choiceSet.stream().mapToInt(i -> i).toArray());

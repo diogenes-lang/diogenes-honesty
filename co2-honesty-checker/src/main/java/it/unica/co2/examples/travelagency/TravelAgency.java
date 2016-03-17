@@ -12,6 +12,7 @@ import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
+import it.unica.co2.api.process.SymbolicIf;
 import it.unica.co2.honesty.HonestyChecker;
 
 
@@ -208,12 +209,12 @@ public class TravelAgency extends Participant {
 			}
 			catch (TimeExpiredException e) {
 				logger.debug("no one responds in time, aborting");
-				
-				// abort
+				processCall(Abort.class, username, password, consumerSession, pblXf, pblXh);
 			}
 			
 		}
 		
+		@SymbolicIf
 		private void step1(Message msg) {
 			
 			logger.debug("STEP 1");
@@ -222,7 +223,7 @@ public class TravelAgency extends Participant {
 			Session<TST> session = (Session<TST>) msg.getSession();
 			printWhoCameFirst(session);
 			
-			assert msg.getLabel().equals("quote");
+//			assert msg.getLabel().equals("quote");
 			
 			int quoteValue = Integer.parseInt(msg.getStringValue());
 			
@@ -234,10 +235,15 @@ public class TravelAgency extends Participant {
 				
 			if (quoteSum<budget) {
 				
-				multipleSessionReceiver()
-					.add(pblXf, "quote", this::step2)
-					.add(pblXh, "quote", this::step2)
-					.waitForReceive();
+				try {
+					multipleSessionReceiver()
+						.add(pblXf, "quote", this::step2)
+						.add(pblXh, "quote", this::step2)
+						.waitForReceive(60_000);
+				}
+				catch (TimeExpiredException e) {
+					processCall(Abort.class, username, password, consumerSession, pblXf, pblXh);
+				}
 			}
 			else {
 				processCall(Abort.class, username, password, consumerSession, pblXf, pblXh);
@@ -245,6 +251,7 @@ public class TravelAgency extends Participant {
 			
 		}
 
+		@SymbolicIf
 		private void step2(Message msg) {
 			logger.debug("STEP 2");
 			
@@ -341,7 +348,7 @@ public class TravelAgency extends Participant {
 				Session<TST> consumerSession, 
 				Public<TST> pblXf, 
 				Public<TST> pblXh,
-				int amount) {
+				Integer amount) {
 			
 			super(username, password);
 			this.consumerSession = consumerSession;

@@ -45,6 +45,7 @@ import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.MultipleSessionReceiver;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
+import it.unica.co2.api.process.SymbolicIf;
 import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
@@ -118,6 +119,7 @@ public class Co2Listener extends ListenerAdapter {
 	
 	// collect the 'run' methods in order to avoid re-build of an already visited CO2 process
 	private Set<MethodInfo> methodsToSkip = new HashSet<>();
+	private Set<MethodInfo> symbMethods = new HashSet<>();
 	
 	private Map<String, Boolean> contractsDelay = new HashMap<>();
 	private Map<String, String> contractSessionMap = new HashMap<>();
@@ -131,11 +133,16 @@ public class Co2Listener extends ListenerAdapter {
 
 		for (MethodInfo m : ci.getDeclaredMethodInfos() ) {
 			
-			AnnotationInfo ai = m.getAnnotation(SkipMethod.class.getName());
+			AnnotationInfo skipAnnotation = m.getAnnotation(SkipMethod.class.getName());
+			AnnotationInfo symbAnnotation = m.getAnnotation(SymbolicIf.class.getName());
 			
-			if (ai!=null) {
+			if (skipAnnotation!=null) {
 				log.info("[SKIP] adding method "+m.getFullName());
 				methodsToSkip.add(m);
+			}
+			else if (symbAnnotation!=null) {
+				log.info("[SYMB-IF] adding method "+m.getFullName());
+				symbMethods.add(m);
 			}
 		}
 		
@@ -235,7 +242,7 @@ public class Co2Listener extends ListenerAdapter {
 		else if (insn instanceof SwitchInstruction && tstate.considerSwitchInstruction((SwitchInstruction) insn)) {
 			tstate.setSwitchInsn((SwitchInstruction) insn);
 		}
-		else if (insn instanceof IfInstruction && tstate.considerIfInstruction((IfInstruction) insn)) {
+		else if (insn instanceof IfInstruction && tstate.considerIfInstruction((IfInstruction) insn, symbMethods)) {
 			HandlerFactory.ifThenElseHandler().handle(this, tstate, ti, insn);
 		}
 		else if (

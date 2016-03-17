@@ -146,24 +146,29 @@ public class ThreadState {
 	
 	/**
 	 * @param ifInsn
+	 * @param symbMethods 
 	 * @return true if the given <code>IfInstruction</code> has to generate a new boolean choice generator.
 	 */
-	public boolean considerIfInstruction(IfInstruction ifInsn) {
+	public boolean considerIfInstruction(IfInstruction ifInsn, Set<MethodInfo> symbMethods) {
 
 		MethodInfo mi = ifInsn.getMethodInfo();
 		ClassInfo ci = mi.getClassInfo();
 		
-		return
-				mi.getName().equals("run") && 									// consider only 'if' into the run method
+		boolean isRunMethod = mi.getName().equals("run");
+		boolean isSymbMethod = symbMethods.contains(mi);
+		boolean extendsCO2Process = 
 				!ci.getName().equals(CO2Process.class.getName()) && 			// ignore 'if' instructions into Participant.class
 				!ci.getName().equals(Participant.class.getName()) && 			// ignore 'if' instructions into Participant.class
-				ci.isInstanceOf(CO2Process.class.getName()) && 					// consider only 'if' into classes are instance of CO2Process
-			(																	// skip if instructions related to switch statements:
+				ci.isInstanceOf(CO2Process.class.getName());
+		
+		boolean isNotASwitchIstruction = 
 				switchInsn==null ||
 				ifInsn.getPosition() < switchInsn.getPosition() || 				// - where the switch starts
 				ifInsn.getPosition() > switchInsn.getTarget() || 				// - where the switch ends
-				!mi.equals(switchInsn.getMethodInfo())
-			);																	
+				!mi.equals(switchInsn.getMethodInfo());
+				
+		
+		return (isRunMethod || isSymbMethod) && extendsCO2Process && isNotASwitchIstruction;
 	}
 	
 	/**

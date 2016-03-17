@@ -115,7 +115,6 @@ public class MultipleSessionReceiver {
 		
 		long endtime = System.currentTimeMillis()+timeout;
 	
-		
 		logger.debug("sessions: {}", sessionActionsMap);
 		logger.debug("consumers: {}", sessionConsumersMap);
 		
