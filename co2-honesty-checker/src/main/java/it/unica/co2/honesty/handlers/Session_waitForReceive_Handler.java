@@ -3,6 +3,7 @@ package it.unica.co2.honesty.handlers;
 import java.util.ArrayList;
 import java.util.List;
 
+import co2api.Session;
 import co2api.TimeExpiredException;
 import gov.nasa.jpf.jvm.JVMStackFrame;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
@@ -30,8 +31,23 @@ class Session_waitForReceive_Handler extends InstructionHandler {
 		
 		ElementInfo sessionEI = ti.getThisElementInfo();
 		
-		String sessionID = listener.getSessionIDBySession(ti, sessionEI);
-		String contractID = listener.getContractIDBySession(ti, sessionEI);
+		String sessionID;
+		
+		if (sessionEI.getClassInfo().getName().equals(Session.class.getName())) {
+			sessionID = listener.getSessionIDBySession(ti, sessionEI);
+		}
+		else {
+			sessionID = listener.getSessionIDByPublic(sessionEI);
+		}
+		
+		String contractID;
+		
+		if (sessionEI.getClassInfo().getName().equals(Session.class.getName())) {
+			contractID = listener.getContractIDBySession(ti, sessionEI);
+		}
+		else {
+			contractID = listener.getContractIDByPublic(sessionEI);
+		}
 		
 		//parameters
 		boolean timeout = listener.getArgumentInteger(ti, 0)>0;

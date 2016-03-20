@@ -1,5 +1,6 @@
 package it.unica.co2.honesty.handlers;
 
+import co2api.Session;
 import gov.nasa.jpf.jvm.bytecode.ARETURN;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
@@ -23,13 +24,21 @@ class Session_sendIfAllowed_Handler extends InstructionHandler {
 		/*
 		 * collect the co2 process
 		 */
-		ElementInfo session2 = ti.getThisElementInfo();
+		ElementInfo session = ti.getThisElementInfo();
 		
-		String sessionName = listener.getSessionIDBySession(ti, session2);
+		String sessionID;
+		
+		if (session.getClassInfo().getName().equals(Session.class.getName())) {
+			sessionID = listener.getSessionIDBySession(ti, session);
+		}
+		else {
+			sessionID = listener.getSessionIDByPublic(session);
+		}
+		
 		String action = listener.getArgumentString(ti, 0);
 		
 		DoSendDS send = new DoSendDS();
-		send.session = sessionName;
+		send.session = sessionID;
 		send.action = action;
 		send.sort = Sort.unit();
 		

@@ -112,6 +112,10 @@ public class Co2Listener extends ListenerAdapter {
 	private MethodInfo CO2Process_processCall;
 	private MethodInfo Public_waitForSession;
 	private MethodInfo Public_waitForSessionT;
+	private MethodInfo Public_waitForReceive;
+	private MethodInfo Public_sendIfAllowed;
+	private MethodInfo Public_sendIfAllowedString;
+	private MethodInfo Public_sendIfAllowedInt;
 	private MethodInfo Session_waitForReceive;
 	private MethodInfo Session_sendIfAllowed;
 	private MethodInfo Session_sendIfAllowedString;
@@ -166,6 +170,18 @@ public class Co2Listener extends ListenerAdapter {
 		}
 		
 		if (ci.getName().equals(Public.class.getName())) {
+			
+			if (Public_waitForReceive==null)
+				Public_waitForReceive = ci.getMethod("waitForReceive", "(Ljava/lang/Integer;[Ljava/lang/String;)Lco2api/Message;", false);
+			
+			if (Public_sendIfAllowed==null)
+				Public_sendIfAllowed = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;)Z", false);
+			
+			if (Public_sendIfAllowedString==null)
+				Public_sendIfAllowedString = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/String;)Z", false);
+			
+			if (Public_sendIfAllowedInt==null)
+				Public_sendIfAllowedInt = ci.getMethod("sendIfAllowed", "(Ljava/lang/String;Ljava/lang/Integer;)Z", false);
 			
 			if (Public_waitForSession==null)
 				Public_waitForSession = ci.getMethod("waitForSession", "()Lco2api/Session;", false);
@@ -230,14 +246,26 @@ public class Co2Listener extends ListenerAdapter {
 		if(Participant_tell!=null && insn==Participant_tell.getFirstInsn()) {
 			HandlerFactory.tellHandler().handle(this, tstate, ti, insn);
 		}
+		else if(
+				(Public_waitForReceive!=null && insn==Public_waitForReceive.getFirstInsn()) ||
+				(Session_waitForReceive!=null && insn==Session_waitForReceive.getFirstInsn())) {
+			HandlerFactory.waitForReceiveHandler().handle(this, tstate, ti, insn);
+		}
+		else if (
+				(Public_sendIfAllowed!=null && insn==Public_sendIfAllowed.getFirstInsn()) ||
+				(Public_sendIfAllowedInt!=null && insn==Public_sendIfAllowedInt.getFirstInsn()) ||
+				(Public_sendIfAllowedString!=null && insn==Public_sendIfAllowedString.getFirstInsn()) ||
+				(Session_sendIfAllowed!=null && insn==Session_sendIfAllowed.getFirstInsn()) ||
+				(Session_sendIfAllowedInt!=null && insn==Session_sendIfAllowedInt.getFirstInsn()) ||
+				(Session_sendIfAllowedString!=null && insn==Session_sendIfAllowedString.getFirstInsn())
+				) {
+			HandlerFactory.sendIfAllowedHandler().handle(this, tstate, ti, insn);
+		}
 		else if(Public_waitForSession!=null && insn==Public_waitForSession.getFirstInsn()) {
 			HandlerFactory.waitForSessionHandler().handle(this, tstate, ti, insn);
 		}
 		else if(Public_waitForSessionT!=null && insn==Public_waitForSessionT.getFirstInsn()) {
 			HandlerFactory.waitForSessionHandler(true).handle(this, tstate, ti, insn);
-		}
-		else if(Session_waitForReceive!=null && insn==Session_waitForReceive.getFirstInsn()) {
-			HandlerFactory.waitForReceiveHandler().handle(this, tstate, ti, insn);
 		}
 		else if(Message_getStringValue!=null && insn==Message_getStringValue.getFirstInsn()) {
 			HandlerFactory.messageHandler().handle(this, tstate, ti, insn);
@@ -247,13 +275,6 @@ public class Co2Listener extends ListenerAdapter {
 		}
 		else if (insn instanceof IfInstruction && tstate.considerIfInstruction((IfInstruction) insn, symbMethods)) {
 			HandlerFactory.ifThenElseHandler().handle(this, tstate, ti, insn);
-		}
-		else if (
-				(Session_sendIfAllowed!=null && insn==Session_sendIfAllowed.getFirstInsn()) ||
-				(Session_sendIfAllowedInt!=null && insn==Session_sendIfAllowedInt.getFirstInsn()) ||
-				(Session_sendIfAllowedString!=null && insn==Session_sendIfAllowedString.getFirstInsn())
-				) {
-			HandlerFactory.sendIfAllowedHandler().handle(this, tstate, ti, insn);
 		}
 		else if(Participant_setConnection!=null && insn==Participant_setConnection.getFirstInsn()) {
 			HandlerFactory.setConnectionHandler().handle(this, tstate, ti, insn);

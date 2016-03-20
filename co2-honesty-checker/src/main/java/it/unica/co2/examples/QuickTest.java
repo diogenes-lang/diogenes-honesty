@@ -6,7 +6,6 @@ import co2api.ContractException;
 import co2api.SessionI;
 import co2api.TST;
 import it.unica.co2.api.contract.ContractDefinition;
-import it.unica.co2.api.process.MultipleSessionReceiver;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
 
