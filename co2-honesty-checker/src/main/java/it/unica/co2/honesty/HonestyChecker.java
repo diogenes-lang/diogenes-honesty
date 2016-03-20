@@ -252,6 +252,13 @@ public class HonestyChecker {
 		conf.setProperty("vm.scheduler.class", "gov.nasa.jpf.vm.DelegatingScheduler");
 		conf.setProperty("vm.scheduler.sync.class",  "it.unica.co2.honesty.CO2SyncPolicy");
 		conf.setProperty("vm.scheduler.sharedness.class", "it.unica.co2.honesty.CO2SharednessPolicy");
+		
+		conf.setProperty("cg.break_single_choice", "false");    
+		conf.setProperty("cg.break_lock_release", "false");
+		conf.setProperty("cg.break_notify", "false");
+		conf.setProperty("cg.break_sleep", "false");
+		conf.setProperty("cg.break_yield", "false");
+		conf.setProperty("cg.break_priority", "false");
 	}
 	
 	@SuppressWarnings("unused")

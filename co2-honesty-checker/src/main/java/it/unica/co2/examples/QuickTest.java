@@ -3,8 +3,10 @@ package it.unica.co2.examples;
 import static it.unica.co2.api.contract.utils.ContractFactory.*;
 
 import co2api.ContractException;
+import co2api.ContractViolationException;
 import co2api.SessionI;
 import co2api.TST;
+import co2api.TimeExpiredException;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
@@ -55,25 +57,16 @@ public class QuickTest extends Participant {
 
 			parallel(()->{
 				y.sendIfAllowed("Y");
-				y.sendIfAllowed("Y1");
 			});
 			
 			parallel(()->{
-				multipleSessionReceiver()
-						.add(x, (msg) -> {
-								System.out.println(">>> message from X");
-							}, "a"
-						)
-						.add(y, (msg) -> {
-								System.out.println(">>> message from Y");
-							}, "d"
-						)
-						.waitForReceive()
-						;
-				
+				try {
+					x.waitForReceive(10_000, "END1", "END2");
+				}
+				catch (ContractException | ContractViolationException | TimeExpiredException e) {
+	
+				}
 			});
-			
-			x.sendIfAllowed("END");
 	}
 	
 }

@@ -167,8 +167,10 @@ public class TravelAgency extends Participant {
 				pblXh.sendIfAllowed("hoteldets", tripDets);
 			});
 			
-			logger.info("calling QuoteManager");
-			processCall(QuoteManager.class, username, password, consumerSession, pblXf, pblXh, budget);
+			parallel(()->{
+				logger.info("calling QuoteManager");
+				processCall(QuoteManager.class, username, password, consumerSession, pblXf, pblXh, budget);
+			});
 		}
 		
 	}
