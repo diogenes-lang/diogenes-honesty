@@ -1,12 +1,8 @@
 package it.unica.co2.honesty.handlers;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.vm.ClassInfo;
 import gov.nasa.jpf.vm.ElementInfo;
 import gov.nasa.jpf.vm.Instruction;
@@ -15,13 +11,10 @@ import it.unica.co2.honesty.Co2Listener;
 import it.unica.co2.honesty.ThreadState;
 import it.unica.co2.honesty.handlers.InstructionHandler.InstructionWrapper;
 
-public abstract class InstructionHandler implements HandlerI<InstructionWrapper> {
+public abstract class InstructionHandler extends AbstractHandler<InstructionWrapper> {
 
-	protected final Logger log;
-	
 	protected InstructionHandler() {
-		log = JPF.getLogger(this.getClass().getName());
-		log.setLevel(Level.ALL);
+
 	}
 	
 	public static class InstructionWrapper {

@@ -1,22 +1,15 @@
 package it.unica.co2.honesty.handlers;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import gov.nasa.jpf.JPF;
 import gov.nasa.jpf.vm.MethodInfo;
 import gov.nasa.jpf.vm.ThreadInfo;
 import it.unica.co2.honesty.Co2Listener;
 import it.unica.co2.honesty.ThreadState;
 import it.unica.co2.honesty.handlers.MethodHandler.MethodWrapper;
 
-public abstract class MethodHandler implements HandlerI<MethodWrapper>{
+public abstract class MethodHandler extends AbstractHandler<MethodWrapper>{
 
-	protected final Logger log;
-	
 	protected MethodHandler() {
-		log = JPF.getLogger(this.getClass().getName());
-		log.setLevel(Level.ALL);
+
 	}
 	
 	public static class MethodWrapper {

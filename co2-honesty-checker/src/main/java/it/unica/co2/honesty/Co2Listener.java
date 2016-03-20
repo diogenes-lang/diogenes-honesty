@@ -50,6 +50,7 @@ import it.unica.co2.honesty.dto.CO2DataStructures.PrefixPlaceholderDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.ProcessDefinitionDS;
 import it.unica.co2.honesty.dto.CO2DataStructures.SumDS;
+import it.unica.co2.honesty.handlers.AbstractHandler;
 import it.unica.co2.honesty.handlers.HandlerFactory;
 
 public class Co2Listener extends ListenerAdapter {
@@ -61,10 +62,12 @@ public class Co2Listener extends ListenerAdapter {
 		if (conf.getBoolean("honesty.listener.log", false)) {
 			log.setLevel(Level.ALL);
 			ThreadState.logger.setLevel(Level.ALL);
+			AbstractHandler.level = Level.ALL;
 		}
 		else {
 			log.setLevel(Level.OFF);
 			ThreadState.logger.setLevel(Level.OFF);
+			AbstractHandler.level = Level.OFF;
 		}
 		
 		
