@@ -74,8 +74,10 @@ HonestyChecker.isHonest(SimpleBuyer.class);
 ```
 
 #Maven
+
+Create JPF packages to use it within maven.
 ```
-mvn install:install-file -Dfile=jpf.jar -DgroupId=jpf -DartifactId=jpf -Dversion=1.0.0 -Dpackaging=jar
-mvn install:install-file -Dfile=jpf-classes.jar -DgroupId=jpf-classes -DartifactId=jpf-classes -Dversion=1.0.0 -Dpackaging=jar
-mvn install:install-file -Dfile=jpf-annotations.jar -DgroupId=jpf-annotations -DartifactId=jpf-annotations -Dversion=1.0.0 -Dpackaging=jar
+mvn install:install-file -Dfile=jpf.jar -DgroupId=jpf -DartifactId=jpf -Dversion=8.31 -Dpackaging=jar
+mvn install:install-file -Dfile=jpf-classes.jar -DgroupId=jpf -DartifactId=jpf-classes -Dversion=8.31 -Dpackaging=jar
+mvn install:install-file -Dfile=jpf-annotations.jar -DgroupId=jpf -DartifactId=jpf-annotations -Dversion=8.31 -Dpackaging=jar
 ```

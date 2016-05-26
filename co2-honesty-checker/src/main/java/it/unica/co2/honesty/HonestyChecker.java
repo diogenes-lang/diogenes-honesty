@@ -65,6 +65,7 @@ public class HonestyChecker {
 		stats.update(Event.HONESTY_START);
 		
 		System.out.println("================================================== HONESTY CHECKER ");
+		System.out.println("Java version: "+System.getProperty("java.version"));
 		System.out.println("checking the honesty of "+participant.getClass().getName());
 		
 		stats.update(Event.JPF_START);

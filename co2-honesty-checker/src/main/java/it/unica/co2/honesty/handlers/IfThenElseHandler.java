@@ -21,11 +21,12 @@ class IfThenElseHandler extends InstructionHandler {
 		
 		if (!ti.isFirstStepInsn()) { // top half - first execution
 
-			log.finer("TOP HALF");
 			
 			log.finer("");
 			tstate.printInfo();
 			log.finer("--IF_THEN_ELSE--");
+
+			log.finer("TOP HALF");
 			
 			IfThenElseDS ifThenElse = new IfThenElseDS();
 			ifThenElse.thenStmt = new PrefixPlaceholderDS();
