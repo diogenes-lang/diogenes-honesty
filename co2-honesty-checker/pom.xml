@@ -4,7 +4,7 @@
 	
 	<groupId>it.unica.co2</groupId>
 	<artifactId>co2-honesty-checker</artifactId>
-	<version>5.1.11</version>
+	<version>5.1.12</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
