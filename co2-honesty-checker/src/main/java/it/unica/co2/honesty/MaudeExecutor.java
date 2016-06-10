@@ -22,6 +22,7 @@ public class MaudeExecutor {
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd-HHmmss-SSS");
 	
 	private PrintStream out;
+	private Process pr = null;
 	
 	private MaudeConfiguration configuration;
 	
@@ -83,16 +84,26 @@ public class MaudeExecutor {
 			
 			//the file is written
 			
-			Process pr = pb.start();
-			//wait until the process terminate or the timeout has expired
-			boolean terminated = pr.waitFor(configuration.timeout(), TimeUnit.SECONDS);		
+			try {
+				pr = pb.start();
+				//wait until the process terminate or the timeout has expired
+				boolean terminated = pr.waitFor(configuration.timeout(), TimeUnit.SECONDS);		
 			
-			if (!terminated) {
-				out.println("-------------------------------------------------- error");
-				out.println("the process is running more than "+configuration.timeout()+" sec, kill");
-				pr.destroyForcibly();
+				if (!terminated) {
+					out.println("-------------------------------------------------- timeout");
+					out.println("the process is running more than "+configuration.timeout()+" sec, kill");
+					pr.destroyForcibly();
+					return HonestyResult.UNKNOWN;
+				}
+			}
+			catch (InterruptedException e) {
+				if (pr!=null) {
+					out.println("killing maude subprocess");
+					pr.destroyForcibly();
+				}
 				return HonestyResult.UNKNOWN;
 			}
+			
 			
 			/*
 			 * read the process output
@@ -195,4 +206,6 @@ public class MaudeExecutor {
 	private boolean checkForDishonesty(String output) {
 		return output.contains(RESULT_DISHONEST);
 	}
+	
+	
 }
