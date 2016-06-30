@@ -117,7 +117,7 @@
 					<descriptors>
 						<descriptor>assembly.xml</descriptor>
 					</descriptors>
-					<outputDirectory>${basedir}/build</outputDirectory>
+					<outputDirectory>${basedir}</outputDirectory>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 			</plugin>
