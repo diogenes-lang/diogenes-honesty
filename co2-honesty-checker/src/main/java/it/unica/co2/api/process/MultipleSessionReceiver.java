@@ -35,12 +35,7 @@ public class MultipleSessionReceiver {
 	
 	
 	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, String... actionNames) {
-		return add(session, new Consumer<Message>() {
-
-			@Override
-			public void accept(Message t) {}
-			
-		}, actionNames);
+		return add(session, (x)->{}, actionNames);
 	}
 	
 	public MultipleSessionReceiver add(SessionI<? extends ContractModel> session, String action, final Consumer<Message> consumer) {
@@ -110,7 +105,8 @@ public class MultipleSessionReceiver {
 		consumer.accept(msg);
 	}
 	
-	public Message _waitForReceive(int timeout) throws TimeExpiredException {
+	
+	private Message _waitForReceive(int timeout) throws TimeExpiredException {
 		
 		
 		long endtime = System.currentTimeMillis()+timeout;

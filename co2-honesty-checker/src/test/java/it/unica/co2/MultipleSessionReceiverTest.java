@@ -20,7 +20,6 @@ public class MultipleSessionReceiverTest {
 
 	// helper class that will be mocked
 	public static class Consumers {
-	
 		public void consume(Message msg) {}
 		public void consumeA(Message msg) {}
 		public void consumeB(Message msg) {}
