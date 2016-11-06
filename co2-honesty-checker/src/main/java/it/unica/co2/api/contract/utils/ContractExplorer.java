@@ -15,16 +15,34 @@ import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.SessionType;
 
 
+/**
+ * Utility class to navigate within a {@code SessionType}.
+ * 
+ * @author Nicola Atzei
+ */
 public class ContractExplorer {
 
-	public static <T extends SessionType> void findAll(SessionType contract, Class<T> clazz) {
-		findAll(contract, clazz, (x)->{});
-	}
-	
+	/**
+	 * Starting from {@code contract}, recursively find all the occurrences of type {@code clazz}.
+	 * Then, apply the given {@code consumer} to each element.
+	 * 
+	 * @param contract The search's starting point.
+	 * @param clazz The class each element have to instance.
+	 * @param consumer The consumer to apply to each element.
+	 */
 	public static <T extends SessionType> void findAll(SessionType contract, Class<T> clazz, Consumer<T> consumer) {
 		findAll(contract, clazz, (x)->(true), consumer);
 	}
 	
+	/**
+	 * Starting from {@code contract}, recursively find all the occurrences of type {@code clazz} that satisfy {@code predicate}.
+	 * Then, apply the given {@code consumer} to each element.
+	 * 
+	 * @param contract The search's starting point.
+	 * @param clazz The class each element have to instance.
+	 * @param predicate The predicate each element have to satisfy.
+	 * @param consumer The consumer to apply to each element.
+	 */
 	public static <T extends SessionType> void findAll(SessionType contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
 		Set<T> acc = new HashSet<>();
 		findAll(new HashSet<>(), contract, clazz, predicate, acc);
@@ -34,6 +52,11 @@ public class ContractExplorer {
 		}
 	}
 	
+	/*
+	 * Internal implementation of findAll():
+	 * - it keeps track of the visited nodes, accumulating the result into a set.
+	 * - the search stops if come across ContractReference or RecursionReference (to avoid loops)
+	 */
 	private static <T extends SessionType> void findAll(Set<SessionType> visited, SessionType contract, Class<T> clazz, Predicate<T> predicate, Set<T> acc) {
 		
 		if (contract==null)
@@ -49,30 +72,40 @@ public class ContractExplorer {
 		}
 		
 		//continue searching
-		if (contract instanceof InternalSum)
+		if (contract instanceof InternalSum) {
 			for (InternalAction a : ((InternalSum) contract).getActions()) {
 				findAll(visited, a.getNext(), clazz, predicate, acc);
 			}
-		
-		else if(contract instanceof ExternalSum)
+		}
+		else if(contract instanceof ExternalSum) {
 			for (ExternalAction a1 : ((ExternalSum) contract).getActions()) {
 				findAll(visited, a1.getNext(), clazz, predicate, acc);
 			}
-		
-		else if(contract instanceof Recursion)
+		}
+		else if(contract instanceof Recursion) {
 			findAll(visited, ((Recursion) contract).getContract(), clazz, predicate, acc);
-		
+		}
 	}
 
-	
-	public static Set<ContractDefinition> getAllReferences(ContractDefinition c) {
+	/**
+	 * Starting from {@code contract}, find all the {@code ContractDefinition} occurrences (including the given one).
+	 * 
+	 * @param contract The search's starting point.
+	 * @return All the occurrences of {@code ContractDefinition}.
+	 */
+	public static Set<ContractDefinition> getAllReferences(ContractDefinition contract) {
 		
 		Set<ContractDefinition> accumulator = new HashSet<>();
-		getReferences(c, accumulator);
+		getReferences(contract, accumulator);
 		
 		return accumulator;
 	}
 	
+	/*
+	 * Internal implementation:
+	 * - first search for all ContractReferences
+	 * - recursively continue searching
+	 */
 	private static void getReferences(ContractDefinition c, Set<ContractDefinition> acc) {
 		
 		ContractExplorer.findAll(
