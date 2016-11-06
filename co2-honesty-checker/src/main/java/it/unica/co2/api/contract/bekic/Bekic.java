@@ -24,7 +24,7 @@ public class Bekic {
 	private boolean bekicApplied = false;
 	private static final String ANONYMOUS = "_ANONYMOUS";
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 	
 	/**
 	 * Returns an Bekic instance. The environment is derived from the given contracts.
@@ -54,7 +54,7 @@ public class Bekic {
 	}
 	
 	
-	/**
+	/*
 	 * Transform the given contracts using the Bekic theorem. All <code>ContractReference</code>s
 	 * are replaced by <Recursion> definitions.
 	 * 
@@ -73,7 +73,7 @@ public class Bekic {
 			this.env.put(newDef.getName(), newDef);
 			
 			// save the old and the new object (to fix references later)
-			references.put(c, newDef);	// c is replaced by newDef
+			references.put(c, newDef);	// c will be replaced by newDef
 		}
 		
 		// fix all other contracts into the new env
@@ -107,7 +107,6 @@ public class Bekic {
 	}
 	
 	public SessionType defToRec() {
-		
 		if (!env.containsKey(ANONYMOUS))
 			throw new IllegalStateException("this method is not allowed. You must use Bekic.getInstance(Contract)");
 		
@@ -118,9 +117,8 @@ public class Bekic {
 	}
 	
 	public ContractDefinition defToRec(ContractDefinition c) {
-		if (!references.containsKey(c)) {
+		if (!references.containsKey(c))
 			throw new IllegalStateException("the environment does not contain the given contract");
-		}
 		
 		if (!bekicApplied)
 			applyBekicTheorem();
@@ -135,6 +133,11 @@ public class Bekic {
 		
 		List<String> contracts = new ArrayList<>(env.keySet());
 		
+		/*
+		 * 
+		 * STEP 0: for each ContractDefinition transform its body to a Recursion
+		 * 
+		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 		log("\n====================================================================== STEP 0");
 		for (String cName : contracts) {
 			
@@ -148,8 +151,12 @@ public class Bekic {
 		}
 		printEnv();
 		
+		/*
+		 * 
+		 * STEP 1: all the ContractReference must point to a new copy of the referred contract
+		 * 
+		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 		log("\n====================================================================== STEP 1");
-		
 		for (String cName : contracts) {
 			
 			ContractDefinition c = env.get(cName);
@@ -174,7 +181,11 @@ public class Bekic {
 		
 		printEnv();
 		
-		
+		/*
+		 * 
+		 * STEP 2: remove all ContractReference in order to point to the Recursion definition.
+		 * 
+		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 		log("\n====================================================================== STEP 2");
 		for (String cName : contracts) {
 			
@@ -194,7 +205,7 @@ public class Bekic {
 								c.getContract(), 
 								Recursion.class,
 								(rec)->{
-									log("[STEP 2]        search: "+rec.getName());
+									log("[STEP 2]        search: "+rec.getName()+"-"+rec.hashCode());
 									return rec.getName().equals(ref.getReference().getName());
 								},
 								(rec)->{
@@ -202,22 +213,28 @@ public class Bekic {
 								});
 
 						log("[STEP 2]    available recs: "+recs.size());
+						recs.forEach((r) -> {log("[STEP 2]    r: "+r.getName()+"-"+r.hashCode());});
 						
-						if (recs.size()>=1) {
-							ref.getPreceeding().next( new RecursionReference(recs.get(0)) );
-						}
-						else {
+						if (recs.isEmpty()) {
 							Recursion rec = (Recursion) ref.getReference().getContract();
 							ref.getPreceeding().next( rec );
 						}
-						
+						else if (recs.size()>=1) {
+							// point to the outer Recursion (the first come across)
+							ref.getPreceeding().next( new RecursionReference(recs.get(0)) );
 						}
-					);	
+					}
+				);	
 		}
 
 		printEnv();
 		
 		
+		/*
+		 * 
+		 * STEP 3: remove all the Recursion definitions not pointed by anyone.
+		 * 
+		 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 		log("\n====================================================================== STEP 3");
 		for (String cName : contracts) {
 			
@@ -239,10 +256,11 @@ public class Bekic {
 						if (lst.size()==0) {	//remove recursion
 							
 							if (rec.getPreceeding()!=null) {
+								// replace the Recursion with its body
 								rec.getPreceeding().next( rec.getContract() );
 							}
 							else {
-								//you are the first contract
+								// you are the first contract in the definition
 								c.setContract( rec.getContract() );
 							}
 						}

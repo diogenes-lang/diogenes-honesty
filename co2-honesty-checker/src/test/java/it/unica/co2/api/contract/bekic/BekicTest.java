@@ -14,7 +14,6 @@ import org.junit.Test;
 
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
-import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
 import it.unica.co2.api.contract.SessionType;
@@ -88,9 +87,11 @@ public class BekicTest {
 		
 		System.out.println(c1);
 		System.out.println(instance.defToRec(c1));
+		System.out.println(instance.defToRec(c1).getContract().toMaude());
 		
 		System.out.println(c2);
 		System.out.println(instance.defToRec(c2));
+		System.out.println(instance.defToRec(c2).getContract().toMaude());
 		
 		checkEnv(instance.getEnv());
 	}

@@ -1,6 +1,8 @@
 package it.unica.co2.api.contract.utils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -44,7 +46,7 @@ public class ContractExplorer {
 	 * @param consumer The consumer to apply to each element.
 	 */
 	public static <T extends SessionType> void findAll(SessionType contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
-		Set<T> acc = new HashSet<>();
+		List<T> acc = new ArrayList<>();
 		findAll(new HashSet<>(), contract, clazz, predicate, acc);
 		
 		for (T c : acc) {
@@ -57,7 +59,7 @@ public class ContractExplorer {
 	 * - it keeps track of the visited nodes, accumulating the result into a set.
 	 * - the search stops if come across ContractReference or RecursionReference (to avoid loops)
 	 */
-	private static <T extends SessionType> void findAll(Set<SessionType> visited, SessionType contract, Class<T> clazz, Predicate<T> predicate, Set<T> acc) {
+	private static <T extends SessionType> void findAll(Set<SessionType> visited, SessionType contract, Class<T> clazz, Predicate<T> predicate, List<T> acc) {
 		
 		if (contract==null)
 			return;
