@@ -24,7 +24,7 @@ public class Bekic {
 	private boolean bekicApplied = false;
 	private static final String ANONYMOUS = "_ANONYMOUS";
 	
-	private static boolean DEBUG = true;
+	private static boolean DEBUG = false;
 	
 	/**
 	 * Returns an Bekic instance. The environment is derived from the given contracts.
