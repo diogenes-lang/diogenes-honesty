@@ -5,12 +5,14 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.EmptyContract;
 import it.unica.co2.api.contract.ExternalAction;
 import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.RecursionReference;
 import it.unica.co2.api.contract.SessionType;
 
 public class TSTContractGenerator extends AbstractContractGenerator{
@@ -70,14 +72,24 @@ public class TSTContractGenerator extends AbstractContractGenerator{
 	
 	@Override
 	protected String convert(Recursion rec) {
-		return "REC '"+rec.getName()+"' [ "+ this.convert(rec.getContract()) +" ] ";
+		return "REC '"+normalize(rec.getName().toLowerCase())+"' [ "+ this.convert(rec.getContract()) +" ] ";
 	}
 
+	protected String convert(RecursionReference ref) {
+		return "'"+normalize(ref.getReference().getName())+"'";
+	}
 
 	@Override
 	protected String convert(EmptyContract recursion) {
 		return "";
 	}
 	
+	protected String convert(ContractReference ref) {
+		throw new UnsupportedOperationException();
+	}
 	
+	private String normalize(String s) {
+		return s.toLowerCase().replaceAll("[^a-z]","");
+		
+	}
 }

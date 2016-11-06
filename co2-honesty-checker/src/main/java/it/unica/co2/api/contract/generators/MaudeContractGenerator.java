@@ -5,12 +5,14 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.EmptyContract;
 import it.unica.co2.api.contract.ExternalAction;
 import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.RecursionReference;
 import it.unica.co2.api.contract.SessionType;
 
 public class MaudeContractGenerator extends AbstractContractGenerator {
@@ -100,8 +102,11 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 	
 	@Override
 	protected String convert(Recursion rec) {
-		
 		return "rec "+rec.getName()+" . ( "+ this.convert(rec.getContract()) +" ) ";
+	}
+	
+	protected String convert(RecursionReference ref) {
+		return ref.getReference().getName();
 	}
 	
 	@Override
@@ -109,4 +114,7 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 		return "0";
 	}
 	
+	protected String convert(ContractReference ref) {
+		return ref.getReference().getName();
+	}
 }

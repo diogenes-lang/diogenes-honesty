@@ -61,12 +61,8 @@ public abstract class AbstractContractGenerator {
 	
 	protected abstract String convert(EmptyContract recursion);
 	
-	protected String convert(RecursionReference ref) {
-		return ref.getReference().getName();
-	}
+	protected abstract String convert(RecursionReference ref);
 	
-	protected String convert(ContractReference ref) {
-		return ref.getReference().getName();
-	}
+	protected abstract String convert(ContractReference ref);
 	
 }

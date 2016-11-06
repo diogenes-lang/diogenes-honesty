@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
+import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
 import it.unica.co2.api.contract.SessionType;
@@ -28,20 +29,18 @@ public class BekicTest {
 	public void test() {
 		System.out.println("+++++++++++ TEST   ++++++++++++");
 		
-		// C = a (+) b . C
+		// C = a! (+) b! . C    <=>   C = rec X . ( a! (+) b! . X )
 		
 		ContractDefinition c = def("c");
 		c.setContract(internalSum().add("a").add("b", ref(c)));
-		
-		// C = rec X . ( a (+) b . X )
 		
 		ContractDefinition cBekic = Bekic.getInstance(c).defToRec(c);
 		
 		System.out.println(c);
 		System.out.println(cBekic);
 		
-//		System.out.println(c.getContract().toTST());
-//		System.out.println(cBekic.getContract().toTST());
+		System.out.println(c.getContract().toTST());
+		System.out.println(cBekic.getContract().toTST());
 		
 		assertTrue(c!=cBekic);
 		checkEnv(cBekic);
@@ -52,6 +51,10 @@ public class BekicTest {
 		
 		System.out.println("+++++++++++ TEST 1 ++++++++++++");
 		
+		/*
+		 * c1 = a1! (+) b1! . c2
+		 * c2 = a2! (+) b2! . c1
+		 */		
 		ContractDefinition c1 = def("c1");
 		ContractDefinition c2 = def("c2");
 		c1.setContract(internalSum().add("a1").add("b1", ref(c2)));
