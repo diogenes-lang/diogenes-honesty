@@ -8,6 +8,11 @@ import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
 
+/**
+ * Factory class, just for brevity.
+ * 
+ * @author Nicola Atzei
+ */
 public class ContractFactory {
 	
 	public static EmptyContract empty() {
