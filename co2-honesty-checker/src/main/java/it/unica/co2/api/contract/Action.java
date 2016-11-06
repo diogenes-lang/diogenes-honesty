@@ -10,7 +10,7 @@ public abstract class Action implements Serializable {
 	protected final Sort<?> sort;
 	protected final String guard;
 	protected final ActionType actionType;
-	protected Contract next;
+	protected SessionType next;
 	
 	public Action(Action a) {
 		this.name = a.getName();
@@ -22,7 +22,7 @@ public abstract class Action implements Serializable {
 			next.setPreceeding(this);
 	}
 	
-	public Action(String name, Sort<?> sort, ActionType actionType, String guard, Contract next) {
+	public Action(String name, Sort<?> sort, ActionType actionType, String guard, SessionType next) {
 		this.name = name;
 		this.sort = sort;
 		this.guard = guard;
@@ -48,10 +48,10 @@ public abstract class Action implements Serializable {
 		return actionType;
 	}
 	
-	public abstract <T extends Action> T next(Contract next);
+	public abstract <T extends Action> T next(SessionType next);
 	
 	
-	public Contract getNext() {
+	public SessionType getNext() {
 		return next;
 	}
 

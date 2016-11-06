@@ -9,13 +9,13 @@ public class ExternalAction extends Action {
 		super(a);
 	}
 	
-	public ExternalAction( String name, Sort<?> sort, String guard, Contract next) {
+	public ExternalAction( String name, Sort<?> sort, String guard, SessionType next) {
 		super(name, sort, ActionType.EXTERNAL, guard, next);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public ExternalAction next(Contract next) {
+	public ExternalAction next(SessionType next) {
 		this.next=next;
 		next.setPreceeding(this);
 		return this;

@@ -1,14 +1,14 @@
 package it.unica.co2.examples.ebookstore;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 
@@ -26,7 +26,7 @@ public class DishonestSeller extends Participant {
 	public void run() {
 		
 		// the contract to interact with the buyer
-		Contract cB = externalSum().add(
+		SessionType cB = externalSum().add(
 				"book",
 				internalSum()
 					.add("confirm", externalSum().add("pay").add("quit"))
@@ -34,7 +34,7 @@ public class DishonestSeller extends Participant {
 		);
 		
 		// the contract to interact with the distributor
-		Contract cD = internalSum().add(
+		SessionType cD = internalSum().add(
 				"bookdistrib",
 				externalSum()
 					.add("confirmdistr", internalSum().add("paydistrib").add("quitdistr"))
@@ -42,7 +42,7 @@ public class DishonestSeller extends Participant {
 		);
 		
 		
-		Session<TST> sessionB = tellAndWait(cB);
+		Session<SessionType> sessionB = tellAndWait(cB);
 		
 		Message msg = sessionB.waitForReceive("book");
 		
@@ -71,11 +71,11 @@ public class DishonestSeller extends Participant {
 			}
 			else { // handled with the distributor
 				
-				Public<TST> pbl = tell(cD);
-				Session<TST> sessionD = pbl.waitForSession();
+				Public<SessionType> pbl = tell(cD);
+				Session<SessionType> sessionD = pbl.waitForSession();
 				
 				/*
-				 * the waitForSession(Public<TST>) above is blocking.
+				 * the waitForSession(Public<SessionType>) above is blocking.
 				 * If the session with the distributor never starts, you are culpable in the session that involve
 				 * the buyer.
 				 */
@@ -174,9 +174,9 @@ public class DishonestSeller extends Participant {
 	private static class AbortSessionD2 extends CO2Process {
 		
 		private static final long serialVersionUID = 1L;
-		private Session<TST> sessionD;
+		private Session<SessionType> sessionD;
 		
-		protected AbortSessionD2(Session<TST> session) {
+		protected AbortSessionD2(Session<SessionType> session) {
 			super();
 			this.sessionD = session;
 		}

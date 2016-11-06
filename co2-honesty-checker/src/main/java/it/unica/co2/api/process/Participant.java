@@ -6,9 +6,8 @@ import co2api.ContractExpiredException;
 import co2api.Private;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.util.ObjectUtils;
 
 
@@ -39,49 +38,42 @@ public abstract class Participant extends CO2Process {
 	
 	
 	
-	public Session<TST> tellAndWait(Contract c) {
+	public Session<SessionType> tellAndWait(SessionType c) {
 		return tellAndWait(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c));
 	}
 	
-	public Session<TST> tellAndWait(ContractDefinition c) {
+	public Session<SessionType> tellAndWait(ContractDefinition c) {
 		return tell(c).waitForSession();
 	}
 
-	public Session<TST> tellAndWait(Contract c, int timeout) throws ContractExpiredException {
+	public Session<SessionType> tellAndWait(SessionType c, int timeout) throws ContractExpiredException {
 		return tellAndWait(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c), timeout);
 	}
 	
-	public Session<TST> tellAndWait(ContractDefinition c, int timeout) throws ContractExpiredException {
+	public Session<SessionType> tellAndWait(ContractDefinition c, int timeout) throws ContractExpiredException {
 		return tell(c, timeout).waitForSession();
 	}
 
-	public Public<TST> tell (Contract c) {
+	public Public<SessionType> tell (SessionType c) {
 		return tell(c, 0);
 	}
 	
-	public Public<TST> tell (ContractDefinition cDef) {
+	public Public<SessionType> tell (ContractDefinition cDef) {
 		return tell(cDef, 0);
 	}
 
-	public Public<TST> tell (Contract c, Integer delay) {
+	public Public<SessionType> tell (SessionType c, Integer delay) {
 		return tell(new ContractDefinition("anon"+System.currentTimeMillis()).setContract(c), delay);
 	}
 	
-	public Public<TST> tell (ContractDefinition cDef, Integer delay) {
+	public Public<SessionType> tell (ContractDefinition cDef, Integer delay) {
 		if (connection==null)
 			setConnection();
 
 		String cserial = ObjectUtils.serializeObjectToStringQuietly(cDef);
 		
 		try {
-			String context = cDef.getContract().getContext();
-			TST tst = new TST(cDef.getContract().toTST());
-			
-			if (context!=null && !context.trim().isEmpty()) {
-				tst.setContext(context);
-			}
-			
-			Private<TST> pvt = tst.toPrivate(connection);
+			Private<SessionType> pvt = cDef.getContract().toPrivate(connection);
 			return _tell(cDef, cserial, pvt, delay);
 		}
 		catch (ContractException e) {
@@ -89,7 +81,7 @@ public abstract class Participant extends CO2Process {
 		}
 	}
 	
-	private Public<TST> _tell (ContractDefinition cDef, String cserial, Private<TST> pvt, Integer delay) {
+	private Public<SessionType> _tell (ContractDefinition cDef, String cserial, Private<SessionType> pvt, Integer delay) {
 		
 		try {
 			logger.info("telling contract <{}> with delay {} msec", cDef.getContract().toTST(), delay);

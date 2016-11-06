@@ -7,7 +7,7 @@ public class ContractDefinition implements Serializable {
 	private static final long serialVersionUID = 1L;
 	
 	private String name;
-	private Contract contract;
+	private SessionType contract;
 	
 	public ContractDefinition(String name) {
 		this.name = name;
@@ -21,11 +21,11 @@ public class ContractDefinition implements Serializable {
 		return name;
 	}
 	
-	public Contract getContract() {
+	public SessionType getContract() {
 		return contract;
 	}
 
-	public ContractDefinition setContract(Contract contract) {
+	public ContractDefinition setContract(SessionType contract) {
 		this.contract = contract;
 		return this;
 	}

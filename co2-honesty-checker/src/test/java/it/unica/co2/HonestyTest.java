@@ -1,6 +1,6 @@
 package it.unica.co2;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Ignore;
 import org.junit.Test;

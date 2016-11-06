@@ -1,11 +1,11 @@
 package it.unica.co2.examples.voucher;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.Message;
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.Participant;
 
 public class VoucherBuyer extends Participant {
@@ -22,16 +22,16 @@ public class VoucherBuyer extends Participant {
 	@Override
 	public void run() {
 		
-		Contract Cvoucher = externalSum()
+		SessionType Cvoucher = externalSum()
 				.add("reject", internalSum().add("pay"))
 				.add("accept", internalSum().add("voucher"));
 		
-		Contract CB = internalSum()
+		SessionType CB = internalSum()
 				.add("clickpay", internalSum().add("pay"))
 				.add("clickvoucher", Cvoucher);
 		
 		
-		Session<TST> session = tellAndWait(CB);
+		Session<SessionType> session = tellAndWait(CB);
 		
 		if (useVoucher()) {
 			

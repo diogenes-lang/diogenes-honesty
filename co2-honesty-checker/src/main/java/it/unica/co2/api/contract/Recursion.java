@@ -3,11 +3,11 @@ package it.unica.co2.api.contract;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 import it.unica.co2.api.contract.utils.ContractFactory;
 
-public class Recursion extends Contract {
+public class Recursion extends SessionType {
 
 	private static final long serialVersionUID = 1L;
 	private final String name;
-	private Contract contract;
+	private SessionType contract;
 	
 	public Recursion(String name) {
 		this.name=name;
@@ -17,17 +17,17 @@ public class Recursion extends Contract {
 		return name;
 	}
 
-	public Contract getContract() {
+	public SessionType getContract() {
 		return contract;
 	}
 	
-	public Recursion setContract(Contract contract) {
+	public Recursion setContract(SessionType contract) {
 		
 		this.contract = contract;
 		
 		ContractExplorer.findAll(
 				contract, 
-				Contract.class,
+				SessionType.class,
 				(x)->{
 					return x==this;
 				},
@@ -44,9 +44,9 @@ public class Recursion extends Contract {
 	}
 	
 	@Override
-	public Contract deepCopy() {
+	public SessionType deepCopy() {
 		
-		Contract cCopy = contract.deepCopy();
+		SessionType cCopy = contract.deepCopy();
 		Recursion copy = new Recursion(name).setContract(cCopy);
 		
 		ContractExplorer.findAll(	// fix recursion references

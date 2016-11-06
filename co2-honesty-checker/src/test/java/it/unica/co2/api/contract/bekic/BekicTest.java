@@ -1,15 +1,22 @@
 package it.unica.co2.api.contract.bekic;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
-import static org.junit.Assert.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.def;
+import static it.unica.co2.api.contract.utils.ContractFactory.empty;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.recRef;
+import static it.unica.co2.api.contract.utils.ContractFactory.recursion;
+import static it.unica.co2.api.contract.utils.ContractFactory.ref;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 
@@ -117,7 +124,7 @@ public class BekicTest {
 		Recursion rec = recursion("x");
 		rec.setContract(internalSum().add("a").add("b", recRef(rec)));
 		
-		Contract cBekic = Bekic.getInstance(rec).defToRec();
+		SessionType cBekic = Bekic.getInstance(rec).defToRec();
 		
 		System.out.println(rec);
 		System.out.println(cBekic);
@@ -131,7 +138,7 @@ public class BekicTest {
 	public void test5() {
 		System.out.println("+++++++++++ TEST 5 ++++++++++++");
 		
-		Contract c = internalSum().add("a", empty());
+		SessionType c = internalSum().add("a", empty());
 		
 		System.out.println(c);
 		System.out.println(c.toMaude());
@@ -145,8 +152,8 @@ public class BekicTest {
 		
 		Recursion playerContract = recursion("x");
 		
-		Contract hit = internalSum().add("card", recRef(playerContract)).add("lose").add("abort");
-		Contract end = internalSum().add("win").add("lose").add("abort");
+		SessionType hit = internalSum().add("card", recRef(playerContract)).add("lose").add("abort");
+		SessionType end = internalSum().add("win").add("lose").add("abort");
 		
 		playerContract.setContract(externalSum().add("hit", hit).add("stand", end));
 		

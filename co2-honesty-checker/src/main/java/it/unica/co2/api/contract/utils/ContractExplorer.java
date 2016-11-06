@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.ExternalAction;
@@ -13,19 +12,20 @@ import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.SessionType;
 
 
 public class ContractExplorer {
 
-	public static <T extends Contract> void findAll(Contract contract, Class<T> clazz) {
+	public static <T extends SessionType> void findAll(SessionType contract, Class<T> clazz) {
 		findAll(contract, clazz, (x)->{});
 	}
 	
-	public static <T extends Contract> void findAll(Contract contract, Class<T> clazz, Consumer<T> consumer) {
+	public static <T extends SessionType> void findAll(SessionType contract, Class<T> clazz, Consumer<T> consumer) {
 		findAll(contract, clazz, (x)->(true), consumer);
 	}
 	
-	public static <T extends Contract> void findAll(Contract contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
+	public static <T extends SessionType> void findAll(SessionType contract, Class<T> clazz, Predicate<T> predicate, Consumer<T> consumer) {
 		Set<T> acc = new HashSet<>();
 		findAll(new HashSet<>(), contract, clazz, predicate, acc);
 		
@@ -34,7 +34,7 @@ public class ContractExplorer {
 		}
 	}
 	
-	private static <T extends Contract> void findAll(Set<Contract> visited, Contract contract, Class<T> clazz, Predicate<T> predicate, Set<T> acc) {
+	private static <T extends SessionType> void findAll(Set<SessionType> visited, SessionType contract, Class<T> clazz, Predicate<T> predicate, Set<T> acc) {
 		
 		if (contract==null)
 			return;

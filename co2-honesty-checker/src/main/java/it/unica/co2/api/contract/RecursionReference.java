@@ -1,7 +1,7 @@
 package it.unica.co2.api.contract;
 
 
-public class RecursionReference extends Contract {
+public class RecursionReference extends SessionType {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -21,7 +21,7 @@ public class RecursionReference extends Contract {
 	}
 	
 	@Override
-	public Contract deepCopy() {
+	public SessionType deepCopy() {
 		return new RecursionReference(reference);
 	}
 }

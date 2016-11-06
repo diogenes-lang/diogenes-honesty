@@ -1,13 +1,13 @@
 package it.unica.co2.examples.voucher;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
@@ -26,19 +26,19 @@ public class VoucherSeller extends Participant {
 	@Override
 	public void run() {
 		
-		Contract Cvoucher = internalSum()
+		SessionType Cvoucher = internalSum()
 				.add("reject", externalSum().add("pay"))
 				.add("accept", externalSum().add("voucher"));
 		
-		Contract CB = externalSum()
+		SessionType CB = externalSum()
 				.add("clickpay", externalSum().add("pay"))
 				.add("clickvoucher", Cvoucher);
 		
-		Contract CV = externalSum().add("ok").add("no");
+		SessionType CV = externalSum().add("ok").add("no");
 		
 		
 		
-		Session<TST> sessionB = tellAndWait(CB);
+		Session<SessionType> sessionB = tellAndWait(CB);
 		
 		Message msg = sessionB.waitForReceive("clickpay", "clickvoucher");
 		
@@ -49,10 +49,10 @@ public class VoucherSeller extends Participant {
 			break;
 			
 		case "clickvoucher":
-			Public<TST> pblV = tell(CV);
+			Public<SessionType> pblV = tell(CV);
 			
 			try {
-				Session<TST> sessionV = pblV.waitForSession(10000);
+				Session<SessionType> sessionV = pblV.waitForSession(10000);
 				processCall(Q.class,sessionB, sessionV);
 			}
 			catch (TimeExpiredException e) {
@@ -62,7 +62,7 @@ public class VoucherSeller extends Participant {
 					sessionB.waitForReceive("pay");
 				});
 				
-				Session<TST> sessionV = pblV.waitForSession();
+				Session<SessionType> sessionV = pblV.waitForSession();
 				sessionV.waitForReceive("ok","no");
 			}
 			
@@ -74,10 +74,10 @@ public class VoucherSeller extends Participant {
 	public static class Q extends CO2Process {
 
 		private static final long serialVersionUID = 1L;
-		private Session<TST> sessionB;
-		private Session<TST> sessionV;
+		private Session<SessionType> sessionB;
+		private Session<SessionType> sessionV;
 		
-		protected Q(Session<TST> sessionB, Session<TST> sessionV) {
+		protected Q(Session<SessionType> sessionB, Session<SessionType> sessionV) {
 			super();
 			this.sessionB = sessionB;
 			this.sessionV = sessionV;

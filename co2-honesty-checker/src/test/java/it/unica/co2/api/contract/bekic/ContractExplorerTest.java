@@ -1,7 +1,12 @@
 package it.unica.co2.api.contract.bekic;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
-import static org.junit.Assert.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.def;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.ref;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,9 +14,9 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 
 
@@ -26,7 +31,7 @@ public class ContractExplorerTest {
 		ContractDefinition w3 = def("w3").setContract(internalSum().add("3"));
 		
 		
-		Contract c = internalSum()
+		SessionType c = internalSum()
 				.add("a", externalSum().add("a1", ref(w1)))
 				.add("b", ref(w2))
 				.add("c")

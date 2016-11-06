@@ -1,10 +1,9 @@
 package it.unica.co2.examples.voucher;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.Participant;
 
 public class VoucherService extends Participant {
@@ -21,9 +20,9 @@ public class VoucherService extends Participant {
 	@Override
 	public void run() {
 		
-		Contract C = internalSum().add("ok").add("no");
+		SessionType C = internalSum().add("ok").add("no");
 		
-		Session<TST> session = tellAndWait(C);
+		Session<SessionType> session = tellAndWait(C);
 		
 		
 		if (isServiceAvailable()) {

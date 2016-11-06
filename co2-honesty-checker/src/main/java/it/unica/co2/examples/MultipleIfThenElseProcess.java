@@ -1,11 +1,10 @@
 package it.unica.co2.examples;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.ContractException;
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.Participant;
 
 public class MultipleIfThenElseProcess extends Participant {
@@ -29,7 +28,7 @@ public class MultipleIfThenElseProcess extends Participant {
 			
 			System.out.println("START");
 
-			Contract A = internalSum().add("start",
+			SessionType A = internalSum().add("start",
 							internalSum()
 								.add("then", 
 										internalSum()
@@ -45,7 +44,7 @@ public class MultipleIfThenElseProcess extends Participant {
 								)
 						);
 			
-			Session<TST> session = tellAndWait(A);
+			Session<SessionType> session = tellAndWait(A);
 			
 			session.sendIfAllowed("start");
 			

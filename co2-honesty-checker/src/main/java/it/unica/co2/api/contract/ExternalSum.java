@@ -18,7 +18,7 @@ public class ExternalSum extends Sum<ExternalAction> {
 	}
 	
 	@Override
-	public ExternalSum add(String name, Sort<?> sort, String guard, Contract next) {
+	public ExternalSum add(String name, Sort<?> sort, String guard, SessionType next) {
 		actions.add(new ExternalAction(name, sort, guard, next));
 		return this;
 	}
@@ -32,7 +32,7 @@ public class ExternalSum extends Sum<ExternalAction> {
 	}
 
 	@Override
-	public Contract deepCopy() {
+	public SessionType deepCopy() {
 		return new ExternalSum(this);
 	}
 }

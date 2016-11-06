@@ -1,6 +1,8 @@
 package it.unica.co2.examples.mitm;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.def;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -18,8 +20,8 @@ import co2api.ContractExpiredException;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
 import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
@@ -50,16 +52,16 @@ public class MasterAttacker extends Participant{
 		
 		
 		try {
-			Public<TST> pblx = tell(c, 10_000);
-			Session<TST> x = pblx.waitForSession();
+			Public<SessionType> pblx = tell(c, 10_000);
+			Session<SessionType> x = pblx.waitForSession();
 
 			try {
-				Public<TST> pbly = tell(c, 10_000);
-				Session<TST> y = pbly.waitForSession();
+				Public<SessionType> pbly = tell(c, 10_000);
+				Session<SessionType> y = pbly.waitForSession();
 				
 				try {
-					Public<TST> pblz = tell(c, 10_000);
-					Session<TST> z = pblz.waitForSession();
+					Public<SessionType> pblz = tell(c, 10_000);
+					Session<SessionType> z = pblz.waitForSession();
 					//all session are fused
 					
 					processCall(Attack.class, pairs, x, y, z);
@@ -83,11 +85,11 @@ public class MasterAttacker extends Participant{
 		private static final long serialVersionUID = 1L;
 
 		private List<String> pairs;
-		private final Session<TST> x;
-		private final Session<TST> y;
-		private final Session<TST> z;
+		private final Session<SessionType> x;
+		private final Session<SessionType> y;
+		private final Session<SessionType> z;
 
-		public Attack(List<String> pairs, Session<TST> x, Session<TST> y, Session<TST> z) {
+		public Attack(List<String> pairs, Session<SessionType> x, Session<SessionType> y, Session<SessionType> z) {
 			this.pairs = pairs;
 			this.x = x;
 			this.y = y;
@@ -192,11 +194,11 @@ public class MasterAttacker extends Participant{
 		private static final long serialVersionUID = 1L;
 
 		private List<String> pairs;
-		private final Session<TST> x;
+		private final Session<SessionType> x;
 		private final String pair;
 		private final String range;
 		
-		public CallToSlave(List<String> pairs, Session<TST> x, String pair, String range) {
+		public CallToSlave(List<String> pairs, Session<SessionType> x, String pair, String range) {
 			super();
 			this.pairs = pairs;
 			this.x = x;

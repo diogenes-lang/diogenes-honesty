@@ -1,19 +1,21 @@
 package it.unica.co2.examples.blackjack;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.recRef;
+import static it.unica.co2.api.contract.utils.ContractFactory.recursion;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
+import co2api.SessionI;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
-
 
 public class Dealer extends Participant {
 
@@ -37,8 +39,8 @@ public class Dealer extends Participant {
 		 */
 		Recursion playerContract = recursion("x");
 		
-		Contract hit = internalSum().add("card", recRef(playerContract)).add("lose").add("abort");
-		Contract end = internalSum().add("win").add("lose").add("abort");
+		SessionType hit = internalSum().add("card", recRef(playerContract)).add("lose").add("abort");
+		SessionType end = internalSum().add("win").add("lose").add("abort");
 		
 		playerContract.setContract(externalSum().add("hit", hit).add("stand", end));
 		
@@ -52,11 +54,11 @@ public class Dealer extends Participant {
 		/*
 		 * PROCESS
 		 */
-		Session<TST> sessionD = tellAndWait(dealerServiceContract);
+		SessionI sessionD = tellAndWait(dealerServiceContract);
 		
-		Public<TST> pblP = tell(playerContract);
+		Public<SessionType> pblP = tell(playerContract);
 		
-		Session<TST> sessionP;
+		Session<SessionType> sessionP;
 		
 		try {
 			sessionP = pblP.waitForSession(10000);
@@ -81,11 +83,11 @@ public class Dealer extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session<TST> sessionP;
-		private final Session<TST> sessionD;
+		private final Session<SessionType> sessionP;
+		private final Session<SessionType> sessionD;
 		private final Integer nP;
 		
-		protected Pplay(Session<TST> sessionP, Session<TST> sessionD, Integer nP) {
+		protected Pplay(Session<SessionType> sessionP, Session<SessionType> sessionD, Integer nP) {
 			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
@@ -132,11 +134,11 @@ public class Dealer extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session<TST> sessionP;
-		private final Session<TST> sessionD;
+		private final Session<SessionType> sessionP;
+		private final Session<SessionType> sessionD;
 		private final Integer nP;
 		
-		protected Pdeck(Session<TST> sessionP, Session<TST> sessionD, Integer nP) {
+		protected Pdeck(Session<SessionType> sessionP, Session<SessionType> sessionD, Integer nP) {
 			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
@@ -174,12 +176,12 @@ public class Dealer extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session<TST> sessionP;
-		private final Session<TST> sessionD;
+		private final Session<SessionType> sessionP;
+		private final Session<SessionType> sessionD;
 		private final Integer nP;
 		private final Integer nD;
 		
-		protected Qstand(Session<TST> sessionP, Session<TST> sessionD, Integer nP, Integer nD) {
+		protected Qstand(Session<SessionType> sessionP, Session<SessionType> sessionD, Integer nP, Integer nD) {
 			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
@@ -207,12 +209,12 @@ public class Dealer extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session<TST> sessionP;
-		private final Session<TST> sessionD;
+		private final Session<SessionType> sessionP;
+		private final Session<SessionType> sessionD;
 		private final Integer nP;
 		private final Integer n;
 		
-		protected Pcard(Session<TST> sessionP, Session<TST> sessionD, Integer nP, Integer n) {
+		protected Pcard(Session<SessionType> sessionP, Session<SessionType> sessionD, Integer nP, Integer n) {
 			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
@@ -240,12 +242,12 @@ public class Dealer extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session<TST> sessionP;
-		private final Session<TST> sessionD;
+		private final Session<SessionType> sessionP;
+		private final Session<SessionType> sessionD;
 		private final Integer nP;
 		private final Integer nD;
 		
-		protected Qdeck(Session<TST> sessionP, Session<TST> sessionD, Integer nP, Integer nD) {
+		protected Qdeck(Session<SessionType> sessionP, Session<SessionType> sessionD, Integer nP, Integer nD) {
 			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;
@@ -286,12 +288,12 @@ public class Dealer extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session<TST> sessionP;
-		private final Session<TST> sessionD;
+		private final Session<SessionType> sessionP;
+		private final Session<SessionType> sessionD;
 		private final Integer nP;
 		private final Integer nD;
 		
-		protected Qcard(Session<TST> sessionP, Session<TST> sessionD, Integer nP, Integer nD) {
+		protected Qcard(Session<SessionType> sessionP, Session<SessionType> sessionD, Integer nP, Integer nD) {
 			super();
 			this.sessionP = sessionP;
 			this.sessionD = sessionD;

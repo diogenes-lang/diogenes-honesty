@@ -1,13 +1,14 @@
 package it.unica.co2.examples;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.recRef;
+import static it.unica.co2.api.contract.utils.ContractFactory.recursion;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 
@@ -30,9 +31,9 @@ public class ProcessComposition2Example {
 			Recursion rec = recursion("x");
 			rec.setContract(externalSum().add("a", recRef(rec)).add("b", recRef(rec)));
 			
-			Contract C = externalSum().add("request", rec);
+			SessionType C = externalSum().add("request", rec);
 			
-			Session<TST> session = tellAndWait(C);
+			Session<SessionType> session = tellAndWait(C);
 
 			Message msg = null;
 			
@@ -60,9 +61,9 @@ public class ProcessComposition2Example {
 
 		private static final long serialVersionUID = 1L;
 
-		private final Session<TST> session;
+		private final Session<SessionType> session;
 		
-		protected ProcessA(Session<TST> session) {
+		protected ProcessA(Session<SessionType> session) {
 			super();
 			this.session = session;
 		}

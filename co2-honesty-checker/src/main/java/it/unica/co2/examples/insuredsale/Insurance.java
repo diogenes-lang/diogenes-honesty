@@ -1,6 +1,7 @@
 package it.unica.co2.examples.insuredsale;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import java.io.FileNotFoundException;
 
@@ -8,12 +9,10 @@ import co2api.ContractException;
 import co2api.ContractExpiredException;
 import co2api.Message;
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
 import it.unica.co2.honesty.HonestyChecker;
-
 
 public class Insurance extends Participant {
 
@@ -26,9 +25,9 @@ public class Insurance extends Participant {
 	@Override
 	public void run() {
 
-		Contract CI = externalSum().add("req", internalSum().add("ok").add("abort"));
+		SessionType CI = externalSum().add("req", internalSum().add("ok").add("abort"));
 		
-		Session<TST> session = tellAndWait(CI);
+		Session<SessionType> session = tellAndWait(CI);
 		
 		Message msg = session.waitForReceive("req");
 		

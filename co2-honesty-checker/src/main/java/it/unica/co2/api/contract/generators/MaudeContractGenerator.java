@@ -5,23 +5,23 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.EmptyContract;
 import it.unica.co2.api.contract.ExternalAction;
 import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.SessionType;
 
 public class MaudeContractGenerator extends AbstractContractGenerator {
 	
 	private final boolean actionsAsString;
 	
-	public MaudeContractGenerator(Contract c) {
+	public MaudeContractGenerator(SessionType c) {
 		this(c, true);
 	}
 	
-	public MaudeContractGenerator(Contract c, boolean actionsAsString) {
+	public MaudeContractGenerator(SessionType c, boolean actionsAsString) {
 		super(c);
 		this.actionsAsString = actionsAsString;
 	}

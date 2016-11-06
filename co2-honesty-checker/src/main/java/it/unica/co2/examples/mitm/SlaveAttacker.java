@@ -1,6 +1,8 @@
 package it.unica.co2.examples.mitm;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.def;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import java.util.Base64;
 
@@ -8,8 +10,8 @@ import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
 import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
@@ -34,8 +36,8 @@ public class SlaveAttacker extends Participant{
 								.add("abort")))
 				.add("abort"));
 		
-		Public<TST> pbl = tell(c);
-		Session<TST> u = pbl.waitForSession();
+		Public<SessionType> pbl = tell(c);
+		Session<SessionType> u = pbl.waitForSession();
 
 		try {
 		

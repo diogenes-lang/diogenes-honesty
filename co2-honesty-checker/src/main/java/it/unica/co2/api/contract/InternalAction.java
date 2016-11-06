@@ -8,13 +8,13 @@ public class InternalAction extends Action {
 		super(a);
 	}
 	
-	public InternalAction(String name, Sort<?> sort, String guard, Contract next ) {
+	public InternalAction(String name, Sort<?> sort, String guard, SessionType next ) {
 		super(name, sort, ActionType.INTERNAL, guard, next);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public InternalAction next(Contract next) {
+	public InternalAction next(SessionType next) {
 		this.next = next;
 		next.setPreceeding(this);
 		return this;

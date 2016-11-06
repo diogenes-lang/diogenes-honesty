@@ -18,7 +18,7 @@ public class InternalSum extends Sum<InternalAction> {
 	}
 	
 	@Override
-	public InternalSum add(String name, Sort<?> sort, String guard, Contract next) {
+	public InternalSum add(String name, Sort<?> sort, String guard, SessionType next) {
 		actions.add( new InternalAction(name, sort, guard, next) );
 		return this;
 	}
@@ -32,7 +32,7 @@ public class InternalSum extends Sum<InternalAction> {
 	}
 	
 	@Override
-	public Contract deepCopy() {
+	public SessionType deepCopy() {
 		return new InternalSum(this);
 	}
 

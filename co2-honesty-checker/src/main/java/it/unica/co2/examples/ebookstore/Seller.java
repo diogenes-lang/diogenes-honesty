@@ -1,14 +1,14 @@
 package it.unica.co2.examples.ebookstore;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.honesty.HonestyChecker;
@@ -27,7 +27,7 @@ public class Seller extends Participant {
 	public void run() {
 		
 		// the contract to interact with the buyer
-		Contract cB = externalSum().add(
+		SessionType cB = externalSum().add(
 				"book",
 				internalSum()
 					.add("confirm", externalSum().add("pay").add("quit"))
@@ -35,7 +35,7 @@ public class Seller extends Participant {
 		);
 		
 		// the contract to interact with the distributor
-		Contract cD = internalSum().add(
+		SessionType cD = internalSum().add(
 				"bookdistrib",
 				externalSum()
 					.add("confirmdistr", internalSum().add("paydistrib").add("quitdistr"))
@@ -43,7 +43,7 @@ public class Seller extends Participant {
 		);
 		
 		
-		Session<TST> sessionB = tellAndWait(cB);
+		Session<SessionType> sessionB = tellAndWait(cB);
 		
 		Message msg = sessionB.waitForReceive("book");
 		
@@ -72,11 +72,11 @@ public class Seller extends Participant {
 			}
 			else { // handled with the distributor
 				
-				Public<TST> pbl = tell(cD);
+				Public<SessionType> pbl = tell(cD);
 				
 				try {
 					
-					Session<TST> sessionD = pbl.waitForSession(10000);
+					Session<SessionType> sessionD = pbl.waitForSession(10000);
 					
 					sessionD.sendIfAllowed("bookdistrib", chosenBook);
 					
@@ -147,7 +147,7 @@ public class Seller extends Participant {
 					sessionB.sendIfAllowed("abort");		//this action make you honest in sessionB
 					
 					//and now, if the session is fused?
-					Session<TST> sessionD = pbl.waitForSession();	//blocking
+					Session<SessionType> sessionD = pbl.waitForSession();	//blocking
 					
 					//and now, if the distributor sent you something? you are culpable in sessionD!
 					processCall(AbortSessionD1.class, sessionD);
@@ -190,9 +190,9 @@ public class Seller extends Participant {
 	private static class AbortSessionD1 extends CO2Process {
 		
 		private static final long serialVersionUID = 1L;
-		private Session<TST> sessionD;
+		private Session<SessionType> sessionD;
 		
-		protected AbortSessionD1(Session<TST> session) {
+		protected AbortSessionD1(Session<SessionType> session) {
 			super();
 			this.sessionD = session;
 		}
@@ -209,9 +209,9 @@ public class Seller extends Participant {
 	private static class AbortSessionD2 extends CO2Process {
 		
 		private static final long serialVersionUID = 1L;
-		private Session<TST> sessionD;
+		private Session<SessionType> sessionD;
 		
-		protected AbortSessionD2(Session<TST> session) {
+		protected AbortSessionD2(Session<SessionType> session) {
 			super();
 			this.sessionD = session;
 		}

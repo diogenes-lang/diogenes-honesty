@@ -1,20 +1,22 @@
 package it.unica.co2.examples.travelagency;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.def;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.ref;
 
 import co2api.ContractExpiredException;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
 import co2api.TimeExpiredException;
 import it.unica.co2.api.contract.ContractDefinition;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.contract.Sort;
 import it.unica.co2.api.process.Participant;
 import it.unica.co2.api.process.SkipMethod;
 import it.unica.co2.api.process.SymbolicIf;
 import it.unica.co2.honesty.HonestyChecker;
-
 
 public class TravelAgency extends Participant {
 
@@ -102,7 +104,7 @@ public class TravelAgency extends Participant {
 			 * advertise the contract to the consumers
 			 */
 			logger.info("advertising contract Cu to the consumers: {}", Cu.getContract().toTST());
-			Session<TST> customerSession = tellAndWait(Cu, 120_000);
+			Session<SessionType> customerSession = tellAndWait(Cu, 120_000);
 
 			logger.info("contract Cu fused");
 			logger.info("contractID: {}", customerSession.getContractID());
@@ -137,11 +139,11 @@ public class TravelAgency extends Participant {
 
 		private static final long serialVersionUID = 1L;
 
-		private Session<TST> consumerSession;
+		private Session<SessionType> consumerSession;
 		private String tripDets;
 		private int budget;
 		
-		protected Negotiatior(String username, String password, Session<TST> consumerSession, String tripDets, Integer budget) {
+		protected Negotiatior(String username, String password, Session<SessionType> consumerSession, String tripDets, Integer budget) {
 			super(username, password);
 			this.consumerSession = consumerSession;
 			this.tripDets = tripDets;
@@ -152,10 +154,10 @@ public class TravelAgency extends Participant {
 		public void run() {
 			
 			logger.info("advertising contract Cf to the flying company");
-			Public<TST> pblXf = tell(Cf);
+			Public<SessionType> pblXf = tell(Cf);
 
 			logger.info("advertising contract Ch to the hotel reservation service");
-			Public<TST> pblXh = tell(Ch);
+			Public<SessionType> pblXh = tell(Ch);
 			
 			parallel(()->{
 				logger.info("[thread-{}] sending 'flightdets'", Thread.currentThread().getId());
@@ -179,18 +181,18 @@ public class TravelAgency extends Participant {
 
 		private static final long serialVersionUID = 1L;
 
-		private Session<TST> consumerSession;
-		private Public<TST> pblXf;
-		private Public<TST> pblXh;
+		private Session<SessionType> consumerSession;
+		private Public<SessionType> pblXf;
+		private Public<SessionType> pblXh;
 		private int budget;
 		private int quoteSum = 0;
 		
 		protected QuoteManager(
 				String username, 
 				String password, 
-				Session<TST> consumerSession, 
-				Public<TST> pblXf, 
-				Public<TST> pblXh,
+				Session<SessionType> consumerSession, 
+				Public<SessionType> pblXf, 
+				Public<SessionType> pblXh,
 				Integer budget) {
 			
 			super(username, password);
@@ -222,7 +224,7 @@ public class TravelAgency extends Participant {
 			logger.debug("STEP 1");
 			
 			@SuppressWarnings("unchecked")
-			Session<TST> session = (Session<TST>) msg.getSession();
+			Session<SessionType> session = (Session<SessionType>) msg.getSession();
 			printWhoCameFirst(session);
 			
 //			assert msg.getLabel().equals("quote");
@@ -258,7 +260,7 @@ public class TravelAgency extends Participant {
 			logger.debug("STEP 2");
 			
 			@SuppressWarnings("unchecked")
-			Session<TST> session = (Session<TST>) msg.getSession();
+			Session<SessionType> session = (Session<SessionType>) msg.getSession();
 			printWhoCameFirst(session);
 			
 //			assert msg.getLabel().equals("quote");
@@ -284,7 +286,7 @@ public class TravelAgency extends Participant {
 		
 		
 		@SkipMethod
-		private void printWhoCameFirst(Session<TST> session) {
+		private void printWhoCameFirst(Session<SessionType> session) {
 
 			if (session.getContractID().equals(pblXf.getContractID())) {
 				logger.debug("the flying company responds first");
@@ -305,16 +307,16 @@ public class TravelAgency extends Participant {
 
 		private static final long serialVersionUID = 1L;
 
-		private Session<TST> consumerSession;
-		private Public<TST> pblXf;
-		private Public<TST> pblXh;
+		private Session<SessionType> consumerSession;
+		private Public<SessionType> pblXf;
+		private Public<SessionType> pblXh;
 		
 		protected Abort(
 				String username, 
 				String password, 
-				Session<TST> consumerSession, 
-				Public<TST> pblXf, 
-				Public<TST> pblXh) {
+				Session<SessionType> consumerSession, 
+				Public<SessionType> pblXf, 
+				Public<SessionType> pblXh) {
 			
 			super(username, password);
 			this.consumerSession = consumerSession;
@@ -339,17 +341,17 @@ public class TravelAgency extends Participant {
 
 		private static final long serialVersionUID = 1L;
 
-		private Session<TST> consumerSession;
-		private Public<TST> pblXf;
-		private Public<TST> pblXh;
+		private Session<SessionType> consumerSession;
+		private Public<SessionType> pblXf;
+		private Public<SessionType> pblXh;
 		private int amount;
 		
 		protected Pay(
 				String username, 
 				String password, 
-				Session<TST> consumerSession, 
-				Public<TST> pblXf, 
-				Public<TST> pblXh,
+				Session<SessionType> consumerSession, 
+				Public<SessionType> pblXf, 
+				Public<SessionType> pblXh,
 				Integer amount) {
 			
 			super(username, password);

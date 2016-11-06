@@ -1,11 +1,14 @@
 package it.unica.co2;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.recRef;
+import static it.unica.co2.api.contract.utils.ContractFactory.recursion;
 
 import org.junit.Test;
 
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.SessionType;
 
 
 public class SyntaxGeneratorTest {
@@ -13,8 +16,8 @@ public class SyntaxGeneratorTest {
 	@Test
 	public void test1() {
 		
-		Contract A = internalSum().add("a").add("b");
-		Contract B = externalSum().add("a").add("b").add("c");
+		SessionType A = internalSum().add("a").add("b");
+		SessionType B = externalSum().add("a").add("b").add("c");
 		
 		System.out.println("------------------");
 		System.out.println("toString: "+A);
@@ -31,7 +34,7 @@ public class SyntaxGeneratorTest {
 	public void test2() {
 		
 		Recursion ra = recursion("ra");
-		Contract A = internalSum()
+		SessionType A = internalSum()
 				.add("a")
 				.add("b")
 				.add("c", recRef(ra))
@@ -39,7 +42,7 @@ public class SyntaxGeneratorTest {
 		ra.setContract(A);
 		
 		Recursion rb = recursion("rb");
-		Contract B = externalSum()
+		SessionType B = externalSum()
 				.add("a")
 				.add("b", recRef(rb)) 
 				.add("c", recRef(rb))

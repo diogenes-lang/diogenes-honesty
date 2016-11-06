@@ -5,17 +5,17 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.EmptyContract;
 import it.unica.co2.api.contract.ExternalAction;
 import it.unica.co2.api.contract.ExternalSum;
 import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.SessionType;
 
 public class TSTContractGenerator extends AbstractContractGenerator{
 	
-	public TSTContractGenerator(Contract c) {
+	public TSTContractGenerator(SessionType c) {
 		super(c);
 	}
 

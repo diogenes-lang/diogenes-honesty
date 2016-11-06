@@ -1,6 +1,9 @@
 package it.unica.co2.examples.blackjack;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.recRef;
+import static it.unica.co2.api.contract.utils.ContractFactory.recursion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,11 +12,10 @@ import java.util.Random;
 
 import co2api.Message;
 import co2api.Session;
-import co2api.TST;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
-
 
 public class DeckService extends Participant {
 
@@ -34,7 +36,7 @@ public class DeckService extends Participant {
 		contract.setContract(externalSum().add("next", internalSum().add("card", recRef(contract))).add("abort"));
 
 		System.out.println("tell and wait");
-		Session<TST> session = tellAndWait(contract);
+		Session<SessionType> session = tellAndWait(contract);
 		
 		processCall(Deck.class, session);
 	}
@@ -43,10 +45,10 @@ public class DeckService extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session<TST> session;
+		private final Session<SessionType> session;
 		private List<Integer> deck = new ArrayList<>();
 		
-		protected Deck(Session<TST> session) {
+		protected Deck(Session<SessionType> session) {
 			super();
 			this.session = session;
 			

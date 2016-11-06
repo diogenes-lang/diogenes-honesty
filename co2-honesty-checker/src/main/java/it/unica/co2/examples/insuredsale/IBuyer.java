@@ -1,13 +1,12 @@
 package it.unica.co2.examples.insuredsale;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.Message;
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.Participant;
-
 
 public class IBuyer extends Participant {
 
@@ -19,7 +18,7 @@ public class IBuyer extends Participant {
 
 	@Override
 	public void run() {
-		Contract CA = internalSum().add("order", 
+		SessionType CA = internalSum().add("order", 
 				externalSum()
 				.add("amount", internalSum().add("pay"))
 				.add("abort"));
@@ -27,7 +26,7 @@ public class IBuyer extends Participant {
 		
 		Integer orderAmount = 60;
 		
-		Session<TST> session = tellAndWait(CA);
+		Session<SessionType> session = tellAndWait(CA);
 		
 		session.sendIfAllowed("order", orderAmount);
 		

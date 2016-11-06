@@ -1,12 +1,12 @@
 package it.unica.co2.examples.ebookstore;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.Participant;
 
 public class Buyer extends Participant {
@@ -22,14 +22,14 @@ public class Buyer extends Participant {
 	@Override
 	public void run() {
 		
-		Contract c = internalSum().add(
+		SessionType c = internalSum().add(
 				"book",
 				externalSum()
 					.add("confirm", internalSum().add("pay").add("quit"))
 					.add("abort")
 		);
 		
-		Session<TST> session = tellAndWait(c);
+		Session<SessionType> session = tellAndWait(c);
 		
 		Message mB;	
 		Integer price;

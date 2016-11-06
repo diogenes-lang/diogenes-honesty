@@ -1,16 +1,17 @@
 package it.unica.co2.examples.blackjack;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.recRef;
+import static it.unica.co2.api.contract.utils.ContractFactory.recursion;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Session;
-import co2api.TST;
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.Recursion;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.CO2Process;
 import it.unica.co2.api.process.Participant;
-
 
 public class Player extends Participant {
 	
@@ -27,12 +28,12 @@ public class Player extends Participant {
 
 		Recursion contract = recursion("x");
 		
-		Contract hit = externalSum().add("card", recRef(contract)).add("lose").add("abort");
-		Contract end = externalSum().add("win").add("lose").add("abort");
+		SessionType hit = externalSum().add("card", recRef(contract)).add("lose").add("abort");
+		SessionType end = externalSum().add("win").add("lose").add("abort");
 		
 		contract.setContract(internalSum().add("hit", hit).add("stand", end));
 	
-		Session<TST> session = tellAndWait(contract);
+		Session<SessionType> session = tellAndWait(contract);
 		
 		processCall(Play.class, session, 0);
 	}
@@ -41,10 +42,10 @@ public class Player extends Participant {
 
 		private static final long serialVersionUID = 1L;
 		
-		private final Session<TST> session;
+		private final Session<SessionType> session;
 		private final Integer n;
 		
-		protected Play(Session<TST> session, Integer n) {
+		protected Play(Session<SessionType> session, Integer n) {
 			super();
 			this.session = session;
 			this.n=n;

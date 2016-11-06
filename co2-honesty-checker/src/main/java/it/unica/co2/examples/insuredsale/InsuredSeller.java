@@ -1,16 +1,15 @@
 package it.unica.co2.examples.insuredsale;
 
-import static it.unica.co2.api.contract.utils.ContractFactory.*;
+import static it.unica.co2.api.contract.utils.ContractFactory.externalSum;
+import static it.unica.co2.api.contract.utils.ContractFactory.internalSum;
 
 import co2api.ContractException;
 import co2api.Message;
 import co2api.Public;
 import co2api.Session;
-import co2api.TST;
 import co2api.TimeExpiredException;
-import it.unica.co2.api.contract.Contract;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.process.Participant;
-
 
 public class InsuredSeller extends Participant {
 
@@ -28,14 +27,14 @@ public class InsuredSeller extends Participant {
 	@Override
 	public void run() {
 		
-		Contract CA = externalSum().add("order", 
+		SessionType CA = externalSum().add("order", 
 				internalSum()
 				.add("amount", externalSum().add("pay"))
 				.add("abort"));
 		
 		
-		Public<TST> pbl = tell(CA);
-		Session<TST> session = pbl.waitForSession();
+		Public<SessionType> pbl = tell(CA);
+		Session<SessionType> session = pbl.waitForSession();
 		
 		Message msg = session.waitForReceive("order");
 		
@@ -58,10 +57,10 @@ public class InsuredSeller extends Participant {
 	private static class HandlePayment extends Participant {
 
 		private static final long serialVersionUID = 1L;
-		private final Session<TST> session;
+		private final Session<SessionType> session;
 		private final Integer amount;
 		
-		protected HandlePayment(Session<TST> session, Integer amount) {
+		protected HandlePayment(Session<SessionType> session, Integer amount) {
 			super(InsuredSeller.username, InsuredSeller.password);
 			this.session = session;
 			this.amount = amount;
@@ -101,10 +100,10 @@ public class InsuredSeller extends Participant {
 	private static class HandleInsurance extends Participant {
 
 		private static final long serialVersionUID = 1L;
-		private final Session<TST> session;
+		private final Session<SessionType> session;
 		private final Integer amount;
 		
-		protected HandleInsurance(Session<TST> session, Integer amount) {
+		protected HandleInsurance(Session<SessionType> session, Integer amount) {
 			super(InsuredSeller.username, InsuredSeller.password);
 			this.session = session;
 			this.amount = amount;
@@ -113,11 +112,11 @@ public class InsuredSeller extends Participant {
 		@Override
 		public void run() {
 			
-			Contract CI = internalSum().add("reqi", externalSum().add("oki").add("aborti"));
+			SessionType CI = internalSum().add("reqi", externalSum().add("oki").add("aborti"));
 
-			Public<TST> pblI = tell(CI);
+			Public<SessionType> pblI = tell(CI);
 		
-			Session<TST> sessionI;
+			Session<SessionType> sessionI;
 			
 			try {
 				sessionI = pblI.waitForSession(10000);

@@ -8,11 +8,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import it.unica.co2.api.contract.Contract;
 import it.unica.co2.api.contract.ContractDefinition;
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
+import it.unica.co2.api.contract.SessionType;
 import it.unica.co2.api.contract.utils.ContractExplorer;
 
 
@@ -46,7 +46,7 @@ public class Bekic {
 	}
 	
 
-	public static Bekic getInstance(Contract contract) {
+	public static Bekic getInstance(SessionType contract) {
 		
 		ContractDefinition cDef = new ContractDefinition(ANONYMOUS);
 		cDef.setContract(contract);
@@ -106,7 +106,7 @@ public class Bekic {
 		return env.values().toArray(new ContractDefinition[]{});
 	}
 	
-	public Contract defToRec() {
+	public SessionType defToRec() {
 		
 		if (!env.containsKey(ANONYMOUS))
 			throw new IllegalStateException("this method is not allowed. You must use Bekic.getInstance(Contract)");
