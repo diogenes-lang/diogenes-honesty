@@ -9,8 +9,8 @@ import co2api.ContractXML;
 import co2api.Private;
 import co2api.TST;
 import it.unica.co2.api.contract.bekic.Bekic;
-import it.unica.co2.api.contract.generators.MaudeContractGenerator;
-import it.unica.co2.api.contract.generators.TSTContractGenerator;
+import it.unica.co2.api.contract.serializer.MaudeContractSerializer;
+import it.unica.co2.api.contract.serializer.TSTContractSerializer;
 
 public abstract class SessionType implements Serializable, ContractModel {
 
@@ -39,15 +39,13 @@ public abstract class SessionType implements Serializable, ContractModel {
 	public abstract SessionType deepCopy();
 	
 	public String toMaude() {
-		return new MaudeContractGenerator(this).generate();
+		return MaudeContractSerializer.instance().convert(this);
 	}
 	
 	public String toTST() {
-		
 		Bekic instance = Bekic.getInstance(this);
 		SessionType c = instance.defToRec();
-		
-		return new TSTContractGenerator(c).generate();
+		return TSTContractSerializer.instance().convert(c);
 	}
 
 	@Override

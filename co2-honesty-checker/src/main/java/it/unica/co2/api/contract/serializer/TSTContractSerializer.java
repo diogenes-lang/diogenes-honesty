@@ -1,4 +1,4 @@
-package it.unica.co2.api.contract.generators;
+package it.unica.co2.api.contract.serializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,65 +13,51 @@ import it.unica.co2.api.contract.InternalAction;
 import it.unica.co2.api.contract.InternalSum;
 import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
-import it.unica.co2.api.contract.SessionType;
 
-public class MaudeContractGenerator extends AbstractContractGenerator {
+/**
+ * Serialize a {@code SessionType} to a timed-session-type accepted by the contract-oriented middleware.
+ * 
+ * @author Nicola Atzei
+ */
+public class TSTContractSerializer extends AbstractContractSerializer{
 	
-	private final boolean actionsAsString;
+	private static TSTContractSerializer instance = new TSTContractSerializer();
 	
-	public MaudeContractGenerator(SessionType c) {
-		this(c, true);
-	}
-	
-	public MaudeContractGenerator(SessionType c, boolean actionsAsString) {
-		super(c);
-		this.actionsAsString = actionsAsString;
+	private TSTContractSerializer() {}
+
+	public static TSTContractSerializer instance() {
+		return instance;
 	}
 	
 	@Override
 	protected String convert(InternalSum contract) {
-		if (contract.getActions().size()==0)
-			return "0";
-		
 		List<String> actions = new ArrayList<>();
 		for (InternalAction a : contract.getActions()) {
-			actions.add(this.convert(a));
-		}
-		return StringUtils.join(actions, " (+) ");
-	}
-	
-	@Override
-	protected String convert(ExternalSum contract) {
-		if (contract.getActions().size()==0)
-			return "0";
-			
-		List<String> actions = new ArrayList<>();
-		for (ExternalAction a : contract.getActions()) {
 			actions.add(this.convert(a));
 		}
 		return StringUtils.join(actions, " + ");
 	}
 	
 	@Override
+	protected String convert(ExternalSum contract) {
+		List<String> actions = new ArrayList<>();
+		for (ExternalAction a : contract.getActions()) {
+			actions.add(this.convert(a));
+		}
+		return StringUtils.join(actions, " & ");
+	}
+	
+	@Override
 	protected String convert(InternalAction action) {
 		StringBuilder sb = new StringBuilder();
 		
-		if (actionsAsString)
-			sb.append("\"");
+		sb.append("!").append(action.getName());
+		sb.append(action.getGuard());
 		
-		sb.append(action.getName());
-		
-		if (actionsAsString)
-			sb.append("\"");
-		
-		sb.append(" ! ").append("unit");
-		
-		if (action.getNext()!=null)
+		if (action.getNext()!=null && !(action.getNext() instanceof EmptyContract))
 			sb.append(" . ( ")
 			.append( this.convert(action.getNext()))
 			.append(" )");
-		else
-			sb.append(" . 0");
 
 		return sb.toString();
 	}
@@ -80,41 +66,37 @@ public class MaudeContractGenerator extends AbstractContractGenerator {
 	protected String convert(ExternalAction action) {
 		StringBuilder sb = new StringBuilder();
 		
-		if (actionsAsString)
-			sb.append("\"");
+		sb.append("?").append(action.getName());
+		sb.append(action.getGuard());
 		
-		sb.append(action.getName());
-		
-		if (actionsAsString)
-			sb.append("\"");
-		
-		sb.append(" ? ").append("unit");
-		
-		if (action.getNext()!=null)
+		if (action.getNext()!=null && !(action.getNext() instanceof EmptyContract))
 			sb.append(" . ( ")
 			.append( this.convert(action.getNext()))
 			.append(" )");
-		else
-			sb.append(" . 0");
 
 		return sb.toString();
 	}
 	
 	@Override
 	protected String convert(Recursion rec) {
-		return "rec "+rec.getName()+" . ( "+ this.convert(rec.getContract()) +" ) ";
+		return "REC '"+normalize(rec.getName().toLowerCase())+"' [ "+ this.convert(rec.getContract()) +" ] ";
 	}
-	
+
 	protected String convert(RecursionReference ref) {
-		return ref.getReference().getName();
+		return "'"+normalize(ref.getReference().getName())+"'";
 	}
-	
+
 	@Override
 	protected String convert(EmptyContract recursion) {
-		return "0";
+		return "";
 	}
 	
 	protected String convert(ContractReference ref) {
-		return ref.getReference().getName();
+		throw new UnsupportedOperationException();
+	}
+	
+	private String normalize(String s) {
+		return s.toLowerCase().replaceAll("[^a-z]","");
+		
 	}
 }

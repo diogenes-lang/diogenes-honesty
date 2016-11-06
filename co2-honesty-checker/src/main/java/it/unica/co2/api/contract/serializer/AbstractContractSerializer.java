@@ -1,4 +1,4 @@
-package it.unica.co2.api.contract.generators;
+package it.unica.co2.api.contract.serializer;
 
 import it.unica.co2.api.contract.ContractReference;
 import it.unica.co2.api.contract.EmptyContract;
@@ -10,41 +10,41 @@ import it.unica.co2.api.contract.Recursion;
 import it.unica.co2.api.contract.RecursionReference;
 import it.unica.co2.api.contract.SessionType;
 
-public abstract class AbstractContractGenerator {
+/**
+ * Abstract class for serializing a {@code SessionType}.
+ * 
+ * @author Nicola Atzei
+ */
+public abstract class AbstractContractSerializer {
 
-	protected SessionType contract;
+	/**
+	 * Serialize the given contract.
+	 * 
+	 * @param contract The contract to serialize.
+	 * @return The serialized contract.
+	 */
+	public String convert(SessionType contract) {
 
-	public AbstractContractGenerator() {
-		super();
-	}
-
-	public AbstractContractGenerator(SessionType c) {
-		this.contract=c;
-	}
-
-	public String generate() {
-		return convert(contract);
-	}
-	
-	protected String convert(SessionType contract) {
+		// dispatching
 		
-		if (contract instanceof InternalSum)
+		if (contract instanceof InternalSum) {
 			return convert((InternalSum) contract);
-		
-		else if(contract instanceof ExternalSum)
+		}
+		else if(contract instanceof ExternalSum) {
 			return convert((ExternalSum) contract);
-		
-		else if(contract instanceof Recursion)
+		}
+		else if(contract instanceof Recursion) {
 			return convert((Recursion) contract);
-		
-		else if(contract instanceof RecursionReference)
+		}
+		else if(contract instanceof RecursionReference) {
 			return convert((RecursionReference) contract);
-		
-		else if(contract instanceof ContractReference)
+		}
+		else if(contract instanceof ContractReference) {
 			return convert((ContractReference) contract);
-		
-		else if(contract instanceof EmptyContract)
+		}
+		else if(contract instanceof EmptyContract) {
 			return convert((EmptyContract) contract);
+		}
 		
 		throw new IllegalStateException("Unexpected contract "+contract.getClass());
 	}
