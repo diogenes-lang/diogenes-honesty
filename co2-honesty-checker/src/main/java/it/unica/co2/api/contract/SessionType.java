@@ -38,10 +38,20 @@ public abstract class SessionType implements Serializable, ContractModel {
 	
 	public abstract SessionType deepCopy();
 	
+	/**
+	 * Serialize this contract to its maude representation.
+	 * 
+	 * @return the serialized contract
+	 */
 	public String toMaude() {
 		return MaudeContractSerializer.instance().convert(this);
 	}
-	
+
+	/**
+	 * Serialize this contract to a session-type parsable by the contract-oriented middleware
+	 * 
+	 * @return the serialized contract
+	 */
 	public String toTST() {
 		Bekic instance = Bekic.getInstance(this);
 		SessionType c = instance.defToRec();
