@@ -16,25 +16,25 @@
 		<dependency>
 			<groupId>jpf</groupId>
 			<artifactId>jpf</artifactId>
-			<version>8.31</version>
+			<version>8.32</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>jpf</groupId>
 			<artifactId>jpf-annotations</artifactId>
-			<version>8.31</version>
+			<version>8.32</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>jpf</groupId>
 			<artifactId>jpf-classes</artifactId>
-			<version>8.31</version>
+			<version>8.32</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>tcs.unica.it</groupId>
 			<artifactId>co2api</artifactId>
-			<version>0.0.9-test</version>
+			<version>0.0.9</version>
 		</dependency>
 		
 		<dependency>
