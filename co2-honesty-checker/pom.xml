@@ -4,7 +4,7 @@
 	
 	<groupId>it.unica.co2</groupId>
 	<artifactId>co2-honesty-checker</artifactId>
-	<version>5.1.16</version>
+	<version>5.2.0</version>
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,19 +16,19 @@
 		<dependency>
 			<groupId>jpf</groupId>
 			<artifactId>jpf</artifactId>
-			<version>8.32</version>
+			<version>8-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>jpf</groupId>
 			<artifactId>jpf-annotations</artifactId>
-			<version>8.32</version>
+			<version>8-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>jpf</groupId>
 			<artifactId>jpf-classes</artifactId>
-			<version>8.32</version>
+			<version>8-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
